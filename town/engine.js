@@ -358,9 +358,14 @@ function frame(now){
 }
 function step(d){const px=Math.round(player.x),py=Math.round(player.y),nx=px+d[0],ny=py+d[1];if(!blocked(nx,ny))player.path=[[nx,ny]];}
 cv.addEventListener('pointerdown',ev=>{
-  if(sheetOpen)return;const r=cv.getBoundingClientRect();const x=Math.floor((ev.clientX-r.left)/ts),y=Math.floor((ev.clientY-r.top)/ts);
+  if(sheetOpen)return;const r=cv.getBoundingClientRect();const fx=(ev.clientX-r.left)/ts,fy=(ev.clientY-r.top)/ts;const x=Math.floor(fx),y=Math.floor(fy);
   if(x<0||y<0||x>=W||y>=H)return;
-  const n=allPeople().find(p=>p.x===x&&p.y===y);if(n){goTo({kind:'npc',n});return;}
+  // 點到居民身上、頭上的「！」或名字，都算點到這位居民（手指比格子大）
+  let n=null,bd=.8;
+  for(const p of allPeople()){for(const [hx,hy] of [[p.x+.5,p.y+.5],[p.x+.5,p.y-.2],[p.x+.5,p.y+1.1]]){const d=Math.hypot(fx-hx,fy-hy);if(d<bd){bd=d;n=p;}}}
+  if(n){goTo({kind:'npc',n});return;}
+  // 點到店家頭上的「繩」泡泡，也算點到店家
+  if(ROPE&&!hasRope()&&BLD[ROPE.at]){const b=BLD[ROPE.at];if(Math.hypot(fx-(b.x0+(b.x1-b.x0+1)/2),fy-(b.y0-.18))<.7){goTo({kind:'bld',key:ROPE.at});return;}}
   const c=grid[y][x];
   if(BINFO[c]){goTo({kind:'bld',key:c});return;}
   if(c==='#')return;
@@ -379,6 +384,7 @@ window.addEventListener('keyup',e=>{if(KM[e.key]&&kb===KM[e.key])kb=null;});
 window.addEventListener('resize',resize);
 resize();renderUI();requestAnimationFrame(frame);toast.t=setTimeout(()=>$('toast').style.opacity=0,7000);
 if(S.done)toast('歡迎回到三明治鎮。點生菜小姐可以再看一次收集。');
+else if(S.helped.length)toast(`歡迎回來！你已經幫了 ${S.helped.length} 位居民，背包也都還在。`);
 if(location.hash==='#book')album();
 // 給自動測試用
 window.__town={Z,NPCS,get S(){return S},G,interact,lesson,album,result,goTo};

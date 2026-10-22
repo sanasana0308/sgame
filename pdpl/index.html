@@ -93,6 +93,8 @@ button:focus-visible{outline:3px solid var(--tomato);outline-offset:2px}
 .fade{animation:fade .35s ease}
 @keyframes fade{from{opacity:.3;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.fade{animation:none}.breath .ring{transition:none}}
+.homeLink{align-self:flex-start;font-size:13px;font-weight:700;color:#888780;text-decoration:none;padding:2px 0}
+.homeLink:hover{color:#2c2c2a}
 </style>
 </head>
 <body>
@@ -100,6 +102,7 @@ button:focus-visible{outline:3px solid var(--tomato);outline-offset:2px}
 
 <div class="ribbon" aria-hidden="true"></div>
 <div class="wrap">
+  <a class="homeLink" href="/">‹ 回 Sandywich 首頁</a>
   <div class="top">
     <div class="brand"><b>排都排了</b><span>PDPL · Level 1</span></div>
     <div class="stickers" id="stickers" aria-label="收集到的貼紙"></div>
@@ -227,8 +230,9 @@ function intro(){
   show(`<span class="eyebrow red">第一關</span>
    <div class="pun"><div class="big">極致<em>肩</em>持</div><div class="from">極致「堅」持 → 極致「肩」持</div></div>
    <p class="lead">你的肩膀今天扛了多少東西？書包、電腦、小孩……<br>跟著小人做 5 個動作，收集 5 張貼紙。大概 3 分鐘。</p>
-   <button class="primary" id="go">開始</button>`);
+   ${st.got.length&&!st.done?`<button class="primary" id="resume">繼續：第 ${POSES.findIndex(p=>!st.got.includes(p.key))+1} 個動作</button><button class="ghost" id="go">從頭開始</button>`:`<button class="primary" id="go">開始</button>`}`);
   document.getElementById('go').onclick=()=>pose(0);
+  const rb=document.getElementById('resume');if(rb)rb.onclick=()=>pose(Math.max(0,POSES.findIndex(p=>!st.got.includes(p.key))));
 }
 async function pose(i){
   const p=POSES[i];
