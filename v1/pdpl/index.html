@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>排都排了｜Sandywich</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Poppins:wght@500;600;700&display=swap">
+<style>
+/* Layout: one phone-width column on cream — brand ribbon, sticker row, then one stage card with the stick-figure mat on top and the step content below. Deliberate single light theme in Sandywich brand colours. */
+:root{
+  --yellow:#ffc233; --tomato:#d7263d; --lettuce:#7fa63d; --ink:#2c2c2a; --stone:#888780;
+  --cream:#efeae3; --white:#ffffff; --line:#ddd6cb; --soft:#f7f3ee; --body:#e2ddd4;
+  --tomato-soft:#fbe3e6; --lettuce-soft:#e9f1dc; --yellow-soft:#fff1cc;
+  --f-zh:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-en:"Poppins","Noto Sans TC",system-ui,sans-serif;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+html,body{background:var(--cream)}
+body{color:var(--ink);font-family:var(--f-zh);font-size:16px;line-height:1.65;margin:0}
+.ribbon{height:22px;background:linear-gradient(90deg,var(--yellow) 0 32%,var(--tomato) 32% 57%,var(--ink) 57% 80%,var(--lettuce) 80% 100%);
+  -webkit-mask:radial-gradient(circle 7px at 50% 100%,transparent 6.5px,#000 7.5px) 0 0/20px 100% repeat-x;
+          mask:radial-gradient(circle 7px at 50% 100%,transparent 6.5px,#000 7.5px) 0 0/20px 100% repeat-x}
+.wrap{max-width:500px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 40px;display:flex;flex-direction:column;gap:12px}
+h1,h2{margin:0;text-wrap:balance;font-weight:900}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--tomato);outline-offset:2px}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;flex-direction:column;line-height:1.15}
+.brand b{font-size:19px;font-weight:900}
+.brand span{font-family:var(--f-en);font-size:11px;letter-spacing:.14em;color:var(--stone);text-transform:uppercase}
+.stickers{display:flex;gap:6px}
+.stk{width:30px;height:30px;border-radius:50%;border:2px dashed var(--line);display:grid;place-items:center;font-size:12px;font-weight:900;color:var(--stone);background:var(--soft)}
+.stk.on{border:2px solid var(--white);background:var(--yellow);color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+
+.card{background:var(--white);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 0 var(--line)}
+.stage{position:relative;background:var(--soft)}
+.stage svg{display:block;width:100%;height:auto;transition:opacity .3s}
+.stage .tag{position:absolute;left:12px;top:12px;font-size:12px;font-weight:700;letter-spacing:.06em;background:var(--white);border-radius:99px;padding:3px 10px}
+.breath{position:absolute;right:14px;top:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.breath .ring{width:44px;height:44px;border-radius:50%;background:var(--lettuce);opacity:.85;transform:scale(.55);transition:transform 2.4s ease-in-out}
+.breath .ring.in{transform:scale(1)}
+.breath span{font-size:13px;font-weight:900}
+.body{padding:18px 18px 20px;display:flex;flex-direction:column;gap:12px}
+.eyebrow{display:inline-flex;align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.08em;padding:3px 10px;border-radius:99px;background:var(--soft);color:var(--stone)}
+.eyebrow.red{background:var(--tomato);color:var(--white)}
+.pname{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pname h2{font-size:26px;line-height:1.2}
+.pname span{font-family:var(--f-en);font-size:13px;color:var(--stone)}
+.lead{margin:0;font-size:17px}
+.muted{margin:0;color:var(--stone);font-size:14px}
+.primary{background:var(--ink);color:var(--white);border:0;border-radius:14px;padding:13px 16px;font-weight:700;font-size:16px}
+.ghost{background:var(--white);border:2px solid var(--line);border-radius:14px;padding:11px 16px;font-weight:700}
+.link{background:none;border:0;color:var(--stone);text-decoration:underline;font-size:14px;align-self:center;padding:4px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 140px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;background:var(--white);border:2px solid var(--line);border-radius:14px;padding:11px 14px;font-size:16px}
+.opt:hover{border-color:var(--ink)}
+.opt.right{border-color:var(--lettuce);background:var(--lettuce-soft)}
+.opt.wrong{border-color:var(--tomato);background:var(--tomato-soft)}
+.opt:disabled{cursor:default}
+.fact{background:var(--yellow-soft);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.fact b{font-size:15px}
+.fact p{margin:0;font-size:15px}
+.tip{display:flex;gap:10px;align-items:flex-start;border-top:2px dashed var(--line);padding-top:10px}
+.tip i{flex:none;font-style:normal;font-size:12px;font-weight:900;background:var(--lettuce);color:var(--white);border-radius:99px;padding:2px 8px;margin-top:3px}
+.tip p{margin:0;font-size:15px}
+.pun{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0}
+.pun .big{font-size:42px;font-weight:900;letter-spacing:.06em;line-height:1.15}
+.pun .big em{font-style:normal;color:var(--tomato)}
+.pun .from{font-size:14px;color:var(--stone)}
+.pat{align-self:center;width:140px;height:140px;border-radius:50%;border:0;background:var(--yellow);font-weight:900;font-size:22px;box-shadow:0 6px 0 var(--ink);transition:transform .08s}
+.pat:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.patmsg{text-align:center;font-size:20px;font-weight:900;min-height:1.6em;margin:0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sticker{border-radius:16px;background:var(--yellow-soft);border:2px solid var(--ink);padding:6px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.sticker svg{width:100%;height:auto}
+.sticker b{font-size:13px;line-height:1.3}
+.road{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.road li{display:flex;align-items:center;gap:10px;border-radius:12px;padding:8px 12px;background:var(--soft);font-size:15px}
+.road li .lv{font-family:var(--f-en);font-weight:700;font-size:12px;color:var(--stone);width:40px;flex:none}
+.road li.done{background:var(--lettuce-soft)}
+.road li.done .lv{color:var(--lettuce)}
+.road li .st{margin-left:auto;font-size:12px;color:var(--stone);white-space:nowrap}
+.copied{font-size:13px;color:var(--lettuce);min-height:1.2em}
+.foot{font-size:12px;color:var(--stone);margin:0;text-align:center}
+.fade{animation:fade .35s ease}
+@keyframes fade{from{opacity:.3;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.fade{animation:none}.breath .ring{transition:none}}
+.homeLink{align-self:flex-start;font-size:13px;font-weight:700;color:#888780;text-decoration:none;padding:2px 0}
+.homeLink:hover{color:#2c2c2a}
+</style>
+</head>
+<body>
+
+
+<div class="ribbon" aria-hidden="true"></div>
+<div class="wrap">
+  <a class="homeLink" href="/">‹ 回 Sandywich 首頁</a>
+  <div class="top">
+    <div class="brand"><b>排都排了</b><span>PDPL · Level 1</span></div>
+    <div class="stickers" id="stickers" aria-label="收集到的貼紙"></div>
+  </div>
+  <section class="card">
+    <div class="stage" id="stage">
+      <svg id="fig" viewBox="0 0 220 214" role="img" aria-label="動作示範小人"></svg>
+      <span class="tag" id="tag">極致肩持</span>
+      <div class="breath" id="breath" hidden><div class="ring" id="ring"></div><span id="btxt">吸氣</span></div>
+    </div>
+    <div class="body fade" id="body"></div>
+  </section>
+  <p class="foot">動作整理自 Sandy 的肩頸課。好玩為主，這不是治療；身體有傷痛，請先詢問醫師。</p>
+</div>
+
+<script>
+// ============ stick figure ============
+// points: hd=head center, sh=shoulder, hip, e/h = elbow/hand (1 near, 2 far), k/f = knee/foot
+const P={
+ stand:{hd:[100,30],sh:[100,52],hip:[100,112],e1:[104,82],h1:[106,108],e2:[96,82],h2:[94,108],k1:[102,155],f1:[104,198],k2:[98,155],f2:[96,198]},
+ dog:{hd:[60,176],sh:[72,160],hip:[120,124],e1:[52,179],h1:[33,198],e2:[56,179],h2:[38,198],k1:[144,161],f1:[167,198],k2:[140,161],f2:[161,198]},
+ kneel:{hd:[104,98],sh:[102,120],hip:[104,180],e1:[100,150],h1:[96,176],e2:[106,150],h2:[110,176],k1:[60,192],f1:[110,196],k2:[64,193],f2:[114,197]},
+ dolphin:{hd:[54,182],sh:[70,168],hip:[118,132],e1:[70,197],h1:[38,198],e2:[74,197],h2:[44,198],k1:[147,165],f1:[175,198],k2:[143,165],f2:[169,198]},
+ table:{hd:[44,132],sh:[62,142],hip:[122,138],e1:[62,170],h1:[62,198],e2:[66,170],h2:[68,198],k1:[160,154],f1:[162,198],k2:[156,154],f2:[156,198]},
+ sphinx:{hd:[40,146],sh:[56,166],hip:[110,191],e1:[56,196],h1:[24,197],e2:[60,196],h2:[30,197],k1:[153,194],f1:[196,195],k2:[150,195],f2:[192,196]},
+ hug:{hd:[104,98],sh:[102,120],hip:[104,180],e1:[78,142],h1:[112,128],e2:[82,150],h2:[114,138],k1:[60,192],f1:[110,196],k2:[64,193],f2:[114,197]}
+};
+const KEYS=Object.keys(P.stand);
+let cur=JSON.parse(JSON.stringify(P.stand)),strap=false,breathT=0,anim=null,view='side';
+const RM=(()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(_){return false}})();
+// back view for cow face arms: top elbow points up, bottom elbow points down, strap joins the hands
+function backSvg(b,small){
+  const L=(x1,y1,x2,y2,w,col)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const u=-b,ink='#2c2c2a';
+  return `${small?'':'<rect x="14" y="198" width="192" height="8" rx="4" fill="var(--lettuce)" opacity=".35"/>'}
+   ${L(92,196,100,182,10,'#b9b2a6')}${L(128,196,120,182,10,'#b9b2a6')}
+   <path d="M84 ${86+u} L136 ${86+u} L126 178 Q110 186 94 178 Z" fill="#e2ddd4" stroke="${ink}" stroke-width="3" stroke-linejoin="round"/>
+   <line x1="110" y1="${92+u}" x2="110" y2="172" stroke="#b9b2a6" stroke-width="2" stroke-dasharray="4 4"/>
+   <circle cx="86" cy="${88+u}" r="10" fill="#ffc233" opacity=".9"/><circle cx="134" cy="${88+u}" r="10" fill="#ffc233" opacity=".9"/>
+   ${L(134,88+u,148,36+u,8,ink)}${L(148,36+u,117,100+u,8,ink)}
+   ${L(86,88+u,76,134+u,8,ink)}${L(76,134+u,103,122+u,8,ink)}
+   <line x1="117" y1="${100+u}" x2="103" y2="${122+u}" stroke="#d7263d" stroke-width="4" stroke-dasharray="5 3" stroke-linecap="round"/>
+   <circle cx="110" cy="${60+u}" r="14" fill="#fff" stroke="${ink}" stroke-width="3"/>
+   ${small?'':`<text x="156" y="${36+u}" font-size="12" font-weight="700" fill="#d7263d" font-family="Noto Sans TC,sans-serif">↑ 手肘朝上</text>
+   <text x="70" y="${150+u}" text-anchor="end" font-size="12" font-weight="700" fill="#d7263d" font-family="Noto Sans TC,sans-serif">手肘朝下 ↓</text>
+   <text x="137" y="${134+u}" font-size="11" fill="#888780" font-family="Noto Sans TC,sans-serif">伸展帶</text>`}`;
+}
+function drawFig(p){
+  const b=Math.sin(breathT)*1.6;
+  if(view==='back'){document.getElementById('fig').innerHTML=backSvg(b,false);return;} // gentle breathing bob on the upper body
+  const q=k=>[p[k][0],p[k][1]-(['hd','sh','e1','e2','h1','h2'].includes(k)?b*(k==='hd'?1.2:1):0)];
+  const L=(a,c,w,col)=>`<line x1="${a[0]}" y1="${a[1]}" x2="${c[0]}" y2="${c[1]}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const far='#b9b2a6',near='var(--ink)';
+  const [hd,sh,hip,e1,h1,e2,h2,k1,f1,k2,f2]=KEYS.map(q);
+  document.getElementById('fig').innerHTML=`
+   <rect x="14" y="198" width="192" height="8" rx="4" fill="var(--lettuce)" opacity=".35"/>
+   ${L(hip,k2,8,far)}${L(k2,f2,8,far)}${L(sh,e2,7,far)}${L(e2,h2,7,far)}
+   ${L(sh,hip,10,near)}
+   <circle cx="${sh[0]}" cy="${sh[1]}" r="11" fill="var(--yellow)" opacity=".9"/>
+   ${L(hip,k1,8,near)}${L(k1,f1,8,near)}${L(sh,e1,7,near)}${L(e1,h1,7,near)}
+   ${strap?`<line x1="${h1[0]}" y1="${h1[1]}" x2="${h2[0]}" y2="${h2[1]}" stroke="var(--tomato)" stroke-width="3" stroke-dasharray="4 3"/>`:''}
+   <circle cx="${hd[0]}" cy="${hd[1]}" r="12" fill="var(--white)" stroke="var(--ink)" stroke-width="3"/>`;
+}
+function swapView(v){const f=document.getElementById('fig');return new Promise(res=>{if(RM){view=v;drawFig(cur);return res();}f.style.opacity=0;setTimeout(()=>{view=v;drawFig(cur);f.style.opacity=1;setTimeout(res,300);},300);});}
+function moveTo(name,ms=1000){
+  const from=JSON.parse(JSON.stringify(cur)),to=P[name];
+  if(RM){cur=JSON.parse(JSON.stringify(to));drawFig(cur);return Promise.resolve();}
+  return new Promise(res=>{
+    const t0=performance.now();
+    cancelAnimationFrame(anim);
+    const step=now=>{let t=Math.min(1,(now-t0)/ms);const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+      for(const k of KEYS)cur[k]=[from[k][0]+(to[k][0]-from[k][0])*e,from[k][1]+(to[k][1]-from[k][1])*e];
+      drawFig(cur);if(t<1)anim=requestAnimationFrame(step);else res();};
+    anim=requestAnimationFrame(step);
+  });
+}
+let breathing=false;
+function idle(){if(breathing&&!RM)breathT+=.045;drawFig(cur);requestAnimationFrame(idle);}
+
+// ============ content ============
+const POSES=[
+ {key:'dog',nm:'下犬式',en:'Downward dog',
+  intro:'屁股往天花板推，身體變成一個倒 V。',
+  q:'下犬式的名字，是從哪個畫面來的？',opts:['狗狗起床伸懶腰','狗狗在挖骨頭','狗狗看到郵差'],a:0,
+  fact:'梵文叫 Adho Mukha Svanasana，意思是「臉朝下的狗」。下次看到狗狗伸懶腰，你就知道牠在練瑜珈。',
+  tip:'手把地板推遠，肩膀就會離開耳朵。腳跟踩不到地沒關係。'},
+ {key:'cow',nm:'牛面手',en:'Cow face arms',back:true,
+  intro:'跪坐。右手往上舉、彎下來摸背，手肘朝天花板；左手從下面往背後爬，手肘朝地板。兩手在背後碰頭。',
+  q:'「牛面式」的牛面，指的是什麼？',opts:['疊起來的腿和手肘，看起來像一張牛臉','做完會跟牛一樣壯','發明的人很愛吃牛肉麵'],a:0,
+  fact:'梵文 Gomukhasana，go 是牛、mukha 是臉。常見的說法是：疊在一起的膝蓋像牛的嘴，上下兩隻手肘像牛的耳朵。',
+  tip:'兩手碰不到？用伸展帶連起來就好。所以 Sandy 的課一開始就發帶子。'},
+ {key:'dolphin',nm:'海豚式',en:'Dolphin',
+  intro:'像下犬式，但改用前臂撐地。',
+  q:'Sandy 上課說，海豚式的前臂像什麼？',opts:['推土機','筷子','雨刷'],a:0,
+  fact:'前臂往下、往前推地板，像推土機一樣。這樣推，肩胛骨會往兩側滑開，肩膀就不會縮成一團。',
+  tip:'肩膀不舒服，膝蓋放地上也可以。'},
+ {key:'table',nm:'反向桌式',en:'Reverse tabletop',
+  intro:'坐著，手放屁股後面，把屁股抬起來，肚子朝天花板。',
+  q:'海豚式把肩胛骨推開。反向桌式的肩胛骨呢？',opts:['往背後收回來','也推開','肩胛骨下班了'],a:0,
+  fact:'肚子朝上，身體變成一張桌子（上面可以放一杯珍奶，但請不要真的放）。肩胛骨往背後收、往下壓，胸口就打開了，剛好跟海豚式反過來。',
+  tip:'手腕不舒服，手指轉向兩側，或握拳撐地。'},
+ {key:'sphinx',nm:'人面獅身',en:'Sphinx',
+  intro:'趴著，用前臂撐起上半身。',
+  q:'這個動作的名字是從哪裡來的？',opts:['埃及的獅身人面像','一隻很懶的獅子','動物園的海獅'],a:0,
+  fact:'英文就叫 Sphinx pose。手肘放在肩膀正下方，胸口往前上方打開，抬頭挺胸，跟那座雕像一模一樣。',
+  tip:'下背不要擠，肩膀不要聳到耳朵旁邊。'}
+];
+const LEVELS=[{lv:'Lv.1',nm:'極致肩持',part:'肩頸'},{lv:'Lv.2',nm:'腹背瘦敵',part:'核心'},{lv:'Lv.3',nm:'背感幸福',part:'背部・呼吸'},{lv:'Lv.4',nm:'融會貫通',part:'全身'}];
+// 結尾唯一的 CTA。填好網址後按鈕才會出現。
+const CTA={label:'',url:''};
+
+// ============ state ============
+const KEY='pdpl-lv1-v2';
+let st=load()||{got:[],right:0,done:false};
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));return s&&Array.isArray(s.got)?s:null;}catch(_){return null;}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(_){}}
+const $b=document.getElementById('body');
+function show(html){$b.classList.remove('fade');void $b.offsetWidth;$b.classList.add('fade');$b.innerHTML=html;renderStickers();}
+function renderStickers(){document.getElementById('stickers').innerHTML=POSES.map((p,i)=>`<span class="stk ${st.got.includes(p.key)?'on':''}" title="${p.nm}">${i+1}</span>`).join('');}
+function tag(t){document.getElementById('tag').textContent=t;}
+
+// ============ screens ============
+function intro(){
+  strap=false;moveTo('stand',600);tag('極致肩持');
+  show(`<span class="eyebrow red">第一關</span>
+   <div class="pun"><div class="big">極致<em>肩</em>持</div><div class="from">極致「堅」持 → 極致「肩」持</div></div>
+   <p class="lead">你的肩膀今天扛了多少東西？書包、電腦、小孩……<br>跟著小人做 5 個動作，收集 5 張貼紙。大概 3 分鐘。</p>
+   ${st.got.length&&!st.done?`<button class="primary" id="resume">繼續：第 ${POSES.findIndex(p=>!st.got.includes(p.key))+1} 個動作</button><button class="ghost" id="go">從頭開始</button>`:`<button class="primary" id="go">開始</button>`}`);
+  document.getElementById('go').onclick=()=>pose(0);
+  const rb=document.getElementById('resume');if(rb)rb.onclick=()=>pose(Math.max(0,POSES.findIndex(p=>!st.got.includes(p.key))));
+}
+async function pose(i){
+  const p=POSES[i];
+  tag(`動作 ${i+1} / ${POSES.length}`);
+  strap=false;if(view==='back')await swapView('side');await moveTo('stand',500);
+  show(`<div class="pname"><h2>${p.nm}</h2><span>${p.en}</span></div>
+   <p class="lead">${p.intro}</p>
+   <button class="primary" id="do">跟著做</button>`);
+  document.getElementById('do').onclick=async()=>{
+    document.getElementById('do').disabled=true;
+    if(p.back){await moveTo('kneel',1000);tag('背面看');await swapView('back');}
+    else await moveTo(p.key,1100);
+    breathe(i);
+  };
+}
+function breathe(i){
+  const p=POSES[i];
+  show(`<div class="pname"><h2>${p.nm}</h2><span>${p.en}</span></div>
+   <p class="lead">停在這裡，跟著右上角的圓圈呼吸兩次。</p>
+   <button class="link" id="skip">我做好了</button>`);
+  const B=document.getElementById('breath'),R=document.getElementById('ring'),T=document.getElementById('btxt');
+  B.hidden=false;breathing=true;let n=0,stop=false;
+  const end=()=>{if(stop)return;stop=true;breathing=false;B.hidden=true;R.classList.remove('in');ask(i);};
+  const cycle=()=>{if(stop)return;
+    if(n>=4)return end();
+    const inh=n%2===0;R.classList.toggle('in',inh);T.textContent=inh?'吸氣':'吐氣';n++;setTimeout(cycle,2500);};
+  cycle();
+  document.getElementById('skip').onclick=end;
+}
+function ask(i){
+  const p=POSES[i];
+  show(`<span class="eyebrow red">猜猜看</span>
+   <h2 style="font-size:20px">${p.q}</h2>
+   <div class="opts">${p.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o}</button>`).join('')}</div>
+   <div id="after"></div>`);
+  $b.querySelectorAll('.opt').forEach(btn=>btn.onclick=()=>{
+    const k=+btn.dataset.k,ok=k===p.a;if(ok)st.right++;
+    if(!st.got.includes(p.key))st.got.push(p.key);save();
+    $b.querySelectorAll('.opt').forEach((x,j)=>{x.disabled=true;if(j===p.a)x.classList.add('right');else if(j===k)x.classList.add('wrong');});
+    document.getElementById('after').innerHTML=`<div class="fact"><b>${ok?'答對了！':'哈，是綠色那個。'}拿到「${p.nm}」貼紙</b><p>${p.fact}</p>
+      <div class="tip"><i>小撇步</i><p>${p.tip}</p></div></div>
+      <button class="primary" id="nx" style="width:100%;margin-top:12px">${i+1<POSES.length?'下一個動作':'最後一步'}</button>`;
+    renderStickers();
+    document.getElementById('nx').onclick=()=>i+1<POSES.length?pose(i+1):pat();
+  });
+}
+async function pat(){
+  tag('收尾');strap=false;if(view==='back')await swapView('side');await moveTo('hug',1000);
+  show(`<h2 style="font-size:22px">最後，抱住自己的肩膀，拍一拍</h2>
+   <p class="lead">這是 Sandy 每次肩頸課的收尾。點三下。</p>
+   <button class="pat" id="patBtn">拍拍</button>
+   <p class="patmsg" id="patMsg"></p>`);
+  let n=0;const m=['拍。','拍拍。','「肩膀，你辛苦了。」'];
+  document.getElementById('patBtn').onclick=()=>{n++;document.getElementById('patMsg').textContent=m[Math.min(n,3)-1];
+    if(!RM){breathT+=1.6;}
+    if(n===3){st.done=true;save();setTimeout(result,1100);}};
+}
+function stickerSvg(key){
+  if(key==='cow')return `<svg viewBox="40 14 140 196">${backSvg(0,true)}</svg>`;
+  const p=P[key],L=(a,c,w,col)=>`<line x1="${a[0]}" y1="${a[1]}" x2="${c[0]}" y2="${c[1]}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+  const far='#b9b2a6',near='#2c2c2a';
+  return `<svg viewBox="10 20 200 190">${L(p.hip,p.k2,9,far)}${L(p.k2,p.f2,9,far)}${L(p.sh,p.e2,8,far)}${L(p.e2,p.h2,8,far)}${L(p.sh,p.hip,11,near)}<circle cx="${p.sh[0]}" cy="${p.sh[1]}" r="12" fill="#ffc233"/>${L(p.hip,p.k1,9,near)}${L(p.k1,p.f1,9,near)}${L(p.sh,p.e1,8,near)}${L(p.e1,p.h1,8,near)}<circle cx="${p.hd[0]}" cy="${p.hd[1]}" r="13" fill="#fff" stroke="#2c2c2a" stroke-width="3"/></svg>`;
+}
+function result(){
+  tag('第一關完成');
+  const got=POSES.filter(p=>st.got.includes(p.key));
+  show(`<span class="eyebrow red">第一關完成</span>
+   <h2 style="font-size:24px">肩膀說：謝謝你。</h2>
+   <p class="muted">收集 ${got.length} / ${POSES.length} 張貼紙，猜對 ${st.right} 題。</p>
+   <div class="grid">${got.map(p=>`<div class="sticker">${stickerSvg(p.key)}<b>${p.nm}</b></div>`).join('')}</div>
+   <div><span class="eyebrow" style="margin-bottom:8px">下一關</span>
+    <ul class="road">${LEVELS.map((l,i)=>`<li class="${i===0?'done':''}"><span class="lv">${l.lv}</span><b>${l.nm}</b><span class="st">${i===0?'完成':'即將開放'}・${l.part}</span></li>`).join('')}</ul></div>
+   ${CTA.url?`<a class="primary" href="${CTA.url}" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">${CTA.label}</a>`:''}
+   <div class="row"><button class="ghost" id="share">複製結果分享</button><button class="ghost" id="again">再玩一次</button></div>
+   <div class="copied" id="copied" aria-live="polite"></div>`);
+  document.getElementById('again').onclick=()=>{st.right=0;st.done=false;save();intro();};
+  document.getElementById('share').onclick=async()=>{
+    const t=`我在「排都排了」破了第一關：極致肩持！\n收集 ${got.length} 張動作貼紙、猜對 ${st.right} 題。\n原來下犬式真的是狗狗伸懶腰。\n#PDPL排都排了排好序列一起練 #sandywichyoga`;
+    const out=document.getElementById('copied');
+    try{await navigator.clipboard.writeText(t);out.textContent='已複製，可以貼到限動或傳給朋友。';}
+    catch(_){out.innerHTML='';const ta=document.createElement('textarea');ta.value=t;ta.rows=5;ta.style.width='100%';out.appendChild(ta);ta.select();}
+  };
+}
+
+drawFig(cur);requestAnimationFrame(idle);
+if(st.done)result();else intro();
+</script>
+
+</body>
+</html>
