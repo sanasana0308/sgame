@@ -1,0 +1,1252 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>心情除錯所｜Sandywich</title>
+<meta name="description" content="下課 10 分鐘，當一次資訊社的心情工程師：讀懂同學的情緒，幫他們除錯。">
+<meta property="og:title" content="心情除錯所｜下課 10 分鐘的心情工程師">
+<meta property="og:description" content="五位同學的系統出錯了。溫度在升、電量在掉，你先救誰？">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: phone column on light "graph paper" — clock + battery HUD, square school map (canvas), then the student status list.
+   Dialogs and mini-games open in a bottom sheet. Deliberate single light theme with code-flavoured accents. */
+:root{
+  --bg:#F5F2EA; --paper:#FFFFFF; --ink:#23303F; --muted:#6A7484; --line:#DCD6CA; --soft:#F8F6F1;
+  --kw:#3B6FD8; --ok:#1F9D74; --ok-soft:#E3F4EC; --warn:#E8962E; --warn-soft:#FDF0DC; --hot:#E5484D; --hot-soft:#FCE5E5;
+  --violet:#8C6BD1; --grid:rgba(59,111,216,.06);
+  --f-zh:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-d:"Huninn","Noto Sans TC",system-ui,sans-serif;
+  --f-code:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font-family:var(--f-zh);font-size:16px;line-height:1.6;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px;overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--kw);outline-offset:2px}
+h1,h2,h3{margin:0;font-family:var(--f-d);font-weight:400;text-wrap:balance}
+code,.mono{font-family:var(--f-code)}
+.wrap{max-width:520px;margin:0 auto;padding:10px max(12px,env(safe-area-inset-right,0px)) 30px max(12px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px}
+.homeLink{align-self:flex-start;font-size:13px;font-weight:700;color:var(--muted);text-decoration:none;padding:6px 0;min-height:32px}
+.homeLink:hover{color:var(--ink)}
+.top{display:flex;align-items:center;gap:10px}
+.brand{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.brand b{font-family:var(--f-d);font-weight:400;font-size:21px}
+.brand span{font-family:var(--f-code);font-size:11px;color:var(--muted)}
+.clock{font-family:var(--f-code);font-weight:700;font-size:24px;font-variant-numeric:tabular-nums;background:var(--paper);border:2px solid var(--ink);border-radius:12px;padding:0 10px;box-shadow:0 3px 0 var(--ink)}
+.clock.late{color:var(--hot)}
+.hud{background:var(--paper);border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 0 var(--line)}
+.hrow{display:flex;align-items:center;gap:8px}
+.lab{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
+.bbar{flex:1;height:12px;border-radius:99px;background:var(--soft);border:2px solid var(--ink);overflow:hidden;position:relative}
+.bbar i{display:block;height:100%;background:var(--ok);transition:width .25s,background .25s}
+.bbar.low i{background:var(--hot)}
+.bbar::after{content:"";position:absolute;left:30%;top:0;bottom:0;border-left:2px dashed rgba(35,48,63,.35)}
+.batN{font-family:var(--f-code);font-weight:700;font-size:14px;min-width:3.4em;text-align:right;font-variant-numeric:tabular-nums}
+.batN.low{color:var(--hot)}
+.tools{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+.tl{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;border-radius:99px;padding:1px 8px 1px 3px;background:var(--soft);color:var(--muted);border:1.5px dashed var(--line);white-space:nowrap}
+.tl svg{width:18px;height:18px}
+.tl.got{background:var(--warn-soft);color:var(--ink);border:1.5px solid var(--ink)}
+.tl.off svg{opacity:.3;filter:grayscale(1)}
+.tl.pop{animation:pop .6s ease 2}
+@keyframes pop{50%{transform:scale(1.15)}}
+.cnt{font-family:var(--f-code);font-size:12px;color:var(--muted);white-space:nowrap}
+.cnt b{color:var(--ink)}
+.endEarly{border:0;background:var(--ok);color:#fff;font-weight:700;border-radius:12px;padding:10px 14px;min-height:44px}
+.main{display:flex;flex-direction:column;gap:10px}
+.stage{position:relative;border-radius:18px;overflow:hidden;background:#E9EEDF;touch-action:manipulation;box-shadow:0 0 0 3px var(--ink)}
+#cv{display:block;width:100%;height:auto}
+.toast{pointer-events:none;position:absolute;left:8px;right:8px;bottom:8px;background:var(--paper);border-radius:12px;padding:7px 12px;font-size:14px;line-height:1.45;box-shadow:0 6px 16px -8px rgba(0,0,0,.45);transition:opacity .3s;border-left:4px solid var(--kw)}
+.toast.bad{border-left-color:var(--hot)}
+.toast.good{border-left-color:var(--ok)}
+.list h3{font-size:16px;display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.list h3 span{font-family:var(--f-code);font-size:12px;color:var(--muted)}
+.studs{display:flex;flex-direction:column;gap:6px}
+.stu{display:grid;grid-template-columns:40px 1fr 54px;align-items:center;gap:8px;background:var(--paper);border:0;border-radius:12px;padding:6px 10px;text-align:left;min-height:52px;width:100%}
+.stu .av svg{width:40px;height:40px;display:block}
+.stu .t{min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.stu .t b{font-size:14px}
+.stu .t b small{font-weight:500;color:var(--muted);font-size:11px;margin-left:4px}
+.stu code{font-size:11px;color:var(--warn);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stu .tp{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.stu .tp b{font-family:var(--f-code);font-size:14px;font-variant-numeric:tabular-nums}
+.tbar{width:54px;height:6px;border-radius:99px;background:var(--soft);overflow:hidden}
+.tbar i{display:block;height:100%;background:var(--warn)}
+.stu.hot code,.stu.hot .tp b{color:var(--hot)}
+.stu.hot .tbar i{background:var(--hot)}
+.stu.crash{background:var(--hot-soft);animation:shake .4s linear infinite}
+.stu.crash code,.stu.crash .tp b{color:var(--hot);font-weight:700}
+.stu.crash .tbar i{background:var(--hot)}
+.stu.fixed{background:var(--ok-soft)}
+.stu.fixed code,.stu.fixed .tp b{color:var(--ok);font-weight:700}
+.stu.fixed .tbar i{background:var(--ok)}
+.stu.ghost{opacity:.45}
+@keyframes shake{25%{transform:translateX(-1.5px)}75%{transform:translateX(1.5px)}}
+.help{font-size:12px;color:var(--muted);margin:0}
+.foot{font-size:12px;color:var(--muted);margin:0;text-align:center}
+
+/* sheet */
+.sheet{position:fixed;inset:0;background:rgba(35,48,63,.42);display:flex;align-items:flex-end;justify-content:center;padding:10px max(10px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));z-index:20}
+.panel{background:var(--paper);border-radius:20px;width:100%;max-width:500px;max-height:100%;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;animation:up .22s ease}
+@keyframes up{from{transform:translateY(14px);opacity:.4}to{transform:none;opacity:1}}
+.ph{display:flex;align-items:center;gap:10px;padding:14px 16px 0}
+.ph .av svg{width:48px;height:48px;display:block}
+.ph .who{flex:1;min-width:0;line-height:1.3}
+.ph b{font-size:17px}
+.ph b small{font-size:12px;color:var(--muted);font-weight:500;margin-left:6px}
+.ph code{display:block;font-size:12px;color:var(--hot);overflow-wrap:anywhere}
+.ph code.fixed{color:var(--ok)}
+.ph .tmp{font-family:var(--f-code);font-weight:700;font-size:15px;color:var(--warn);white-space:nowrap}
+.pb{padding:12px 16px 16px;display:flex;flex-direction:column;gap:10px}
+.see{margin:0;font-size:15px;color:var(--muted)}
+.see b{color:var(--ink)}
+.say{margin:0;font-size:16px;background:var(--soft);border-radius:4px 16px 16px 16px;padding:9px 13px}
+.q{font-size:13px;font-weight:700;color:var(--kw);font-family:var(--f-code)}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{text-align:left;background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:9px 13px;font-size:15px;min-height:46px;line-height:1.45}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt small{display:block;font-size:12px;color:var(--hot)}
+.opt:disabled{cursor:default;opacity:.55}
+.opt.pick{opacity:1;border-color:var(--ink);background:var(--soft)}
+.opt.g-best{border-color:var(--ok);background:var(--ok-soft)}
+.opt.g-bad{border-color:var(--hot);background:var(--hot-soft)}
+.words{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.words .opt{text-align:center;font-size:18px;font-weight:700}
+.fb{background:var(--warn-soft);border-radius:14px;padding:10px 13px;display:flex;flex-direction:column;gap:4px}
+.fb p{margin:0;font-size:15px}
+.fb .fx{font-family:var(--f-code);font-size:12px;color:var(--muted)}
+.fb.good{background:var(--ok-soft)}
+.fb.bad{background:var(--hot-soft)}
+.clue{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.clue div{background:var(--soft);border-radius:12px;padding:8px 10px;font-size:14px;line-height:1.45}
+.clue i{display:block;font-style:normal;font-size:11px;font-weight:700;color:var(--kw);font-family:var(--f-code)}
+.primary{background:var(--ink);color:#fff;border:0;border-radius:14px;padding:12px 16px;font-weight:700;font-size:16px;min-height:48px}
+.primary.go{background:var(--ok)}
+.ghost{background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:10px 14px;font-weight:700;min-height:46px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1 1 130px}
+.eyebrow{display:inline-flex;align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.06em;padding:2px 10px;border-radius:99px;background:var(--kw);color:#fff;font-family:var(--f-code)}
+.lead{margin:0;font-size:16px}
+.rules{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.small{font-size:13px;color:var(--muted);margin:0}
+
+/* mini-games: pointer events, finger + mouse */
+.mg-h{display:flex;flex-direction:column;line-height:1.35}
+.mg-h b{font-family:var(--f-d);font-weight:400;font-size:20px}
+.mg-h span{font-size:14px;color:var(--muted)}
+.mg-time{height:7px;border-radius:99px;background:var(--soft);overflow:hidden}
+.mg-time i{display:block;height:100%;width:100%;background:var(--kw)}
+.mg-res{margin:0;font-weight:700;min-height:1.5em;color:var(--ok)}
+.chip{min-height:44px;border-radius:12px;border:2px solid var(--ink);background:var(--paper);font-weight:700;font-size:15px;padding:6px 12px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 3px 0 var(--ink);position:relative}
+.chip.drag{z-index:5;box-shadow:0 8px 16px -6px rgba(0,0,0,.45);cursor:grabbing}
+.chip.sel{background:var(--warn-soft);outline:3px solid var(--warn)}
+.chip:disabled{box-shadow:none;opacity:.6}
+.pool{display:flex;flex-wrap:wrap;gap:8px;min-height:50px;align-items:flex-start}
+.bigblock{width:100%;min-height:72px;border:2px solid var(--ink);border-radius:14px;background:var(--hot-soft);font-family:var(--f-d);font-size:26px;box-shadow:0 4px 0 var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2}
+.bigblock small{font-family:var(--f-zh);font-size:13px;color:var(--muted)}
+.slots{display:flex;flex-direction:column;gap:6px}
+.slot{display:flex;align-items:center;gap:8px;min-height:46px;border:2px dashed var(--line);border-radius:12px;padding:4px 10px;background:var(--soft)}
+.slot i{font-style:normal;font-family:var(--f-code);font-weight:700;color:var(--kw);width:1.2em}
+.slot span{font-weight:700}
+.slot.on{border-style:solid;border-color:var(--ink);background:var(--warn-soft)}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bin{min-height:120px;border:2px dashed var(--line);border-radius:14px;padding:6px;display:flex;flex-direction:column;gap:4px;background:var(--soft);cursor:pointer}
+.bin b{font-family:var(--f-code);font-size:15px}
+.bin[data-b="f"] b{color:var(--kw)}
+.bin[data-b="g"] b{color:var(--violet)}
+.bin small{font-size:11px;color:var(--muted)}
+.bin .in{display:flex;flex-direction:column;gap:4px}
+.bin .in span{font-size:13px;background:var(--paper);border-radius:8px;padding:3px 6px;border:1.5px solid var(--line)}
+.bin .in span.no{border-color:var(--hot)}
+.bin.hi{border-color:var(--warn);background:var(--warn-soft)}
+.card{font-size:14px;text-align:left;font-weight:500}
+.scene{position:relative;border-radius:14px;overflow:hidden;border:2px solid var(--ink);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.scene svg{display:block;width:100%;height:auto}
+.scene .it{cursor:pointer}
+.scene .it.found .mark{opacity:1}
+.scene .mark{opacity:0;transition:opacity .2s}
+.gcount{font-family:var(--f-code);font-weight:700;font-size:15px}
+.codebox{background:#1F2A37;color:#E6EDF3;border-radius:14px;padding:10px 12px;font-family:var(--f-code);font-size:14px;display:flex;flex-direction:column;gap:6px}
+.codebox .ln{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.codebox .kw{color:#7FB2FF}
+.codebox .cm{color:#8B98A8}
+.blank{display:inline-flex;align-items:center;min-width:92px;min-height:38px;border-radius:8px;border:2px dashed #5C6B7D;padding:2px 8px;font-family:var(--f-zh);font-weight:700;color:#FFD47A;cursor:pointer}
+.blank.on{border-style:solid;border-color:#FFD47A}
+.breath{position:relative;height:190px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:var(--soft);touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:pointer}
+.ring{position:absolute;width:160px;height:160px;border-radius:50%;border:4px solid var(--kw);transform:scale(.55)}
+.ring-core{width:100px;height:100px;border-radius:50%;background:var(--kw);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:15px;transform:scale(.72);transition:transform .25s;text-align:center;line-height:1.25}
+.breath.on .ring-core{transform:scale(1);background:var(--ok)}
+.sync{font-family:var(--f-code);font-size:13px;color:var(--muted);text-align:center;margin:0}
+
+/* report */
+.term{background:#FBFAF6;border:2px solid var(--ink);border-radius:16px;overflow:hidden}
+.term .bar{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--ink);color:#fff;font-family:var(--f-code);font-size:12px}
+.term .bar i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.term .body{padding:12px 14px;font-family:var(--f-code);font-size:13px;line-height:1.7;display:flex;flex-direction:column;gap:2px}
+.term .body .p{color:var(--kw)}
+.term .kv{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line)}
+.term .kv b{font-variant-numeric:tabular-nums}
+.term .ok{color:var(--ok)}
+.term .er{color:var(--hot)}
+.graph svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.legend i{width:12px;height:4px;border-radius:2px;display:inline-block}
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.badge{border-radius:12px;border:2px solid var(--ink);background:var(--warn-soft);padding:6px;text-align:center;display:flex;flex-direction:column;gap:2px;line-height:1.3}
+.badge b{font-size:13px}
+.badge small{font-size:11px;color:var(--muted)}
+.badge.off{border:2px dashed var(--line);background:var(--soft);color:var(--muted)}
+.badge.new{background:var(--ok-soft)}
+.style{border-radius:16px;background:var(--ok-soft);padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.style h2{font-size:24px}
+.style ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:3px;font-size:15px}
+.style .cost,.style .tip{margin:0;font-size:15px}
+.style .tip{border-top:2px dashed rgba(31,157,116,.35);padding-top:6px}
+.style .tip i,.style .cost i{font-style:normal;font-size:12px;font-weight:700;border-radius:99px;padding:1px 8px;margin-right:4px;color:#fff}
+.style .cost i{background:var(--warn)}
+.style .tip i{background:var(--ok)}
+.care{margin:0;font-size:15px;background:var(--soft);border-radius:12px;padding:10px 12px;border-left:4px solid var(--violet)}
+.console{background:#1F2A37;color:#E6EDF3;border-radius:14px;padding:12px;font-family:var(--f-code);font-size:14px;display:flex;flex-direction:column;gap:8px}
+.console .kw{color:#7FB2FF}
+.console .cm{color:#9FD8B9}
+.moods{display:flex;flex-wrap:wrap;gap:6px}
+.moods button{background:#2B3949;color:#FFD47A;border:1.5px solid #4A5A6E;border-radius:10px;padding:6px 10px;min-height:44px;font-family:var(--f-zh);font-weight:700}
+.moods button.on{background:#FFD47A;color:#1F2A37}
+.copied{font-size:13px;color:var(--ok);min-height:1.2em;margin:0}
+.dict{display:flex;flex-direction:column;gap:8px}
+.page{border-radius:14px;border:2px solid var(--ink);background:var(--paper);padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.page h3{font-size:20px;display:flex;justify-content:space-between;align-items:baseline}
+.page h3 code{font-size:12px;color:var(--kw)}
+.page p{margin:0;font-size:14px}
+.page p i{font-style:normal;font-weight:700;font-size:12px;color:var(--muted);margin-right:4px}
+.page.lock{border-style:dashed;border-color:var(--line);color:var(--muted);background:var(--soft)}
+@media (min-width:900px){.wrap{max-width:1040px}.main{display:grid;grid-template-columns:minmax(0,1fr) 330px;align-items:start;gap:16px}.stage{width:min(100%,calc(100vh - 210px));justify-self:center}}
+@media (min-width:700px) and (min-height:600px){.sheet{align-items:center}}
+@media (prefers-reduced-motion:reduce){.panel{animation:none}.stu.crash{animation:none}.ring-core{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="homeLink" href="/">‹ 回首頁</a>
+  <div class="top">
+    <div class="brand"><b>心情除錯所</b><span>mood-debugger v2 · 資訊社</span></div>
+    <div class="clock" id="clock" aria-live="off">10:00:00</div>
+  </div>
+  <div class="hud" id="hud">
+    <div class="hrow"><span class="lab">你的電量</span><div class="bbar" id="bbar"><i id="batI" style="width:100%"></i></div><span class="batN" id="batN">100%</span></div>
+    <div class="hrow"><span class="lab">工具</span><div class="tools" id="tools"></div></div>
+    <div class="hrow"><span class="cnt">Fixed <b id="fixN">0/5</b></span><span class="cnt">貼紙 <b id="stkN">0/3</b></span><span class="cnt" id="statusN" style="flex:1;text-align:right"></span><button class="endEarly" id="endEarly" hidden>提早收工</button></div>
+  </div>
+  <div class="main">
+    <div class="stage" id="stageMap">
+      <canvas id="cv" aria-label="校園地圖：點地圖走路，點同學或地點就會走過去"></canvas>
+      <div class="toast" id="toast">按「開始下課」。</div>
+    </div>
+    <div class="list">
+      <h3>同學狀態 <span>溫度到 100° 會當機</span></h3>
+      <div class="studs" id="studs"></div>
+      <p class="help" style="margin-top:8px">點地圖走路，點同學（或他頭上的溫度）就會走過去。點地點可以拿工具、充電。電腦可用方向鍵走路、E 互動。</p>
+    </div>
+  </div>
+  <p class="foot">遊戲裡的方法，是常見的情緒調節練習，不是治療。<br>心情一直不好，找導師或輔導老師聊聊。</p>
+</div>
+<div class="sheet" id="sheet" hidden><div class="panel" id="panel" role="dialog" aria-modal="true"></div></div>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const RM=(()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(_){return false}})();
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const GAME_URL=location.origin+'/mood';
+
+// ================= 存檔 =================
+const STORE='sandywich.mood';
+function loadP(){try{const s=JSON.parse(localStorage.getItem(STORE)||'{}');return (s&&typeof s==='object')?s:{};}catch(_){return {};}}
+let PS=loadP();
+PS.dict=PS.dict&&typeof PS.dict==='object'?PS.dict:{};PS.badges=PS.badges&&typeof PS.badges==='object'?PS.badges:{};
+PS.best=PS.best&&typeof PS.best==='object'?PS.best:{score:0,fixed:0};PS.runs=+PS.runs||0;PS.moods=Array.isArray(PS.moods)?PS.moods:[];
+function saveP(){try{localStorage.setItem(STORE,JSON.stringify(PS));}catch(_){}}
+
+// ================= 地圖 =================
+// . 地面  = 走廊  o 操場  # 樹  建築：C 教室 P 電腦教室 H 保健室 S 福利社 G 輔導室  V 販賣機 B 長椅
+const MAP=[
+ "CCCCC.=..PPPP.#",
+ "CCCCC.=..PPPP..",
+ "CCCCC.=..PPPP..",
+ "===============",
+ "HHHH.=.SSS.=GGG",
+ "HHHH.=.SSS.=GGG",
+ "#....=.....=..#",
+ "V.B..=.....=...",
+ "ooooooooooooooo",
+ "ooooooooooooooo",
+ "ooooooooooooooo",
+ "ooooooooooooooo",
+ "ooooooooooooooo",
+ ".#...........#.",
+ "##...........##"];
+const W=15,H=15,grid=MAP.map(r=>r.split(''));
+const BINFO={
+ C:{name:'教室',bg:'#F6C46A'},P:{name:'電腦教室',bg:'#86AEEA'},H:{name:'保健室',bg:'#F4A3AA'},S:{name:'福利社',bg:'#A5D79E'},
+ G:{name:'輔導室',bg:'#CDBDEB',closed:true},V:{name:'販賣機',bg:'#5E8FD8',fg:'#fff',small:true},B:{name:'長椅',bg:'#B9875A',fg:'#fff',small:true}};
+const BLD={};for(let y=0;y<H;y++)for(let x=0;x<W;x++){const c=grid[y][x];if(BINFO[c]){const b=BLD[c]||(BLD[c]={x0:x,y0:y,x1:x,y1:y});b.x0=Math.min(b.x0,x);b.y0=Math.min(b.y0,y);b.x1=Math.max(b.x1,x);b.y1=Math.max(b.y1,y);}}
+const STICKERS=[[13,0],[0,13],[14,13]];
+const START=[8,7];
+const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
+const walkable=c=>c==='.'||c==='='||c==='o';
+
+// ================= 工具 =================
+const TOOLS={
+ note:{nm:'便利貼',at:'S'},
+ filter:{nm:'事實濾鏡',at:'V'},
+ phones:{nm:'耳機',at:'P'},
+ imsg:{nm:'我訊息積木',at:'P'},
+ bubble:{nm:'呼吸泡泡',at:'H'}};
+const TOOL_ORDER=['note','filter','phones','imsg','bubble'];
+function toolSvg(k){
+  const o='<svg viewBox="0 0 24 24" aria-hidden="true">',ink='#23303F';
+  if(k==='note')return o+`<path d="M4 4h16v11l-5 5H4z" fill="#FFD447" stroke="${ink}" stroke-width="1.8" stroke-linejoin="round"/><path d="M15 20v-5h5" fill="#F2B300" stroke="${ink}" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 9h9M7 12h6" stroke="${ink}" stroke-width="1.5"/></svg>`;
+  if(k==='filter')return o+`<rect x="3" y="5" width="18" height="14" rx="3" fill="#E3ECFB" stroke="${ink}" stroke-width="1.8"/><path d="M7 10h4M7 14h3" stroke="#3B6FD8" stroke-width="2" stroke-linecap="round"/><path d="M14 9l2 2 3-3" stroke="#1F9D74" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M14 15l4-0" stroke="#8C6BD1" stroke-width="2" stroke-linecap="round" stroke-dasharray="1 2"/></svg>`;
+  if(k==='phones')return o+`<path d="M5 15v-3a7 7 0 0 1 14 0v3" fill="none" stroke="${ink}" stroke-width="2"/><rect x="3" y="13" width="5" height="7" rx="2" fill="#8C6BD1" stroke="${ink}" stroke-width="1.6"/><rect x="16" y="13" width="5" height="7" rx="2" fill="#8C6BD1" stroke="${ink}" stroke-width="1.6"/></svg>`;
+  if(k==='imsg')return o+`<rect x="2" y="4" width="9" height="7" rx="2" fill="#7FB2FF" stroke="${ink}" stroke-width="1.6"/><rect x="13" y="4" width="9" height="7" rx="2" fill="#FFD47A" stroke="${ink}" stroke-width="1.6"/><rect x="6" y="13" width="12" height="7" rx="2" fill="#9FD8B9" stroke="${ink}" stroke-width="1.6"/></svg>`;
+  if(k==='bubble')return o+`<circle cx="10" cy="13" r="7" fill="#DDF3FB" stroke="${ink}" stroke-width="1.8"/><circle cx="18" cy="6" r="3.5" fill="#DDF3FB" stroke="${ink}" stroke-width="1.6"/><path d="M7 11a3 3 0 0 1 3-3" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+  return '';
+}
+
+// ================= 同學 =================
+const STU_DATA=[
+ {id:'an',nm:'小安',tag:'完美主義',color:'#5B8DEF',hair:'#3B2A22',prop:'notes',x:5,y:1,loud:false,rate:.22,
+  err:'Error: 報告明天交，進度 0%',short:'Error',
+  see:'第三次把同一頁筆記重抄，螢光筆換了四種顏色。',
+  says:'「嗯？我沒事啊。」（手沒停）',
+  ap:[
+   {k:'notice',calm:true,g:'best',l:'說出你看到的：「這頁你抄第三次了耶。」',r:'她的筆停了。「……被你發現了。報告明天交，我一個字都還沒寫。」'},
+   {k:'ask',g:'ok',l:'直接問：「你怎麼了？」',r:'「我沒事。」停了三秒。「……好啦，報告明天交。」'},
+   {k:'advise',g:'bad',l:'給建議：「別想了啦，先去玩！」',r:'「你不懂。」她轉回去，筆記又抄了一遍。'},
+   {k:'text',g:'ok',l:'傳訊息：「還好嗎？」',r:'她回了一張 OK 貼圖。兩秒後又傳：「其實不太好」。'}],
+  clue:{body:'肩膀聳起來、呼吸很淺、手一直停不下來',words:'「我沒事」「還有好多沒做」「明天就要交了」'},
+  words:[['焦慮','exact','對。焦慮：擔心還沒發生的事，身體先緊起來。'],
+   ['不安','near','很接近！不安比較像說不出原因的怪怪的；她很清楚在擔心「明天」，更貼近焦慮。'],
+   ['害怕','near','接近。害怕通常有個眼前的威脅；她擔心的是還沒到的「明天」，更貼近焦慮。'],
+   ['無聊','far','嗯……手停不下來的人，通常不是無聊。看看她的肩膀？更貼近的是焦慮。']],
+  tool:'note',miss:'「我需要……能把它拆小一點的東西。福利社有賣便利貼。」',mg:'chunk',
+  thx:{great:'「三張便利貼，第一張只要寫大綱。好，我可以。……等下我還是會把便利貼排整齊。」',partial:'「順序有點怪，但至少不是一整坨了。」',fail:'「先拆成小塊就好，順序我自己來。謝啦。」'},
+  gift:'imsg'},
+ {id:'zhe',nm:'阿哲',tag:'開心果',color:'#F2994A',hair:'#2A2320',prop:'phone',x:14,y:1,loud:true,rate:.2,
+  err:'TimeoutError: 訊息已讀 3 小時沒回',short:'Timeout',
+  see:'連講五個笑話，每講完一個就看一次手機。',
+  says:'「欸你知道工程師為什麼分不清萬聖節跟聖誕節？因為 Oct 31 = Dec 25！哈哈哈……」（看手機）',
+  ap:[
+   {k:'jokeReal',g:'best',l:'先接梗，再認真：「好冷喔哈哈。……欸，你看手機第 20 次了。」',r:'他笑到一半停住。「……被抓包。她已讀我三小時了。」'},
+   {k:'ask',g:'ok',l:'直接問：「你怎麼了？」',r:'「我？我超好的啊！」（又看手機）「……好啦，有一點怪。」'},
+   {k:'sit',calm:true,g:'ok',l:'先陪他坐著，不說話',r:'他坐不住，又講了兩個笑話。最後小聲說：「她都不回。」'},
+   {k:'advise',g:'bad',l:'給建議：「不要一直看手機啦。」',r:'「我哪有！」他把手機翻面，三秒後又偷偷翻回來。'}],
+  clue:{body:'一直滑手機、腳在抖、笑得有點太大聲',words:'「我超好的啊」「她是不是……算了」'},
+  words:[['不安','exact','對。不安：心裡懸著，一直想確認。笑得大聲，不一定代表開心。'],
+   ['焦慮','near','很接近！焦慮多半在擔心「之後」的事；他是現在就懸著、一直確認手機，更貼近不安。'],
+   ['失落','near','接近。失落是已經失去了什麼；他還在等回覆，更貼近不安。'],
+   ['開心','far','他一直在笑沒錯——但笑不等於開心。更貼近的是不安。']],
+  tool:'filter',miss:'「我需要……能把腦補過濾掉的東西。聽說販賣機最近會掉出奇怪的卡片。」',mg:'fact',
+  thx:{great:'「事實只有兩個：已讀、她今天段考。其他都是我腦補的劇本。……欸這可以做成梗圖。」',partial:'「有些我還是分不太出來，但沒那麼慌了。」',fail:'「好啦，我先不要一直重新整理了。」'}},
+ {id:'mi',nm:'小米',tag:'安靜派',color:'#9B7FD4',hair:'#1F1A1A',prop:'hood',x:14,y:7,loud:false,rate:.17,
+  err:'StackOverflow: 一直重播上台講錯的那句',short:'Overflow',
+  see:'縮在牆角，帽T的帽子戴起來，一句話都沒說。',
+  says:'（沒有聲音。她把帽子又拉低了一點。）',
+  ap:[
+   {k:'sit',calm:true,g:'best',l:'先坐在她旁邊，什麼都不說',r:'過了一會兒，她小聲說：「……我剛剛上台，講錯一句話。」'},
+   {k:'text',g:'ok',l:'傳訊息：「我在旁邊，想聊再說。」',r:'她看了手機，把帽子拉下來一點點。'},
+   {k:'ask',g:'bad',l:'大聲問：「你怎麼了？」',r:'旁邊同學都轉過來看。她把帽子拉得更低了。'},
+   {k:'joke',g:'bad',l:'開玩笑：「哈囉～有人在家嗎？」',r:'她轉過去面對牆壁。'}],
+  clue:{body:'低頭、臉紅、身體縮成一團',words:'（很小聲）「大家一定都記得」「我一直想到那句」'},
+  words:[['尷尬','exact','對。尷尬：覺得自己出糗、被看見，腦袋會一直重播。'],
+   ['丟臉','near','非常接近！丟臉更重一點，像覺得整個人很糟；她卡在「那一句」，更貼近尷尬。'],
+   ['難過','near','接近。難過比較像失去或受傷；她是一直重播出糗那一刻，更貼近尷尬。'],
+   ['生氣','far','她沒有對誰發火，是縮起來。更貼近的是尷尬。']],
+  tool:'phones',miss:'「……腦袋一直重播。電腦教室有那種……能讓我回到現在的耳機嗎？」',mg:'ground',
+  thx:{great:'「五個看到、四個聽到、三個摸到……那句話好像小聲一點了。」她把帽子拿下來。',partial:'「有比較回到這裡一點。謝謝你沒有一直問。」',fail:'「……沒關係，你坐在這裡就有幫到。」'},
+  hint:true},
+ {id:'xiong',nm:'大雄',tag:'嘴硬派',color:'#3FA772',hair:'#2B2B2B',prop:'glasses',x:8,y:1,loud:false,rate:.25,
+  err:'PermissionDenied: 組員都不做，我全包',short:'Denied',
+  see:'雙手抱胸，對著電腦冷笑。',
+  says:'「好啊，反正都我做。他們很閒嘛。」',
+  ap:[
+   {k:'ack',calm:true,g:'best',l:'先承認他的感受：「一個人扛整組，真的很累吧。」',r:'他的手放下來。「……對啦。超累。」'},
+   {k:'ask',g:'ok',l:'直接問：「你怎麼了？」',r:'「沒事啊，我超愛做報告的。」（眼神死）「……好啦，全組只有我在做。」'},
+   {k:'advise',g:'bad',l:'給建議：「你去跟老師講啊。」',r:'「喔，好棒的建議，我怎麼沒想到。」'},
+   {k:'joke',g:'bad',l:'開玩笑：「哇你好強喔～」',r:'「對啊，強到全組只剩我。」溫度又往上跳。'}],
+  clue:{body:'雙手抱胸、聲音變大、講話酸酸的',words:'「好啊，反正都我做」「他們都很閒嘛」'},
+  words:[['委屈','exact','對。委屈：付出沒被看見、覺得不公平。它常常包在生氣和酸言酸語裡。'],
+   ['生氣','near','很接近！表面是生氣沒錯；再往下一層，是「都我在做、沒人看見」的委屈。'],
+   ['挫折','near','接近。挫折是努力了卻沒成功；他是覺得不公平，更貼近委屈。'],
+   ['害怕','far','他不像在怕，比較像「憑什麼」。更貼近的是委屈。']],
+  tool:'imsg',miss:'「……我是想好好講，可是一開口就變罵人。聽說小安整理過一套『我訊息』積木，電腦教室也印得出來。」',mg:'imsg',
+  thx:{great:'「我覺得很累，因為報告大多是我做，我希望重新分工。……蛤，這樣講就好了喔？比罵人省力欸。」',partial:'「有一句還是有點酸，但比剛剛好多了。」',fail:'「……我再練練。至少我知道不要用『你都』開頭。」'}},
+ {id:'qing',nm:'小晴',tag:'好勝派',color:'#E5484D',hair:'#3A241C',prop:'ball',x:3,y:10,loud:true,rate:.3,
+  err:'Overheat: 比賽輸了想砸鍵盤',short:'Overheat',
+  see:'班際賽輸了，眼眶紅紅，一直用力踢球。',
+  says:'「我沒事！只是輸了而已！」（砰——又踢一腳）',
+  ap:[
+   {k:'sit',calm:true,g:'best',l:'先陪她站一下，等她喘口氣',r:'球停了。「……我不想哭，可是我真的好不甘心。」'},
+   {k:'ask',g:'ok',l:'直接問：「你怎麼了？」',r:'「就說沒事！」……踢完最後一腳，她蹲了下來。'},
+   {k:'advise',g:'bad',l:'講道理：「只是比賽而已啦。」',r:'「什麼叫『只是』！」球從你耳邊飛過去。'},
+   {k:'joke',g:'bad',l:'開玩笑：「下次你當球就不會輸了。」',r:'她瞪你。你感覺溫度計爆了一格。'}],
+  clue:{body:'臉很燙、握拳、呼吸很快、眼眶紅紅',words:'「我明明練很久」「好想砸東西」'},
+  words:[['挫折','exact','對。挫折：很努力了，結果卻不如預期。身體會發燙、想哭。'],
+   ['生氣','near','很接近！她確實在氣；但底下是「我那麼努力還是輸」，更貼近挫折。'],
+   ['失望','near','接近。失望比較冷、比較沉；她現在是燙的，更貼近挫折。'],
+   ['害怕','far','她沒有在躲什麼，是在燒。更貼近的是挫折。']],
+  tool:'bubble',miss:'「我現在整個人好燙……保健室有那個呼吸泡泡吧？」',mg:'breath',
+  thx:{great:'「吐氣比吸氣長……真的有慢下來。下一場我要贏回來。冷靜地贏。」',partial:'「還是很不甘心，但比較不想砸東西了。」',fail:'「呼吸好難喔……不過至少我停下來了。」'}}
+];
+const TEACH_DATA={id:'t',nm:'王老師',tag:'隱藏角色',color:'#6B7A8F',hair:'#9AA0A8',prop:'pen',x:7,y:6,loud:false,rate:.1,teacher:true,
+  err:'Error 404：耐心 not found',short:'404',
+  see:'邊走邊改考卷，嘴裡念著：「這題上課講過三次……」',
+  says:'「嗯？你要問什麼？不是要問考試範圍吧？」',
+  ap:[
+   {k:'care',calm:true,g:'best',l:'遞一杯水：「老師，先喝口水。」',r:'老師愣了一下，笑了。「……謝謝。我從早上到現在都沒喝水。」'},
+   {k:'notice',g:'ok',l:'「老師，你看起來好累喔。」',r:'「有那麼明顯嗎？」老師揉揉眼睛。'},
+   {k:'joke',g:'bad',l:'「老師，下節可以不要考試嗎？」',r:'Error 404 升級成 Error 500。'}],
+  clue:{body:'揉眼睛、嘆氣、紅筆越寫越用力',words:'「這題講過三次了」「好啦好啦」'},
+  words:[['疲累','exact','對。疲累：能量用完了，對小事也容易煩。老師也是人。'],
+   ['煩躁','near','很接近！煩躁是表面；底下是從早忙到現在的疲累。'],
+   ['生氣','near','接近。老師不是在氣你，是電量剩 5%。更貼近疲累。'],
+   ['開心','far','嗯……改考卷改到嘆氣，應該不是開心。更貼近疲累。']],
+  tool:null,mg:null,
+  thx:{great:'「耐心 reloaded。……好，這節課不考試。開玩笑的，還是要考。」'}};
+
+const DICT={
+ '焦慮':{one:'擔心還沒發生的事，腦袋一直跑「如果……怎麼辦」。',body:'肩膀緊、呼吸淺、手停不下來。',try:'把大事拆成 10 分鐘做得完的小塊。',code:'一次開了 87 個分頁'},
+ '不安':{one:'心裡懸著，說不太出原因，一直想確認。',body:'坐不住、一直看手機、腳在抖。',try:'分清「事實」和「猜測」。',code:'一直按 F5 重新整理'},
+ '尷尬':{one:'覺得自己出糗、被看見。',body:'臉紅、想躲、腦袋一直重播。',try:'5-4-3-2-1：把注意力帶回「現在」。',code:'同一段影片無限 loop'},
+ '委屈':{one:'付出沒被看見、覺得不公平。常包在生氣和酸話裡。',body:'抱胸、聲音變大、講話帶刺。',try:'用「我覺得…因為…我希望…」說出來。',code:'權限不足，卻被要求執行'},
+ '挫折':{one:'很努力了，結果卻不如預期。',body:'發燙、握拳、想哭、想砸東西。',try:'吐氣比吸氣長，先讓身體慢下來。',code:'CPU 過熱自動降速'},
+ '疲累':{one:'能量用完了，對小事也容易煩。',body:'揉眼睛、嘆氣、反應變慢。',try:'喝水、休息一下。照顧自己不是偷懶。',code:'電量 5%'}};
+const DICT_ORDER=['焦慮','不安','尷尬','委屈','挫折','疲累'];
+
+const BADGES=[
+ {id:'allfix',n:'全員 Fixed',h:'5 位同學都修好'},
+ {id:'bat30',n:'電量從沒低於 30',h:'整場都有照顧自己（至少修好 2 位）'},
+ {id:'hero',n:'救火英雄',h:'修好一位當機的同學'},
+ {id:'teacher',n:'隱藏老師',h:'幫老師找回耐心'},
+ {id:'sticker',n:'貼紙獵人',h:'一場找到 3 張好心情貼紙'},
+ {id:'kind',n:'一次都沒說錯話',h:'開口沒踩雷（至少 3 次）'}];
+
+// ================= 遊戲狀態 =================
+let ST,STU,TEACH,L,player,sheetOpen=false,sheetKind=null;
+function newRun(){
+  STU=STU_DATA.map(d=>Object.assign({},d,{temp:Math.round(rnd(20,50)),rate:d.rate*rnd(.9,1.15),stage:0,met:false,fixed:false,crashed:false,wasCrashed:false,
+    apOrder:shuffle(d.ap.map((_,i)=>i)),apG:null,wG:null,mgG:null,score:0,asked:false}));
+  TEACH=Object.assign({},TEACH_DATA,{temp:62,stage:0,met:false,fixed:false,crashed:false,wasCrashed:false,present:false,apOrder:shuffle(TEACH_DATA.ap.map((_,i)=>i)),score:0});
+  ST={phase:'intro',t:0,bat:100,minBat:100,tools:{},toolAsk:{},stickers:[],down:0,pendingCrash:false,with:null,evQ:[],
+    events:[{id:'group',at:Math.round(rnd(140,220))},{id:'rumor',at:Math.round(rnd(280,330))},{id:'teacher',at:360}],
+    panic:0,lastSample:-99,hist:[],shake:0,bread:false,drink:false,decision:null,endedAt:null};
+  L={targets:[],approaches:[],words:[],mgs:[],playerCrashes:0,recharges:0,noTool:0,toolsAtFirst:null,firstAt:null,crashed:[],rescued:0,
+    walked:0,downTime:0,group:null,rumor:null,printed:false};
+  player={x:START[0],y:START[1],path:[],target:null};
+}
+newRun();
+const people=()=>TEACH.present?[...STU,TEACH]:STU;
+const fixedN=()=>STU.filter(s=>s.fixed).length;
+const toolCount=()=>Object.keys(ST.tools).length;
+const fmtClock=t=>{const s=Math.min(600,Math.floor(t));return `10:${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;};
+
+// ================= 路徑 =================
+function blocked(x,y){if(x<0||y<0||x>=W||y>=H)return true;if(!walkable(grid[y][x]))return true;return people().some(p=>p.x===x&&p.y===y);}
+function bfs(sx,sy,goal){
+  if(goal(sx,sy))return [];
+  const K=(x,y)=>y*W+x,start=K(sx,sy),prev=new Map([[start,-1]]),q=[[sx,sy]];
+  while(q.length){const [x,y]=q.shift();for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(blocked(nx,ny))continue;const k=K(nx,ny);if(prev.has(k))continue;prev.set(k,K(x,y));
+    if(goal(nx,ny)){const path=[];let c=k;while(c!==start){path.unshift([c%W,(c/W)|0]);c=prev.get(c);}return path;}q.push([nx,ny]);}}
+  return null;
+}
+const adjTo=(x,y,tx,ty)=>Math.abs(tx-x)+Math.abs(ty-y)===1;
+function adjBld(b,x,y){for(let yy=b.y0;yy<=b.y1;yy++)for(let xx=b.x0;xx<=b.x1;xx++)if(adjTo(x,y,xx,yy))return true;return false;}
+function isAdj(tg,x,y){if(tg.kind==='npc')return adjTo(x,y,tg.n.x,tg.n.y);if(tg.kind==='bld')return adjBld(BLD[tg.key],x,y);return false;}
+const ppos=()=>[Math.round(player.x),Math.round(player.y)];
+function pathLen(n){const [px,py]=ppos();const p=bfs(px,py,(x,y)=>adjTo(x,y,n.x,n.y));return p?p.length:99;}
+
+// ================= HUD / list =================
+const $toast=$('toast');
+function toast(t,kind){$toast.textContent=t;$toast.className='toast'+(kind?' '+kind:'');$toast.style.opacity=1;clearTimeout(toast.t);toast.t=setTimeout(()=>$toast.style.opacity=0,5000);}
+function renderTools(pop){
+  $('tools').innerHTML=TOOL_ORDER.map(k=>{const g=!!ST.tools[k];return `<span class="tl ${g?'got':'off'} ${pop===k?'pop':''}" data-tool="${k}" title="${TOOLS[k].nm}">${toolSvg(k)}${g?TOOLS[k].nm:(ST.toolAsk[k]?TOOLS[k].nm+'？':'？')}</span>`;}).join('');
+}
+function renderHud(){
+  const b=Math.round(ST.bat),low=ST.bat<30;
+  $('batI').style.width=b+'%';$('bbar').classList.toggle('low',low);$('batN').textContent=b+'%';$('batN').classList.toggle('low',low);
+  $('fixN').textContent=fixedN()+'/5';$('stkN').textContent=ST.stickers.length+'/3';
+  $('clock').textContent=fmtClock(ST.t);$('clock').classList.toggle('late',ST.t>=480);
+  $('statusN').textContent=ST.down>0?`當機中…${Math.ceil(ST.down)}s`:low?'電量低：走路變慢':ST.panic>0?'衝衝衝（耗電 ×2）':'';
+  $('endEarly').hidden=!(ST.phase==='play'&&fixedN()===5);
+}
+function faceSvg(s,mood){
+  mood=mood||moodOf(s);const skin='#F6D9C0',ink='#23303F';
+  let eyes=`<circle cx="19" cy="25" r="1.8" fill="${ink}"/><circle cx="29" cy="25" r="1.8" fill="${ink}"/>`,mouth='';
+  if(mood==='happy')mouth=`<path d="M19 30 Q24 35 29 30" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  else if(mood==='fake')mouth=`<path d="M19 30 Q24 34 29 30" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M33 18 q2 3 0 5 q-2 -2 0 -5" fill="#7FC4E8"/>`;
+  else if(mood==='worry')mouth=`<path d="M20 32 Q22 30 24 32 T28 32" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  else if(mood==='sad')mouth=`<path d="M19 33 Q24 29 29 33" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;
+  else if(mood==='angry'){mouth=`<path d="M19 33 Q24 29 29 33" stroke="${ink}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`;eyes+=`<path d="M16 21l5 2M32 21l-5 2" stroke="${ink}" stroke-width="1.8" stroke-linecap="round"/>`;}
+  else if(mood==='crash'){eyes=`<path d="M17 23l4 4M21 23l-4 4M27 23l4 4M31 23l-4 4" stroke="${ink}" stroke-width="1.8" stroke-linecap="round"/>`;mouth=`<path d="M20 32 L22 30 L24 32 L26 30 L28 32" stroke="${ink}" stroke-width="1.6" fill="none"/>`;}
+  else mouth=`<path d="M20 31 H28" stroke="${ink}" stroke-width="1.8" stroke-linecap="round"/>`;
+  const hood=s.prop==='hood'?`<path d="M9 30 C8 12 40 12 39 30 L35 30 C35 18 13 18 13 30 Z" fill="${s.color}"/>`:'';
+  const hair=s.prop==='hood'?'':s.teacher?`<circle cx="24" cy="11" r="5" fill="${s.hair}"/><path d="M13 24 C12 13 36 13 35 24 C32 18 16 18 13 24Z" fill="${s.hair}"/>`:`<path d="M13 24 C12 12 36 12 35 24 C30 17 18 17 13 24Z" fill="${s.hair}"/>`;
+  const gl=s.prop==='glasses'?`<circle cx="19" cy="25" r="4" fill="none" stroke="${ink}" stroke-width="1.4"/><circle cx="29" cy="25" r="4" fill="none" stroke="${ink}" stroke-width="1.4"/><path d="M23 25h2" stroke="${ink}" stroke-width="1.4"/>`:'';
+  const cheek=(mood==='crash'||mood==='angry'||(mood==='sad'&&s.prop==='hood'))?`<circle cx="16" cy="30" r="2.4" fill="#F28C8C" opacity=".7"/><circle cx="32" cy="30" r="2.4" fill="#F28C8C" opacity=".7"/>`:'';
+  const bg=s.fixed?'#E3F4EC':mood==='crash'?'#FCE5E5':'#F8F6F1';
+  return `<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="23" fill="${bg}"/><path d="M8 48 C8 36 40 36 40 48Z" fill="${s.color}"/>${hood}<circle cx="24" cy="26" r="11" fill="${skin}" stroke="${ink}" stroke-width="1.3"/>${hair}${cheek}${eyes}${mouth}${gl}</svg>`;
+}
+function moodOf(s){
+  if(s.fixed)return 'happy';if(s.crashed)return 'crash';
+  if(s.prop==='phone'&&s.temp<85)return 'fake';
+  if(s.temp>=70)return (s.prop==='glasses'||s.prop==='ball'||s.teacher)?'angry':'sad';
+  if(s.temp>=40)return 'worry';return 'calm';
+}
+function buildList(){
+  $('studs').innerHTML=[...STU,TEACH].map(s=>`<button class="stu" data-id="${s.id}" ${s.teacher?'hidden':''}><span class="av"></span><span class="t"><b>${s.nm}<small>${s.tag}</small></b><code></code></span><span class="tp"><b></b><span class="tbar"><i></i></span></span></button>`).join('');
+  $('studs').querySelectorAll('.stu').forEach(b=>b.addEventListener('click',()=>{const s=people().find(p=>p.id===b.dataset.id);if(s)goTo({kind:'npc',n:s});}));
+  updateList(true);
+}
+function updateList(force){
+  for(const s of [...STU,TEACH]){
+    const el=$('studs').querySelector(`[data-id="${s.id}"]`);if(!el)continue;
+    if(s.teacher)el.hidden=!s.present;
+    const mood=moodOf(s),key=mood+'|'+s.fixed;
+    if(force||el.dataset.k!==key){el.dataset.k=key;el.querySelector('.av').innerHTML=faceSvg(s,mood);}
+    el.classList.toggle('fixed',s.fixed);el.classList.toggle('crash',!!s.crashed&&!s.fixed);el.classList.toggle('hot',!s.fixed&&!s.crashed&&s.temp>=75);
+    el.querySelector('code').textContent=s.fixed?'✓ Fixed':s.crashed?'CRASHED · '+s.err:s.err;
+    el.querySelector('.tp b').textContent=s.fixed?'✓':Math.round(s.temp)+'°';
+    el.querySelector('.tbar i').style.width=(s.fixed?100:s.temp)+'%';
+  }
+}
+
+// ================= 時間 / 溫度 / 電量 =================
+function useBat(n){
+  ST.bat=clamp(ST.bat-n,0,100);if(ST.bat<ST.minBat)ST.minBat=ST.bat;
+  if(ST.bat<=0&&ST.down<=0&&ST.phase==='play'){if(sheetOpen)ST.pendingCrash=true;else crashPlayer();}
+  renderHud();
+}
+function gainBat(n){ST.bat=clamp(ST.bat+n,0,100);renderHud();}
+function crashPlayer(){
+  ST.pendingCrash=false;ST.down=30;L.playerCrashes++;player.path=[];player.target=null;ST.bat=0;
+  toast('電量 0%……你當機了。系統重新開機中（30 秒）。','bad');renderHud();
+}
+function advance(dg){
+  if(ST.phase!=='play')return;
+  ST.t+=dg;
+  const late=ST.t>420?1.2:1;
+  for(const s of people()){
+    if(s.fixed||ST.with===s.id)continue;
+    if(s.crashed)continue;
+    s.temp=Math.min(100,s.temp+s.rate*dg*late);
+    if(s.teacher){s.temp=Math.min(97,s.temp);continue;}
+    if(s.temp>=100)crashStudent(s);
+  }
+  if(ST.panic>0)ST.panic=Math.max(0,ST.panic-dg);
+  if(ST.down>0){L.downTime+=Math.min(dg,ST.down);ST.down-=dg;if(ST.down<=0){ST.down=0;ST.bat=35;L.recharges++;toast('重新開機完成，電量 35%。下次早點充電。');renderHud();}}
+  for(const ev of ST.events){if(!ev.fired&&ST.t>=ev.at){ev.fired=true;fireEvent(ev.id);}}
+  if(ST.t-ST.lastSample>=10){ST.lastSample=ST.t;ST.hist.push({t:Math.round(ST.t),bat:Math.round(ST.bat),T:Object.fromEntries(STU.map(s=>[s.id,s.fixed?null:Math.round(s.temp)]))});}
+  if(ST.t>=600)ST.needEnd=true;
+}
+function crashStudent(s){
+  s.crashed=true;s.wasCrashed=true;s.temp=100;s.rebooted=false;if(!L.crashed.includes(s.id))L.crashed.push(s.id);
+  const others=STU.filter(o=>o!==s&&!o.fixed&&!o.crashed&&ST.with!==o.id);
+  let o=null,bd=1e9;for(const c of others){const d=Math.abs(c.x-s.x)+Math.abs(c.y-s.y);if(d<bd){bd=d;o=c;}}
+  if(o)o.temp=Math.min(100,o.temp+20);
+  ST.shake=.6;
+  toast(`${s.nm} 當機了！${o?`焦慮會傳染：離最近的 ${o.nm} +20°`:''}`,'bad');
+  if(o&&o.temp>=100)crashStudent(o);
+}
+function addTime(sec){advance(sec);}
+
+// ================= 走路、互動 =================
+function goTo(tg){
+  if(sheetOpen||ST.phase!=='play')return;
+  if(ST.down>0){toast(`當機中……還要 ${Math.ceil(ST.down)} 秒才能動。`,'bad');return;}
+  if(tg.kind==='npc'&&!tg.n.met&&!tg.n.fixed)ST.decision=snapshot(tg.n);
+  const [px,py]=ppos();
+  if(isAdj(tg,px,py)){player.path=[];interact(tg);return;}
+  const p=bfs(px,py,(x,y)=>isAdj(tg,x,y));
+  if(!p){toast('那裡走不過去。');return;}
+  player.path=p;player.target=tg;
+}
+function snapshot(s){
+  const open=STU.filter(o=>!o.fixed);if(!open.length)return null;
+  const maxT=Math.max(...open.map(o=>o.crashed?100:o.temp));
+  const d=open.map(o=>[o.id,pathLen(o)]);const minD=Math.min(...d.map(x=>x[1]));
+  const my=(d.find(x=>x[0]===s.id)||[0,99])[1];
+  return {id:s.id,t:Math.round(ST.t),temp:Math.round(s.temp),hottest:s.temp>=maxT-3,nearest:my<=minD+1,loud:!!s.loud,crashed:!!s.crashed};
+}
+function interact(tg){
+  player.target=null;
+  if(tg.kind==='bld'){openBuilding(tg.key);return;}
+  openStudent(tg.n);
+}
+
+// ================= 對話框 =================
+const $sheet=$('sheet'),$panel=$('panel');
+function openSheet(html,kind){sheetOpen=true;sheetKind=kind||'dlg';$sheet.hidden=false;$panel.innerHTML=html;$panel.scrollTop=0;const f=$panel.querySelector('button:not(:disabled)');f&&f.focus({preventScroll:true});}
+function closeSheet(){
+  miniTok++;sheetOpen=false;sheetKind=null;ST.with=null;$sheet.hidden=true;renderHud();updateList();
+  if(ST.phase==='play'&&ST.pendingCrash)crashPlayer();
+}
+function head(s){
+  const tmp=s.fixed?'✓':Math.round(s.temp)+'°';
+  return `<div class="ph"><span class="av">${faceSvg(s)}</span><div class="who"><b>${s.nm}<small>${s.tag}</small></b><code class="${s.fixed?'fixed':''}">${s.fixed?'✓ Fixed':s.err}</code></div><span class="tmp" id="htmp">${tmp}</span></div>`;
+}
+function btnRow(btns){return `<div class="row">${btns.map((b,i)=>`<button class="${b.cls||(i===0?'primary':'ghost')}" data-bi="${i}">${b.l}</button>`).join('')}</div>`;}
+function bindRow(btns){$panel.querySelectorAll('[data-bi]').forEach(b=>b.onclick=()=>btns[+b.dataset.bi].fn());}
+function say(who,text,btns,extra){
+  openSheet(`${who?head(who):''}<div class="pb">${extra||''}<p class="say">${text}</p>${btnRow(btns)}</div>`);bindRow(btns);
+}
+function fxLine(d){return Object.entries(d).filter(([,v])=>v).map(([k,v])=>`${k} ${v>0?'+':''}${v}`).join(' · ');}
+
+function openStudent(s){
+  if(s.fixed){toast(`${s.nm}：看起來好多了。${s.teacher?'老師在哼歌。':'✓ Fixed'}`,'good');return;}
+  if(!s.met){s.met=true;if(!s.teacher){const d=(ST.decision&&ST.decision.id===s.id)?ST.decision:snapshot(s);if(d)L.targets.push(d);if(L.toolsAtFirst==null){L.toolsAtFirst=toolCount();L.firstAt=ST.t;}}}
+  ST.decision=null;ST.with=s.id;
+  if(s.crashed&&!s.rebooted){stepReboot(s);return;}
+  if(s.stage===0)stepApproach(s);else if(s.stage===1)stepWord(s);else stepTool(s);
+}
+function stepReboot(s){
+  openSheet(`${head(s)}<div class="pb"><p class="see"><b>${s.nm} 當機了：</b>畫面卡住，現在什麼話都聽不進去。</p>
+   <p class="say">（${s.prop==='hood'?'她把整張臉埋進膝蓋。':s.prop==='ball'?'她背對所有人，肩膀一直在抖。':s.prop==='phone'?'他把手機摔在椅子上，不笑了。':s.prop==='glasses'?'他直接戴上耳機，誰都不理。':'她把筆記本闔起來，趴在桌上。'}）</p>
+   <span class="q">// 先別急著修。先讓他重新開機。</span>
+   ${btnRow([{l:'先陪他待一下，不說話（20 秒，電量 −6）'},{l:'等一下再來'}])}</div>`);
+  bindRow([{fn:()=>{addTime(20);useBat(6);s.rebooted=true;s.crashed=false;s.temp=85;if(s.stage===0)stepApproach(s,'他慢慢抬起頭。系統重新開機完成，但溫度還很高。');else if(s.stage===1)stepWord(s);else stepTool(s);}},{fn:closeSheet}]);
+}
+function stepApproach(s,pre){
+  const low=ST.bat<30;
+  const opts=s.apOrder.map(i=>Object.assign({i},s.ap[i]));
+  openSheet(`${head(s)}<div class="pb">${pre?`<div class="fb"><p>${pre}</p></div>`:''}
+    <p class="see"><b>你看到：</b>${s.see}</p><p class="say">${s.nm}：${s.says}</p>
+    <span class="q">// step 1：你要怎麼開口？</span>
+    <div class="opts">${opts.map(a=>`<button class="opt" data-i="${a.i}" data-g="${a.g}" data-k="${a.k}" ${low&&a.calm?'disabled':''}>${a.l}${low&&a.calm?'<small>電量低於 30%：沒力氣慢慢陪</small>':''}</button>`).join('')}</div>
+    <div id="after"></div></div>`);
+  $panel.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    const a=s.ap[+b.dataset.i];
+    $panel.querySelectorAll('.opt').forEach(x=>{x.disabled=true;});b.classList.add('pick','g-'+a.g);
+    const eff={best:{t:-15,b:5,s:9},ok:{t:-6,b:7,s:11},bad:{t:12,b:10,s:11}}[a.g];
+    s.temp=clamp(s.temp+eff.t,0,99);addTime(eff.s);useBat(eff.b);s.apG=a.g;s.stage=1;
+    L.approaches.push({id:s.id,k:a.k,g:a.g});
+    const msg=a.g==='best'?'他願意說了。':a.g==='ok'?'有打開一點點。':'他更不想講了……不過你還在，可以繼續。';
+    $('after').innerHTML=`<div class="fb ${a.g==='best'?'good':a.g==='bad'?'bad':''}"><p>${a.r}</p><p><b>${msg}</b></p><span class="fx">溫度 ${eff.t>0?'+':''}${eff.t}° · 電量 −${eff.b} · 時間 +${eff.s}s</span></div>
+      <button class="primary" id="nx" style="width:100%">下一步：讀懂${s.teacher?'老師':s.nm}的感覺</button>`;
+    $('htmp').textContent=Math.round(s.temp)+'°';
+    $('nx').onclick=()=>stepWord(s);$('nx').focus({preventScroll:true});
+  });
+}
+function stepWord(s){
+  ST.with=s.id;
+  const low=ST.bat<30;
+  let ws=s.words.map((w,i)=>({w:w[0],g:w[1],fb:w[2],i}));
+  if(low){const near=ws.filter(w=>w.g==='near');ws=ws.filter(w=>w!==near[near.length-1]);}
+  if(!s.wOrder)s.wOrder=shuffle(ws.map(w=>w.i));
+  ws=s.wOrder.map(i=>ws.find(w=>w.i===i)).filter(Boolean);
+  openSheet(`${head(s)}<div class="pb">
+    <div class="clue"><div><i>身體訊號</i>${s.clue.body}</div><div><i>${s.teacher?'老師':'他'}說的話</i>${s.clue.words}</div></div>
+    <span class="q">// step 2：哪個詞更貼近${s.teacher?'老師':s.nm}現在的感覺？</span>
+    <div class="words">${ws.map(w=>`<button class="opt" data-i="${w.i}" data-g="${w.g}">${w.w}</button>`).join('')}</div>
+    ${low?'<p class="small">電量低，腦袋只想得到 3 個詞。</p>':''}
+    <div id="after"></div></div>`);
+  $panel.querySelectorAll('.words .opt').forEach(b=>b.onclick=()=>{
+    const w=s.words[+b.dataset.i],g=w[1];const exact=s.words.find(x=>x[1]==='exact')[0];
+    $panel.querySelectorAll('.words .opt').forEach(x=>x.disabled=true);b.classList.add('pick');
+    $panel.querySelectorAll('.words .opt').forEach(x=>{if(s.words[+x.dataset.i][1]==='exact')x.classList.add('g-best');});
+    const eff={exact:-8,near:-4,far:4}[g];s.temp=clamp(s.temp+eff,0,99);addTime(6);useBat(2);s.wG=g;s.stage=2;
+    L.words.push({id:s.id,g});
+    let newPage=false;if(g==='exact'&&!PS.dict[exact]){PS.dict[exact]=true;saveP();newPage=true;}
+    const title=g==='exact'?`就是「${exact}」。`:g==='near'?`很接近！更貼近的詞：「${exact}」`:`更貼近的詞：「${exact}」`;
+    $('after').innerHTML=`<div class="fb ${g==='exact'?'good':''}"><p><b>${title}</b></p><p>${w[2]}</p>${newPage?`<p class="fx">情緒字典 +1 頁：${exact}</p>`:''}<span class="fx">溫度 ${eff>0?'+':''}${eff}° · 時間 +6s</span></div>
+      <button class="primary" id="nx" style="width:100%">${s.teacher?'完成':'下一步：用工具修'}</button>`;
+    $('htmp').textContent=Math.round(s.temp)+'°';
+    $('nx').onclick=()=>s.teacher?finishTeacher(s):stepTool(s);$('nx').focus({preventScroll:true});
+  });
+}
+function stepTool(s){
+  ST.with=s.id;
+  const t=s.tool,tn=TOOLS[t].nm;
+  if(!ST.tools[t]){
+    if(!s.asked)L.noTool++;s.asked=true;ST.toolAsk[t]=true;renderTools();
+    openSheet(`${head(s)}<div class="pb"><span class="q">// step 3：需要工具「${tn}」</span><p class="say">${s.nm}：${s.miss}</p>
+      <p class="small">你的背包裡沒有「${tn}」。地圖上的「？」會變成工具名稱。</p>${btnRow([{l:'好，我去拿'}])}</div>`);
+    bindRow([{fn:closeSheet}]);return;
+  }
+  const NAMES={chunk:'拆任務',fact:'換個想法',ground:'5-4-3-2-1 著地',imsg:'我訊息',breath:'一起呼吸'};
+  openSheet(`${head(s)}<div class="pb"><span class="q">// step 3：使用「${tn}」</span>
+    <p class="lead">小遊戲：<b>${NAMES[s.mg]}</b>。做得越好，花的電越少。</p>${btnRow([{l:`使用 ${tn}，開始`,cls:'primary go'},{l:'等一下再來'}])}</div>`);
+  bindRow([{fn:()=>runMini(s)},{fn:closeSheet}]);
+}
+function runMini(s){
+  const done=res=>finishHelp(s,res);
+  ({chunk:mgChunk,fact:mgFact,ground:mgGround,imsg:mgImsg,breath:mgBreath})[s.mg](s,done);
+}
+function finishHelp(s,res){
+  const r=res==='great'?'great':res==='fail'||res==='meh'?'fail':'partial';
+  const cost={great:8,partial:14,fail:22}[r];useBat(cost);
+  L.mgs.push({id:s.id,mg:s.mg,r});
+  s.mgG=r;s.fixed=true;s.temp=10;s.crashed=false;
+  let sc=100+{best:30,ok:10,bad:0}[s.apG||'bad']+{exact:30,near:15,far:0}[s.wG||'far']+{great:40,partial:20,fail:0}[r];
+  if(s.wasCrashed){sc=Math.round(sc*.6);L.rescued++;}
+  s.score=sc;
+  let gift='';
+  if(s.gift&&!ST.tools[s.gift]){ST.tools[s.gift]=true;gift=`<div class="fb good"><p>${s.nm}送你一樣東西：<b>${TOOLS[s.gift].nm}</b>。「我把老師教的整理成積木了，給你。」</p></div>`;renderTools(s.gift);}
+  if(s.hint){const left=STICKERS.filter(p=>!ST.stickers.includes(p.join(',')));if(left.length){const p=left[0];gift+=`<div class="fb good"><p>${s.nm}小聲說：「我躲在角落的時候看到……${p[1]<3?'電腦教室後面':p[0]<3?'操場左下角':'操場右下角'}有一張貼紙。」</p></div>`;}}
+  openSheet(`${head(s)}<div class="pb"><span class="q" style="color:var(--ok)">// ✓ Fixed${s.wasCrashed?'（當機救回）':''}</span>
+    <p class="say">${s.nm}：${s.thx[r]}</p>${gift}
+    <div class="fb"><span class="fx">+${sc} 分${s.wasCrashed?'（當機過 ×0.6）':''} · 電量 −${cost}</span></div>
+    ${btnRow([{l:'回到下課'}])}</div>`);
+  bindRow([{fn:closeSheet}]);
+  updateList();renderHud();
+  if(fixedN()===5)toast('全員 Fixed！可以按「提早收工」，或去找找隱藏角色。','good');
+}
+function finishTeacher(s){
+  useBat(6);s.fixed=true;s.temp=10;s.score=s.apG==='best'?120:s.apG==='ok'?90:60;
+  openSheet(`${head(s)}<div class="pb"><span class="q" style="color:var(--ok)">// ✓ Fixed · 隱藏角色</span><p class="say">王老師：${s.thx.great}</p>
+    <div class="fb good"><p>獲得徽章：<b>隱藏老師</b></p><span class="fx">+${s.score} 分 · 電量 −6</span></div>${btnRow([{l:'回到下課'}])}</div>`);
+  bindRow([{fn:closeSheet}]);updateList();
+}
+
+// ================= 地點 =================
+function openBuilding(k){
+  const info=BINFO[k];
+  if(k==='C'){toast('教室裡有人在補眠，有人在搶最後一題作業。');return;}
+  if(k==='G'){say(null,'輔導室門上掛著：「下課時間暫停開放。午休、放學，都歡迎來聊聊。」<br><small>心情一直沒變好的時候，這扇門是開的。</small>',[{l:'記住了',fn:closeSheet}],`<span class="eyebrow">輔導室</span>`);return;}
+  const parts=[],btns=[];let got=null;
+  if(k==='S'){
+    if(!ST.tools.note){got='note';parts.push('福利社阿姨：「便利貼？最後一包，拿去。」');}
+    else parts.push('福利社阿姨：「同學，要買什麼？」');
+    if(!ST.bread)btns.push({l:'買一個麵包（電量 +12，10 秒）',fn:()=>{ST.bread=true;addTime(10);gainBat(12);L.recharges++;closeSheet();toast('咬一口麵包。電量 +12。','good');}});
+  }
+  if(k==='H'){
+    if(!ST.tools.bubble){got='bubble';parts.push('護理師：「呼吸泡泡？吐氣比吸氣長一點，很多人會覺得比較能慢下來。拿去用。」');}
+    else parts.push('護理師：「累了就坐一下，喝點水。」');
+    btns.push({l:'喝水、坐一下（電量 +40，20 秒）',fn:()=>{addTime(20);gainBat(40);L.recharges++;closeSheet();toast('喝了水，坐了一下。電量 +40。照顧自己，才有力氣照顧別人。','good');}});
+  }
+  if(k==='P'){
+    if(!ST.tools.phones){got='phones';parts.push('資訊社學長：「耳機？拿去。聽聽周圍的聲音也可以，不一定要放音樂。」');}
+    else parts.push('電腦教室的冷氣好涼。');
+    if(!ST.tools.imsg&&(ST.toolAsk.imsg||STU.find(s=>s.id==='xiong').met))btns.push({l:'列印「我訊息積木」（20 秒）',fn:()=>{addTime(20);ST.tools.imsg=true;L.printed=true;renderTools('imsg');closeSheet();toast('印表機慢慢吐出「我訊息積木」。拿到了！','good');}});
+  }
+  if(k==='V'){
+    if(!ST.tools.filter){got='filter';parts.push('你投了 10 元……掉出來的不是飲料，是一張「事實濾鏡」卡。販賣機好像壞了。');}
+    else parts.push('販賣機發出嗡嗡聲。');
+    if(!ST.drink)btns.push({l:'再投一次，買飲料（電量 +8，4 秒）',fn:()=>{ST.drink=true;addTime(4);gainBat(8);L.recharges++;closeSheet();toast('咕嚕咕嚕。電量 +8。','good');}});
+  }
+  if(k==='B'){
+    parts.push('一張曬得暖暖的長椅。坐下來，跟著圈圈深呼吸，可以回一點電。');
+    btns.push({l:'坐下深呼吸（小遊戲，電量最多 +35）',fn:()=>{mgBreath(null,res=>{const g={great:35,ok:24,meh:14}[res]||14;gainBat(g);L.recharges++;closeSheet();toast(`深呼吸三次。電量 +${g}。`,'good');});}});
+  }
+  if(got){ST.tools[got]=true;addTime(5);renderTools(got);parts.push(`<b>拿到「${TOOLS[got].nm}」！</b>`);}
+  btns.push({l:'離開',fn:closeSheet,cls:'ghost'});
+  btns[0].cls=btns[0].cls||'primary';
+  say(null,parts.join('<br>'),btns,`<span class="eyebrow">${info.name}</span>`);
+}
+
+// ================= 突發事件 =================
+function fireEvent(id){
+  if(id==='teacher'){
+    let p=[TEACH_DATA.x,TEACH_DATA.y];const [px,py]=ppos();
+    for(const c of [[7,6],[8,6],[9,6],[6,6]]){if(!(c[0]===px&&c[1]===py)&&!(player.path.length&&player.path.some(q=>q[0]===c[0]&&q[1]===c[1]))){p=c;break;}}
+    TEACH.x=p[0];TEACH.y=p[1];TEACH.present=true;
+    if(player.path.length){const pp=player.path;if(pp.some(q=>q[0]===TEACH.x&&q[1]===TEACH.y)){player.path=[];}}
+    updateList();toast('偵測到隱藏角色：福利社前面出現一位 Error 404 的……老師？','good');return;
+  }
+  if(id==='group'){for(const s of STU)if(!s.fixed&&!s.crashed){s.temp=Math.min(99,s.temp+10);}toast('班群訊息爆炸！所有人溫度 +10°','bad');}
+  ST.evQ.push(id);
+}
+function openEvent(id){
+  if(id==='group'){
+    say(null,'嗡嗡嗡嗡——班群一分鐘 87 則訊息：「誰有數學講義」「明天要考嗎？？」「笑死」。大家的手機都在震，溫度一起 +10°。<br>你的手機也在震。',
+      [{l:'手機先靜音（電量 +3）',fn:()=>{L.group='mute';gainBat(3);closeSheet();toast('靜音。世界安靜了一點。');}},
+       {l:'一則一則回（20 秒，電量 −8，阿哲 −15°）',cls:'ghost',fn:()=>{L.group='reply';addTime(20);useBat(8);const z=STU.find(s=>s.id==='zhe');if(!z.fixed&&!z.crashed)z.temp=Math.max(0,z.temp-15);closeSheet();toast('你回了 12 則。阿哲看到你回他，鬆了一口氣。');}}],
+      '<span class="eyebrow">突發事件</span>');
+  }else if(id==='rumor'){
+    say(null,'走廊有人大喊：「聽說今天下課鐘會提早響！！」<br>是真的嗎？',
+      [{l:'先確認：看一下公告（8 秒）',fn:()=>{L.rumor='check';addTime(8);closeSheet();toast('公告寫著：10:10 正常打鐘。是謠言——事實和猜測，差很多。','good');}},
+       {l:'相信！衝衝衝（走路變快 60 秒，耗電 ×2）',cls:'ghost',fn:()=>{L.rumor='panic';ST.panic=60;closeSheet();toast('你開始用跑的。電量掉得好快……');}}],
+      '<span class="eyebrow">突發事件</span>');
+  }
+}
+
+// ================= 小遊戲 =================
+let miniTok=0;
+function openMini(s,title,sub,html,init,cb){
+  const tok=++miniTok;if(s)ST.with=s.id;
+  openSheet(`${s?head(s):''}<div class="pb mg" data-mg="${title}"><div class="mg-h"><b>${title}</b><span>${sub}</span></div>${html}<div class="mg-time"><i id="mgT"></i></div><p class="mg-res" id="mgRes" aria-live="polite"></p></div>`,'mini');
+  if(s)ST.with=s.id;
+  let done=false,raf=0;
+  const api={q:sel=>$panel.querySelector(sel),qa:sel=>[...$panel.querySelectorAll(sel)],
+    raf(fn){const loop=now=>{if(done||tok!==miniTok)return;fn(now);if(!done)raf=requestAnimationFrame(loop);};raf=requestAnimationFrame(loop);},
+    bar(f){const b=$('mgT');if(b)b.style.width=clamp(f,0,1)*100+'%';},
+    finish(res,msg){if(done||tok!==miniTok)return;done=true;cancelAnimationFrame(raf);const m=$panel.querySelector('.mg');if(m)m.dataset.res=res;const r=$('mgRes');if(r)r.textContent=msg||'';
+      $panel.querySelectorAll('.mg button,.mg .chip').forEach(b=>{b.disabled=true;});
+      setTimeout(()=>{if(tok!==miniTok)return;cb(res);},msg?1300:200);}};
+  init(api);
+}
+// drag or tap a chip; works with finger and mouse
+function dnd(chip,targets,onDrop,onTap){
+  let pid=null,sx=0,sy=0,drag=false;
+  chip.addEventListener('pointerdown',e=>{if(chip.disabled)return;e.preventDefault();pid=e.pointerId;sx=e.clientX;sy=e.clientY;drag=false;try{chip.setPointerCapture(pid);}catch(_){}});
+  chip.addEventListener('pointermove',e=>{if(pid!==e.pointerId)return;const dx=e.clientX-sx,dy=e.clientY-sy;if(!drag&&Math.hypot(dx,dy)>8){drag=true;chip.classList.add('drag');}
+    if(drag){chip.style.transform=`translate(${dx}px,${dy}px)`;targets().forEach(t=>t.classList.toggle('hi',hit(t,e)));}});
+  const hit=(t,e)=>{const r=t.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom;};
+  chip.addEventListener('pointerup',e=>{if(pid!==e.pointerId)return;pid=null;
+    if(drag){chip.classList.remove('drag');chip.style.transform='';const ts=targets();ts.forEach(t=>t.classList.remove('hi'));const t=ts.find(t=>hit(t,e));if(t)onDrop(chip,t);}
+    else onTap(chip);});
+  chip.addEventListener('pointercancel',()=>{pid=null;drag=false;chip.classList.remove('drag');chip.style.transform='';targets().forEach(t=>t.classList.remove('hi'));});
+  chip.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onTap(chip);}});
+}
+function mgChunk(s,cb){
+  const parts=shuffle([['寫大綱',0],['查資料',1],['寫前 100 字',2]]);const LIM=10;
+  openMini(s,'拆任務','點一下「報告」把它拆開，再把小塊排進 1→2→3（拖曳或點）。',
+   `<button class="bigblock" id="big">報告<small>明天交 · 點一下拆開</small></button>
+    <div class="pool" id="pool" hidden>${parts.map(p=>`<button class="chip" data-o="${p[1]}">${p[0]}</button>`).join('')}</div>
+    <div class="slots">${[0,1,2].map(i=>`<div class="slot" data-n="${i}"><i>${i+1}</i><span></span></div>`).join('')}</div>`,api=>{
+    const big=api.q('#big'),pool=api.q('#pool'),slots=api.qa('.slot'),fill=[null,null,null];const t0=performance.now();
+    big.addEventListener('click',()=>{big.hidden=true;pool.hidden=false;});
+    const end=()=>{const n=fill.filter(Boolean).length,ord=fill.map(c=>c?+c.dataset.o:-1).join('');
+      if(n===3&&(ord==='012'||ord==='102'))api.finish('great','拆好了！每一塊都小到 10 分鐘做得完。');
+      else if(n===3)api.finish('partial','拆開了！順序可以再想想：先有大綱，寫起來比較不卡。');
+      else if(n>=1)api.finish('partial','拆了一部分。光是開始拆，就比較不會卡住。');
+      else api.finish('fail','時間到。沒關係，下次先試著把它拆成三塊。');};
+    const place=(chip,slot)=>{const n=+slot.dataset.n;if(fill[n])fill[n].hidden=false;const prev=fill.indexOf(chip);if(prev>=0){fill[prev]=null;slots[prev].classList.remove('on');slots[prev].querySelector('span').textContent='';}
+      fill[n]=chip;chip.hidden=true;slot.classList.add('on');slot.querySelector('span').textContent=chip.textContent;if(fill.every(Boolean))end();};
+    api.qa('#pool .chip').forEach(ch=>dnd(ch,()=>slots,place,c=>{const k=fill.findIndex(f=>!f);if(k>=0)place(c,slots[k]);}));
+    slots.forEach((sl,n)=>sl.addEventListener('click',()=>{if(fill[n]){fill[n].hidden=false;fill[n]=null;sl.classList.remove('on');sl.querySelector('span').textContent='';}}));
+    api.raf(now=>{const t=(now-t0)/1000;api.bar(1-t/LIM);if(t>=LIM)end();});
+  },cb);
+}
+function mgFact(s,cb){
+  const cards=shuffle([['訊息已讀 3 小時','f'],['她今天有兩科段考','f'],['她一定在生我的氣','g'],['我一定說錯話，她討厭我了','g']]);const LIM=10;
+  openMini(s,'換個想法','把每張卡片放進「事實」或「猜測」（拖曳，或先點卡片再點框）。',
+   `<div class="pool">${cards.map((c,i)=>`<button class="chip card" data-a="${c[1]}" data-i="${i}">${c[0]}</button>`).join('')}</div>
+    <div class="bins"><div class="bin" data-b="f" role="button" tabindex="0"><b>事實</b><small>看得到、查得到</small><div class="in"></div></div><div class="bin" data-b="g" role="button" tabindex="0"><b>猜測</b><small>腦袋自己補的</small><div class="in"></div></div></div>`,api=>{
+    const bins=api.qa('.bin');let sel=null,placed=0,right=0;const t0=performance.now();
+    const end=()=>{if(right===4)api.finish('great','分得超清楚。事實只有兩個，其他是腦袋寫的劇本。');else if(right>=2)api.finish('partial',`對了 ${right} 張。「一定」「討厭我」這種，通常是猜測。`);else api.finish('fail','有點混在一起。小訣竅：拍得到、查得到的，才是事實。');};
+    const place=(chip,bin)=>{if(chip.disabled)return;const ok=chip.dataset.a===bin.dataset.b;if(ok)right++;placed++;
+      bin.querySelector('.in').insertAdjacentHTML('beforeend',`<span class="${ok?'':'no'}">${chip.textContent}</span>`);chip.hidden=true;chip.disabled=true;sel=null;
+      api.qa('.card').forEach(c=>c.classList.remove('sel'));if(placed>=4)end();};
+    api.qa('.card').forEach(ch=>dnd(ch,()=>bins,place,c=>{api.qa('.card').forEach(x=>x.classList.remove('sel'));sel=c;c.classList.add('sel');}));
+    bins.forEach(b=>{b.addEventListener('click',()=>{if(sel)place(sel,b);});b.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&sel){e.preventDefault();place(sel,b);}});});
+    api.raf(now=>{const t=(now-t0)/1000;api.bar(1-t/LIM);if(t>=LIM)end();});
+  },cb);
+}
+const SCENE_ITEMS=[
+ {id:'window',n:'窗戶',svg:'<rect x="18" y="16" width="86" height="62" rx="4" fill="#CFE8F7" stroke="#23303F" stroke-width="2.5"/><path d="M61 16v62M18 47h86" stroke="#23303F" stroke-width="2"/><ellipse cx="40" cy="32" rx="12" ry="6" fill="#fff"/>',cx:61,cy:47},
+ {id:'clock',n:'時鐘',svg:'<circle cx="160" cy="30" r="16" fill="#fff" stroke="#23303F" stroke-width="2.5"/><path d="M160 30v-9M160 30l7 4" stroke="#23303F" stroke-width="2.2" stroke-linecap="round"/>',cx:160,cy:30},
+ {id:'poster',n:'海報',svg:'<rect x="205" y="12" width="44" height="56" rx="3" fill="#FFD47A" stroke="#23303F" stroke-width="2.5"/><path d="M213 26h28M213 36h20M213 46h24" stroke="#23303F" stroke-width="2"/>',cx:227,cy:40},
+ {id:'plant',n:'盆栽',svg:'<path d="M276 112h26l-4 26h-18z" fill="#C97B4A" stroke="#23303F" stroke-width="2.5"/><path d="M289 112c-14-10-12-30-2-34 4 12 8 20 2 34zm0 0c10-14 26-14 28-6-10 6-18 6-28 6z" fill="#5BAA5E" stroke="#23303F" stroke-width="2"/>',cx:289,cy:108},
+ {id:'bag',n:'書包',svg:'<rect x="24" y="120" width="40" height="40" rx="8" fill="#5B8DEF" stroke="#23303F" stroke-width="2.5"/><path d="M32 120c0-12 24-12 24 0" fill="none" stroke="#23303F" stroke-width="2.5"/><rect x="34" y="136" width="20" height="10" rx="3" fill="#86AEEA" stroke="#23303F" stroke-width="2"/>',cx:44,cy:140},
+ {id:'bottle',n:'水壺',svg:'<rect x="140" y="104" width="16" height="32" rx="5" fill="#9FD8B9" stroke="#23303F" stroke-width="2.5"/><rect x="143" y="97" width="10" height="8" rx="2" fill="#23303F"/>',cx:148,cy:118},
+ {id:'book',n:'課本',svg:'<path d="M176 128l30-6 30 6v12l-30-6-30 6z" fill="#F4A3AA" stroke="#23303F" stroke-width="2.5" stroke-linejoin="round"/><path d="M206 122v12" stroke="#23303F" stroke-width="2"/>',cx:206,cy:130},
+ {id:'cat',n:'窗外的貓',svg:'<circle cx="90" cy="64" r="9" fill="#F2994A" stroke="#23303F" stroke-width="2"/><path d="M83 58l2-8 4 5M97 58l-2-8-4 5" fill="#F2994A" stroke="#23303F" stroke-width="2" stroke-linejoin="round"/><circle cx="87" cy="63" r="1.3" fill="#23303F"/><circle cx="93" cy="63" r="1.3" fill="#23303F"/>',cx:90,cy:62}];
+function mgGround(s,cb){
+  const HEAR=shuffle([['鐘聲',1],['遠處的球聲',1],['冷氣嗡嗡聲',1],['鳥叫',1],['腦中重播那句話',0]]);
+  const TOUCH=shuffle([['椅子',1],['袖子',1],['桌面',1],['大家的眼光',0]]);
+  const P=[{k:'see',need:5,lim:6,l:'5 樣看得到的東西：點畫面裡的東西'},{k:'hear',need:4,lim:4,l:'4 個聽得到的聲音'},{k:'touch',need:3,lim:3.5,l:'3 樣摸得到的東西'}];
+  openMini(s,'5-4-3-2-1 著地','腦袋在重播的時候，把注意力拉回「現在」。（真實生活裡慢慢做更好）',
+   `<p class="gcount" id="gl">${P[0].l} · 0/5</p>
+    <div class="scene" id="scene"><svg viewBox="0 0 320 170" role="img" aria-label="教室角落"><rect width="320" height="100" fill="#FBF3E4"/><rect y="100" width="320" height="70" fill="#E9DCC6"/><path d="M0 100h320" stroke="#23303F" stroke-width="2"/>
+     <rect x="120" y="136" width="130" height="8" rx="3" fill="#B9875A" stroke="#23303F" stroke-width="2"/>
+     ${SCENE_ITEMS.map(it=>`<g class="it" data-it="${it.id}" data-cx="${it.cx}" data-cy="${it.cy}">${it.svg}<circle class="mark" cx="${it.cx}" cy="${it.cy}" r="20" fill="none" stroke="#1F9D74" stroke-width="4"/><circle cx="${it.cx}" cy="${it.cy}" r="22" fill="transparent"/></g>`).join('')}</svg></div>
+    <div class="pool" id="gp" hidden></div>`,api=>{
+    let ph=0,got=0,score=0,bad=0,tP=performance.now();const gl=api.q('#gl'),scene=api.q('#scene'),gp=api.q('#gp');
+    const setPhase=i=>{ph=i;got=0;tP=performance.now();const p=P[i];gl.textContent=`${p.l} · 0/${p.need}`;
+      if(i>0){scene.hidden=true;gp.hidden=false;const list=i===1?HEAR:TOUCH;gp.innerHTML=list.map(c=>`<button class="chip" data-ok="${c[1]}">${c[0]}</button>`).join('');
+        gp.querySelectorAll('.chip').forEach(ch=>ch.addEventListener('pointerdown',e=>{e.preventDefault();pick(ch);}));
+        gp.querySelectorAll('.chip').forEach(ch=>ch.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();pick(ch);}}));}};
+    const next=()=>{if(ph<2)setPhase(ph+1);else end();};
+    const end=()=>{const tot=score-bad;if(tot>=10)api.finish('great','回到現在了。5 看、4 聽、3 摸，剩下的 2 聞、1 嚐，下課自己試試。');else if(tot>=6)api.finish('partial',`找到 ${tot} 樣。有回到「現在」一點點了。`);else api.finish('fail','腦袋還在重播。沒關係，這個練習慢慢做也可以。');};
+    const pick=ch=>{if(ch.disabled)return;ch.disabled=true;if(ch.dataset.ok==='1'){score++;got++;ch.classList.add('sel');}else{bad++;ch.style.borderColor='var(--hot)';gl.textContent='那是腦內的聲音／別人的眼光，不是「現在摸得到、聽得到」的。';}
+      const p=P[ph];if(ch.dataset.ok==='1')gl.textContent=`${p.l} · ${got}/${p.need}`;if(got>=p.need)setTimeout(next,250);};
+    scene.querySelectorAll('.it').forEach(g=>g.addEventListener('pointerdown',e=>{e.preventDefault();if(ph!==0||g.classList.contains('found'))return;g.classList.add('found');score++;got++;gl.textContent=`${P[0].l} · ${got}/5`;if(got>=5)setTimeout(next,250);}));
+    api.raf(now=>{const t=(now-tP)/1000,p=P[ph];api.bar(1-t/p.lim);if(t>=p.lim)next();});
+  },cb);
+}
+function mgImsg(s,cb){
+  const chips=shuffle([['很累',0],['有點委屈',0],['報告大多是我一個人做',1],['我們可以重新分工',2],['你們都很爛',-1],['你都不做事',-1],['你們自己看著辦',-1]]);const LIM=10;
+  openMini(s,'我訊息','把積木填進程式。點積木會放進下一個空格，也可以拖到指定的格子。',
+   `<div class="codebox"><span class="cm">// 把「你都…」換成「我…」</span>
+     <div class="ln"><span class="kw">我覺得</span>(<span class="blank" data-n="0"></span>)</div>
+     <div class="ln"><span class="kw">因為</span>(<span class="blank" data-n="1"></span>)</div>
+     <div class="ln"><span class="kw">我希望</span>(<span class="blank" data-n="2"></span>)</div></div>
+    <div class="pool">${chips.map(c=>`<button class="chip" data-s="${c[1]}">${c[0]}</button>`).join('')}</div>`,api=>{
+    const blanks=api.qa('.blank'),fill=[null,null,null];const t0=performance.now();
+    const end=()=>{let ok=0,blame=0;fill.forEach((c,n)=>{if(!c)return;const v=+c.dataset.s;if(v===n)ok++;if(v<0)blame++;});
+      if(ok===3)api.finish('great','編譯成功！沒有「你都…」，對方比較聽得進去。');
+      else if(ok>=2)api.finish('partial',blame?'warning：有一句還帶刺。「你都…」開頭，對方通常會先防衛。':'差一點！看看每一格要放的是感覺、原因，還是希望。');
+      else api.finish('fail',blame?'error：句子裡都是「你」。換成「我」開頭試試。':'時間到。格式是：我覺得（感覺）因為（事情）我希望（做法）。');};
+    const place=(chip,b)=>{const n=+b.dataset.n;const prev=fill.indexOf(chip);if(prev>=0){fill[prev]=null;blanks[prev].textContent='';blanks[prev].classList.remove('on');}
+      if(fill[n])fill[n].hidden=false;fill[n]=chip;chip.hidden=true;b.textContent=chip.textContent;b.classList.add('on');if(fill.every(Boolean))end();};
+    api.qa('.pool .chip').forEach(ch=>dnd(ch,()=>blanks,place,c=>{const k=fill.findIndex(f=>!f);if(k>=0)place(c,blanks[k]);}));
+    blanks.forEach((b,n)=>b.addEventListener('click',()=>{if(fill[n]){fill[n].hidden=false;fill[n]=null;b.textContent='';b.classList.remove('on');}}));
+    api.raf(now=>{const t=(now-t0)/1000;api.bar(1-t/LIM);if(t>=LIM)end();});
+  },cb);
+}
+function holdable(elm,onDown){
+  let on=false;
+  const down=e=>{if(on)return;on=true;elm.classList.add('on');if(e&&e.pointerId!=null){try{elm.setPointerCapture(e.pointerId);}catch(_){}}onDown&&onDown();};
+  const up=()=>{if(!on)return;on=false;elm.classList.remove('on');};
+  elm.addEventListener('pointerdown',e=>{e.preventDefault();down(e);});
+  elm.addEventListener('pointerup',up);elm.addEventListener('pointercancel',up);elm.addEventListener('lostpointercapture',up);
+  elm.addEventListener('contextmenu',e=>e.preventDefault());
+  elm.addEventListener('keydown',e=>{if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();down();}});
+  elm.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();up();}});
+  elm.tabIndex=0;return ()=>on;
+}
+function mgBreath(s,cb){
+  // 3 rounds: inhale 2s, exhale 3s (exhale longer than inhale)
+  const SEQ=[['in',2],['out',3],['in',2],['out',3],['in',2],['out',3]],TOT=15;
+  openMini(s,'一起呼吸','圈圈變大：按住吸氣。圈圈變小：放開吐氣。吐氣比吸氣長一點。',
+   `<div class="breath" id="br" aria-label="按住吸氣，放開吐氣"><div class="ring" id="ring"></div><div class="ring-core" id="core">按住<br>開始</div></div><p class="sync" id="sync">第 1/3 次</p>`,api=>{
+    const br=api.q('#br'),ring=api.q('#ring'),core=api.q('#core'),sy=api.q('#sync');let t0=null,good=0,tot=0,last=0;const born=performance.now();
+    const isOn=holdable(br,()=>{if(t0===null){t0=performance.now();last=t0;}});
+    api.raf(now=>{
+      if(t0===null){api.bar(1-(now-born)/9000);if(now-born>9000)api.finish('meh','沒關係，光是停下來就有幫助。');return;}
+      const t=(now-t0)/1000,dt=(now-last)/1000;last=now;
+      if(t>=TOT){const acc=tot?good/tot:0;const res=acc>=.72?'great':acc>=.45?'ok':'meh';api.finish(res,res==='great'?`跟得很好（${Math.round(acc*100)}%）。吐氣變長了。`:`跟上了 ${Math.round(acc*100)}%。節奏亂一點也沒關係。`);return;}
+      let a0=0,ph='in',pt=0,pl=2,round=1,idx=0;for(const [p,l] of SEQ){if(t<a0+l){ph=p;pt=t-a0;pl=l;break;}a0+=l;idx++;}round=Math.floor(idx/2)+1;
+      const k=pt/pl,sc=ph==='in'?.55+.45*k:1-.45*k;ring.style.transform=`scale(${sc})`;br.dataset.phase=ph;
+      core.innerHTML=ph==='in'?'吸——<br><small>按住</small>':'吐———<br><small>放開</small>';
+      if(pt>.3){tot+=dt;if(isOn()===(ph==='in'))good+=dt;}
+      sy.textContent=`第 ${Math.min(3,round)}/3 次 · 同步 ${tot?Math.round(good/tot*100):0}%`;
+      api.bar(1-t/TOT);});
+  },cb);
+}
+
+// ================= 結束 =================
+function earnedBadges(){
+  const got=[];const fx=fixedN();
+  if(fx===5)got.push('allfix');
+  if(ST.minBat>=30&&fx>=2)got.push('bat30');
+  if(STU.some(s=>s.fixed&&s.wasCrashed))got.push('hero');
+  if(TEACH.fixed)got.push('teacher');
+  if(ST.stickers.length>=3)got.push('sticker');
+  if(L.approaches.length>=3&&!L.approaches.some(a=>a.g==='bad'))got.push('kind');
+  return got;
+}
+const LISTEN=new Set(['sit','notice','ack','jokeReal','text','care']),RUSH=new Set(['ask','advise','joke']);
+function reflection(){
+  const ap=L.approaches.filter(a=>a.id!=='t'),listen=ap.filter(a=>LISTEN.has(a.k)).length,rush=ap.filter(a=>RUSH.has(a.k)).length;
+  const tg=L.targets,n=tg.length||1,hot=tg.filter(t=>t.hottest).length,near=tg.filter(t=>t.nearest).length,loud=tg.filter(t=>t.loud).length;
+  const hotOnly=tg.filter(t=>t.hottest&&!t.nearest).length,nearOnly=tg.filter(t=>t.nearest&&!t.hottest).length;
+  const fx=fixedN(),crashed=L.crashed.length,minB=Math.round(ST.minBat);
+  const first=tg[0],fs=first?STU.find(s=>s.id===first.id):null;
+  const quietLeft=STU.filter(s=>!s.loud&&!s.fixed).map(s=>s.nm);
+  const types={
+    crash:{n:'硬撐到當機型',tag:'一直說「我還可以」，直到螢幕真的黑掉。',
+      s:L.playerCrashes*5+(L.recharges===0&&minB<25?4:0),
+      cost:L.playerCrashes?`代價：你當機了 ${L.playerCrashes} 次，那 ${Math.round(L.downTime)} 秒誰都幫不了。`:`代價：電量最低掉到 ${minB}%，最後幾位同學只能用「沒力氣的你」去陪。`,
+      tip:'小調整：電量剩 30% 就先喝口水。先照顧自己，才有力氣陪別人。'},
+    plan:{n:'計畫型',tag:'先把工具收齊再出發，背包整齊得像資料夾。',
+      s:(L.toolsAtFirst>=3?4+(L.toolsAtFirst-3)+(L.noTool===0?1:0):0),
+      cost:first?`代價：出發前先繞了一圈，第一位同學等到 ${fmtClock(first.t)} 才等到你。`:'代價：工具收齊了，可是下課也快結束了。',
+      tip:'小調整：出發前花 3 秒看溫度表，順路的工具邊走邊拿。'},
+    fire:{n:'救火隊型',tag:'哪裡最燙就衝哪裡。帥，但很喘。',
+      s:(tg.length>=2&&hot/n>=.6?2.5+hot/n+hotOnly*.5:0)+L.rescued*.2,
+      cost:quietLeft.length?`代價：一直追最燙的，安靜的 ${quietLeft.join('、')} 慢慢升溫，沒人發現。`:'代價：一直在追火，幾乎沒停下來喘口氣。',
+      tip:'小調整：每救完一個人，花 3 秒掃一眼溫度：誰在「慢慢」變高？'},
+    listen:{n:'先聽再修型',tag:'先陪、先聽，再拿工具。修得慢，但修得穩。',
+      s:(ap.length>=3&&listen/ap.length>=.6?3+listen/ap.length*1.5:0)+(L.words.filter(w=>w.g==='exact').length>=3?.5:0),
+      cost:fx<5?`代價：慢慢陪很花時間和電，有 ${5-fx} 位同學沒等到你。`:'代價：幾乎沒有。可能是你的電量。',
+      tip:'小調整：聽完可以問一句：「你想要我陪你，還是幫你想辦法？」省時間又不失溫度。'},
+    social:{n:'社交高手型',tag:'誰在旁邊就先聊誰，開口完全不怕。',
+      s:(tg.length>=2&&near/n>=.5?2.5+near/n+nearOnly*.5:0)+(ap.length>=2&&rush/ap.length>=.5?2:0)+(loud/n>=.6?.5:0),
+      cost:rush>=2?`代價：${rush} 次直接開口問或給建議，好幾次只換到一句「我沒事」。`:'代價：誰近聊誰，最燙的那位反而晚到。',
+      tip:'小調整：開口前，先說你「看到」的，例如：「你這頁抄第三次了耶。」'},
+    flex:{n:'隨機應變型',tag:'沒有固定套路，走到哪修到哪。',
+      s:1.5,cost:'代價：每一步都要重新想，比較累。',tip:'小調整：下次先決定一個原則，例如「先救最燙的」或「先拿工具」，看看感覺有什麼不一樣。'}
+  };
+  let best='flex',bs=-1;for(const k in types)if(types[k].s>bs){bs=types[k].s;best=k;}
+  const T=types[best];
+  const O={
+    first:fs?`你第一個去找 ${fs.nm}（當時 ${first.temp}°${first.hottest?'，全場最燙':''}${first.nearest?'，離你最近':''}${first.loud?'，也是最大聲的':''}）。`:'這節下課，你一位同學都還沒開口找。',
+    hot:tg.length?`${tg.length} 次選人裡，有 ${hot} 次選了當下最燙的、${near} 次選了最近的。`:null,
+    talk:ap.length?`開口 ${ap.length} 次：${listen} 次先陪、先聽，${rush} 次直接問或給建議。`:null,
+    bat:`電量最低 ${minB}%，充電 ${L.recharges} 次${L.playerCrashes?`，當機 ${L.playerCrashes} 次`:''}。`,
+    tools:L.toolsAtFirst!=null?`第一次開口前，背包裡有 ${L.toolsAtFirst} 樣工具；被同學「請去拿工具」${L.noTool} 次。`:null,
+    crash:crashed?`${crashed} 位同學當機過，救回 ${L.rescued} 位。`:'沒有任何同學當機。',
+    word:L.words.length?`猜感覺：精準 ${L.words.filter(w=>w.g==='exact').length} 次、接近 ${L.words.filter(w=>w.g==='near').length} 次。`:null};
+  const ORDER={crash:['bat','crash','first'],plan:['tools','first','crash'],fire:['hot','first','crash'],listen:['talk','word','crash'],social:['hot','talk','first'],flex:['first','talk','bat']};
+  const obs=[];for(const k of [...ORDER[best],'talk','crash','bat'])if(O[k]&&!obs.includes(O[k])&&obs.length<3)obs.push(O[k]);
+  return {id:best,name:T.n,tag:T.tag,obs,cost:T.cost,tip:T.tip,scores:Object.fromEntries(Object.entries(types).map(([k,v])=>[k,+v.s.toFixed(2)]))};
+}
+function titleOf(sc){return sc>=850?'傳說級心情工程師':sc>=650?'心情架構師':sc>=450?'資深除錯工程師':sc>=220?'除錯工程師':'見習工程師';}
+function graphSvg(){
+  const Wd=320,Ht=130,pl=26,pr=6,pt=8,pb=18,X=t=>pl+t/600*(Wd-pl-pr),Y=v=>pt+(1-v/100)*(Ht-pt-pb);
+  const h=ST.hist.concat([{t:Math.min(600,Math.round(ST.t)),bat:Math.round(ST.bat),T:Object.fromEntries(STU.map(s=>[s.id,s.fixed?null:Math.round(s.temp)]))}]);
+  let lines='';
+  for(const s of STU){let d='',pen=false;for(const p of h){const v=p.T[s.id];if(v==null){pen=false;continue;}d+=(pen?'L':'M')+X(p.t).toFixed(1)+' '+Y(v).toFixed(1)+' ';pen=true;}
+    lines+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`;}
+  const bd=h.map((p,i)=>(i?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.bat).toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 ${Wd} ${Ht}" role="img" aria-label="下課十分鐘的溫度變化"><rect x="${pl}" y="${pt}" width="${Wd-pl-pr}" height="${Ht-pt-pb}" fill="#fff" stroke="#DCD6CA"/>
+   <path d="M${pl} ${Y(100)}H${Wd-pr}" stroke="#E5484D" stroke-dasharray="4 3" stroke-width="1.2"/><path d="M${pl} ${Y(30)}H${Wd-pr}" stroke="#DCD6CA" stroke-dasharray="2 3"/>
+   <text x="${pl-4}" y="${Y(100)+4}" font-size="9" text-anchor="end" fill="#E5484D" font-family="JetBrains Mono,monospace">100</text><text x="${pl-4}" y="${Y(30)+3}" font-size="9" text-anchor="end" fill="#6A7484" font-family="JetBrains Mono,monospace">30</text>
+   ${[0,300,600].map(t=>`<text x="${X(t)}" y="${Ht-5}" font-size="9" text-anchor="${t===0?'start':t===600?'end':'middle'}" fill="#6A7484" font-family="JetBrains Mono,monospace">${fmtClock(t).slice(0,5)}</text>`).join('')}
+   <path d="${bd}" fill="none" stroke="#23303F" stroke-width="1.6" stroke-dasharray="3 3"/>${lines}</svg>`;
+}
+let lastReport=null;
+function endGame(reason){
+  if(ST.phase!=='play')return;
+  ST.phase='end';ST.endedAt=ST.t;miniTok++;player.path=[];
+  const fx=fixedN();
+  const score=STU.reduce((a,s)=>a+(s.fixed?s.score:0),0)+(TEACH.fixed?TEACH.score:0)+ST.stickers.length*20;
+  const badges=earnedBadges(),newB=badges.filter(b=>!PS.badges[b]);badges.forEach(b=>PS.badges[b]=true);
+  const prevBest=PS.best.score||0;PS.best={score:Math.max(prevBest,score),fixed:Math.max(PS.best.fixed||0,fx)};PS.runs++;saveP();
+  const R=reflection();
+  const elapsed=Math.max(1,Math.min(600,ST.t));const uptime=Math.round((1-L.downTime/elapsed)*100);
+  lastReport={reason,fx,score,badges,R,title:titleOf(score),uptime};
+  showReport();
+}
+function showReport(){
+  const {reason,fx,score,badges,R,title,uptime}=lastReport;
+  const words=L.words.filter(w=>w.g==='exact').length;
+  openSheet(`<div class="pb">
+    <span class="eyebrow">${reason==='bell'?'噹——噹——上課鐘響了':'提早收工'}</span>
+    <div class="term"><div class="bar"><i style="background:#E5484D"></i><i style="background:#E8962E"></i><i style="background:#1F9D74"></i><span style="margin-left:6px">今日系統報告 · report.log</span></div>
+     <div class="body"><span class="p">$ mood-debugger --report 10:00–${fmtClock(lastReport&&ST.endedAt||ST.t).slice(0,5)}</span>
+      <div class="kv"><span>uptime</span><b>${uptime}%</b></div>
+      <div class="kv"><span>students fixed</span><b class="${fx>=3?'ok':''}">${fx} / 5</b></div>
+      <div class="kv"><span>crashed → rescued</span><b class="${L.crashed.length?'er':'ok'}">${L.crashed.length} → ${L.rescued}</b></div>
+      <div class="kv"><span>最低電量</span><b class="${ST.minBat<30?'er':''}">${Math.round(ST.minBat)}%</b></div>
+      <div class="kv"><span>情緒詞精準</span><b>${words} / ${L.words.filter(w=>w.id!=='t').length}</b></div>
+      <div class="kv"><span>隱藏角色</span><b class="${TEACH.fixed?'ok':''}">${TEACH.fixed?'✓ Fixed':TEACH.present?'沒來得及':'沒出現'}</b></div>
+      <div class="kv"><span>score</span><b>${score}${score>=(PS.best.score||0)&&score>0?' · NEW BEST':` · best ${PS.best.score}`}</b></div>
+      <span>稱號：<b>${title}</b></span>
+      <div class="graph">${graphSvg()}</div>
+      <div class="legend">${STU.map(s=>`<span><i style="background:${s.color}"></i>${s.nm}</span>`).join('')}<span><i style="background:repeating-linear-gradient(90deg,#23303F 0 3px,transparent 3px 6px)"></i>你的電量</span></div>
+     </div></div>
+    <div class="badges">${BADGES.map(b=>`<div class="badge ${badges.includes(b.id)?'':'off'}"><b>${b.n}</b><small>${b.h}</small></div>`).join('')}</div>
+    <div class="style" id="styleBox" data-style="${R.id}"><span class="q">你今天的除錯風格</span><h2>${R.name}</h2><p class="lead">${R.tag}</p>
+      <ul>${R.obs.map(o=>`<li>${o}</li>`).join('')}</ul><p class="cost"><i>代價</i>${R.cost.replace(/^代價：/,'')}</p><p class="tip"><i>小調整</i>${R.tip.replace(/^小調整：/,'')}</p></div>
+    <p class="care">如果這種心情一直沒有變好，找導師或輔導老師聊聊，也是一種除錯。</p>
+    <div class="console"><span><span class="kw">console</span>.log(今天的我)</span><span class="cm" style="color:#8B98A8">// 最後一步：選一個詞，代表你自己今天的心情。沒有標準答案。</span>
+      <div class="moods" id="moods">${MOODS.map(m=>`<button data-m="${m[0]}">${m[0]}</button>`).join('')}</div><span class="cm" id="moodOut"></span></div>
+    <div class="row"><button class="ghost" id="share">複製結果分享</button><button class="ghost" id="dictB">情緒字典 ${Object.keys(PS.dict).length}/6</button></div>
+    <p class="copied" id="copied" aria-live="polite"></p>
+    <button class="primary go" id="again">再玩一次</button>
+    <a class="homeLink" href="/" style="align-self:center">‹ 回首頁</a></div>`,'end');
+  $('moods').querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    $('moods').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    const m=MOODS.find(x=>x[0]===b.dataset.m);$('moodOut').textContent=`> "${m[0]}"  // ${m[1]}`;
+    PS.moods.push({d:new Date().toISOString().slice(0,10),w:m[0]});PS.moods=PS.moods.slice(-20);saveP();});
+  $('again').onclick=()=>{closeSheet();restart();};
+  $('dictB').onclick=()=>showDict(showReport);
+  $('share').onclick=async()=>{
+    const t=`我在「心情除錯所」當了 10 分鐘心情工程師\n✓ Fixed ${fx}/5 · 稱號：${title}\n我的除錯風格：${R.name}\n換你來除錯 → ${GAME_URL}`;
+    const out=$('copied');
+    try{await navigator.clipboard.writeText(t);out.textContent='已複製，可以貼給朋友。';}
+    catch(_){out.innerHTML='';const ta=document.createElement('textarea');ta.value=t;ta.rows=4;ta.style.width='100%';out.appendChild(ta);ta.select();}
+  };
+}
+const MOODS=[
+ ['平靜','很好。記住這個感覺在身體的哪裡。'],['開心','好耶。開心也值得被好好記下來。'],['普通','普通也是一種狀態，不一定要很好或很糟。'],
+ ['累','收到。今天先幫自己充個電：喝水、早點睡，都算。'],['煩','煩也沒關係。它比較像焦慮、委屈，還是累？'],['緊張','緊張常常代表你在乎。吐氣比吸氣長一點，試三次。'],
+ ['難過','謝謝你說出來。難過可以慢慢來，也可以找信任的人聊聊。'],['說不上來','說不上來也是答案。情緒本來就不一定有名字。']];
+function showDict(back){
+  openSheet(`<div class="pb"><span class="eyebrow">情緒字典 · ${Object.keys(PS.dict).length}/6 頁</span><h2 style="font-size:22px">情緒字典</h2>
+    <p class="small">幫同學時，選中「最貼近」的詞，就會解鎖那一頁。</p>
+    <div class="dict">${DICT_ORDER.map(w=>PS.dict[w]?`<div class="page"><h3>${w}<code>// ${DICT[w].code}</code></h3><p>${DICT[w].one}</p><p><i>身體</i>${DICT[w].body}</p><p><i>可以試試</i>${DICT[w].try}</p></div>`:`<div class="page lock"><h3>？？<code>// locked</code></h3><p>還沒解鎖。</p></div>`).join('')}</div>
+    <button class="primary" id="back">返回</button></div>`,'dict');
+  $('back').onclick=()=>back();
+}
+function showBadges(back){
+  openSheet(`<div class="pb"><span class="eyebrow">徽章</span><div class="badges">${BADGES.map(b=>`<div class="badge ${PS.badges[b.id]?'':'off'}"><b>${b.n}</b><small>${b.h}</small></div>`).join('')}</div><button class="primary" id="back">返回</button></div>`,'dict');
+  $('back').onclick=()=>back();
+}
+function showIntro(){
+  openSheet(`<div class="pb"><span class="eyebrow">資訊社 · 心情工程師</span><h1 style="font-size:30px">心情除錯所</h1>
+    <p class="lead">下課 10 分鐘。五位同學的「系統」出錯了。<br>你是資訊社的心情工程師。</p>
+    <ul class="rules">
+     <li><b>溫度</b>會一直升高。到 100° 會<b>當機</b>，還會<b>傳染</b>給最近的人。</li>
+     <li><b>電量</b>：走路、幫忙都要花電。低於 30%，你會變慢，也沒力氣慢慢陪人。歸零你也會當機。</li>
+     <li><b>工具</b>散落在校園各處。地圖上的「？」就是。</li>
+     <li>同一種情緒，每個人表現都不一樣。先看，再開口。</li>
+    </ul>
+    <p class="small mono">best: ${PS.best.score||0} 分 · 最多修好 ${PS.best.fixed||0} 位 · 玩過 ${PS.runs} 次</p>
+    <button class="primary go" id="go">開始下課（10:00）</button>
+    <div class="row"><button class="ghost" id="dictB">情緒字典 ${Object.keys(PS.dict).length}/6</button><button class="ghost" id="badB">徽章 ${Object.keys(PS.badges).length}/6</button></div></div>`,'intro');
+  $('go').onclick=()=>{closeSheet();ST.phase='play';toast('10:00 下課！點同學或他頭上的溫度，走過去看看。');};
+  $('dictB').onclick=()=>showDict(showIntro);$('badB').onclick=()=>showBadges(showIntro);
+}
+function restart(){newRun();buildList();renderTools();renderHud();showIntro();}
+
+// ================= 畫地圖 =================
+const cv=$('cv'),ctx=cv.getContext('2d');let ts=24,cw=360,pulse=0;
+function resize(){cw=$('stageMap').clientWidth||360;ts=cw/W;const d=window.devicePixelRatio||1;cv.width=Math.round(cw*d);cv.height=Math.round(cw*H/W*d);cv.style.height=(cw*H/W)+'px';ctx.setTransform(d,0,0,d,0,0);}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+const FONT=(w,s)=>`${w} ${s}px "Noto Sans TC",sans-serif`;
+function draw(dt){
+  pulse+=dt;
+  ctx.save();if(ST.shake>0&&!RM){ST.shake-=dt;ctx.translate(Math.sin(pulse*60)*2,0);}
+  ctx.fillStyle='#EDEFE6';ctx.fillRect(-4,0,cw+8,cw*H/W);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const c=grid[y][x];
+    if(c==='.'&&(x+y)%2===0){ctx.fillStyle='#E5E8DC';ctx.fillRect(x*ts,y*ts,ts,ts);}
+    if(c==='='){ctx.fillStyle='#F7F1E4';ctx.fillRect(x*ts,y*ts,ts+.5,ts+.5);ctx.strokeStyle='#E7DCC6';ctx.lineWidth=1;ctx.strokeRect(x*ts+.5,y*ts+.5,ts-1,ts-1);}
+    if(c==='o'){ctx.fillStyle=(x+y)%2?'#C9E0AE':'#C2DBA5';ctx.fillRect(x*ts,y*ts,ts+.5,ts+.5);}
+  }
+  // track
+  ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=Math.max(2,ts*.09);rr(ts*1.3,ts*8.35,ts*12.4,ts*4.3,ts*2.1);ctx.stroke();
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='rgba(35,48,63,.35)';ctx.font=FONT(900,ts*.5);ctx.fillText('操 場',ts*7.5,ts*12.4);
+  ctx.fillStyle='rgba(35,48,63,.35)';ctx.font=FONT(900,ts*.42);ctx.fillText('走 廊',ts*3.5,ts*3.5);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(grid[y][x]==='#'){const cx=(x+.5)*ts,cy=(y+.5)*ts;ctx.fillStyle='#5E9446';ctx.beginPath();ctx.arc(cx,cy+ts*.06,ts*.44,0,7);ctx.fill();ctx.fillStyle='#7DB05B';ctx.beginPath();ctx.arc(cx-ts*.07,cy-ts*.05,ts*.33,0,7);ctx.fill();}
+  for(const k in BLD){const b=BLD[k],info=BINFO[k];const x=b.x0*ts+2,y=b.y0*ts+2,w=(b.x1-b.x0+1)*ts-4,h=(b.y1-b.y0+1)*ts-4;
+    if(k==='B'){ctx.fillStyle='#B9875A';rr(x+1,y+h*.3,w-2,h*.4,3);ctx.fill();ctx.strokeStyle='#23303F';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#8A6040';ctx.fillRect(x+3,y+h*.7,2,h*.25);ctx.fillRect(x+w-5,y+h*.7,2,h*.25);
+      ctx.fillStyle='#23303F';ctx.font=FONT(700,Math.max(8,ts*.3));ctx.fillText('長椅',x+w/2,y+h*.12);continue;}
+    if(k==='V'){rr(x+1,y,w-2,h,4);ctx.fillStyle=info.bg;ctx.fill();ctx.strokeStyle='#23303F';ctx.lineWidth=1.8;ctx.stroke();ctx.fillStyle='#DDF3FB';ctx.fillRect(x+4,y+3,w-8,h*.45);ctx.fillStyle='#fff';ctx.font=FONT(900,Math.max(8,ts*.32));ctx.fillText('販',x+w/2,y+h*.78);}
+    else{
+      rr(x,y,w,h,7);ctx.fillStyle=info.bg;ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle='#23303F';ctx.stroke();
+      ctx.fillStyle='rgba(255,255,255,.28)';ctx.fillRect(x+4,y+4,w-8,h*.26);
+      ctx.fillStyle='#23303F';const fs=Math.max(9,Math.min(ts*.52,w/info.name.length*.85));ctx.font=FONT(900,fs);ctx.fillText(info.name,x+w/2,y+h*.58);
+      if(info.closed){ctx.fillStyle='#fff';rr(x+w/2-ts*.95,y+h*.78-ts*.2,ts*1.9,ts*.4,4);ctx.fill();ctx.strokeStyle='#8C6BD1';ctx.lineWidth=1.2;ctx.stroke();ctx.fillStyle='#8C6BD1';ctx.font=FONT(700,Math.max(7,ts*.26));ctx.fillText('下課暫停開放',x+w/2,y+h*.78);}
+    }
+    // tool bubbles
+    const tk=TOOL_ORDER.filter(t=>TOOLS[t].at===k&&!ST.tools[t]&&!(t==='imsg'&&!ST.toolAsk.imsg));
+    if(tk.length){const t=tk[0];const label=ST.toolAsk[t]?TOOLS[t].nm.slice(0,2):'？';bubble(b.x0+(b.x1-b.x0+1)/2,Math.max(.42,b.y0+(k==='V'?0:.1)),ST.toolAsk[t]?'#E8962E':'#FFD447',label);}
+    if((k==='H'||k==='B')&&ST.bat<30&&ST.phase==='play')bubble(b.x0+(b.x1-b.x0+1)/2+(k==='H'?.9:0),b.y0+.1,'#1F9D74','充');
+  }
+  // stickers (hidden, faint)
+  for(const [sx,sy] of STICKERS){if(ST.stickers.includes(sx+','+sy))continue;const cx=(sx+.5)*ts,cy=(sy+.5)*ts;ctx.globalAlpha=.18+.22*(.5+.5*Math.sin(pulse*2.2+sx));star(cx,cy,ts*.22,'#E8962E');ctx.globalAlpha=1;}
+  const ord=[...people()].sort((a,b)=>a.y-b.y);
+  for(const p of ord)drawPerson(p);
+  drawPlayer();
+  for(const p of ord)drawTag(p);
+  ctx.restore();
+}
+function star(cx,cy,r,col){ctx.fillStyle=col;ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rad=i%2?r*.45:r;ctx.lineTo(cx+Math.cos(a)*rad,cy+Math.sin(a)*rad);}ctx.closePath();ctx.fill();}
+function bubble(tx,ty,col,t){const x=tx*ts,y=ty*ts-ts*.15+(RM?0:Math.sin(pulse*4)*2);ctx.font=FONT(900,ts*.3);const w=Math.max(ts*.52,ctx.measureText(t).width+ts*.26);ctx.fillStyle=col;rr(x-w/2,y-ts*.24,w,ts*.48,ts*.24);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=col==='#FFD447'?'#23303F':'#fff';ctx.fillText(t,x,y+1);}
+function faceC(cx,cy,r,mood){
+  const ink='#23303F';ctx.fillStyle=ink;ctx.strokeStyle=ink;ctx.lineWidth=Math.max(1.2,r*.13);const ey=cy-r*.1;
+  if(mood==='crash'){ctx.beginPath();for(const sx of [-1,1]){ctx.moveTo(cx+sx*r*.32-r*.12,ey-r*.12);ctx.lineTo(cx+sx*r*.32+r*.12,ey+r*.12);ctx.moveTo(cx+sx*r*.32+r*.12,ey-r*.12);ctx.lineTo(cx+sx*r*.32-r*.12,ey+r*.12);}ctx.stroke();}
+  else{ctx.beginPath();ctx.arc(cx-r*.32,ey,Math.max(1.3,r*.11),0,7);ctx.arc(cx+r*.32,ey,Math.max(1.3,r*.11),0,7);ctx.fill();}
+  if(mood==='angry'){ctx.beginPath();ctx.moveTo(cx-r*.55,ey-r*.35);ctx.lineTo(cx-r*.15,ey-r*.2);ctx.moveTo(cx+r*.55,ey-r*.35);ctx.lineTo(cx+r*.15,ey-r*.2);ctx.stroke();}
+  ctx.beginPath();
+  if(mood==='happy'||mood==='fake')ctx.arc(cx,cy+r*.12,r*.3,.15*Math.PI,.85*Math.PI);
+  else if(mood==='sad'||mood==='angry')ctx.arc(cx,cy+r*.55,r*.25,1.15*Math.PI,1.85*Math.PI);
+  else if(mood==='worry'||mood==='crash'){ctx.moveTo(cx-r*.22,cy+r*.36);ctx.quadraticCurveTo(cx-r*.11,cy+r*.24,cx,cy+r*.36);ctx.quadraticCurveTo(cx+r*.11,cy+r*.48,cx+r*.22,cy+r*.36);}
+  else{ctx.moveTo(cx-r*.2,cy+r*.34);ctx.lineTo(cx+r*.2,cy+r*.34);}
+  ctx.stroke();
+  if(mood==='fake'||mood==='worry'){ctx.fillStyle='#7FC4E8';ctx.beginPath();ctx.ellipse(cx+r*.75,cy-r*.35,r*.12,r*.18,0,0,7);ctx.fill();}
+  if(mood==='crash'||mood==='angry'){ctx.fillStyle='rgba(242,140,140,.75)';ctx.beginPath();ctx.arc(cx-r*.55,cy+r*.2,r*.15,0,7);ctx.arc(cx+r*.55,cy+r*.2,r*.15,0,7);ctx.fill();}
+}
+function drawPerson(n){
+  let cx=(n.x+.5)*ts,cy=(n.y+.5)*ts;const r=ts*.42;const mood=moodOf(n);
+  if(n.crashed&&!RM)cx+=Math.sin(pulse*40)*1.4;
+  if(!n.fixed){const k=n.temp/100;const g=ctx.createRadialGradient(cx,cy+r*.2,r*.15,cx,cy+r*.2,r*1.35);g.addColorStop(0,`rgba(229,72,77,${.08+.42*k*k})`);g.addColorStop(1,'rgba(229,72,77,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy+r*.2,r*1.35,0,7);ctx.fill();}
+  else{ctx.fillStyle='rgba(31,157,116,.18)';ctx.beginPath();ctx.arc(cx,cy+r*.2,r*1.1,0,7);ctx.fill();}
+  ctx.fillStyle='rgba(0,0,0,.12)';ctx.beginPath();ctx.ellipse(cx,cy+r*.95,r*.75,r*.22,0,0,7);ctx.fill();
+  // body
+  ctx.fillStyle=n.color;ctx.beginPath();ctx.arc(cx,cy+r*.3,r*.75,Math.PI,0);ctx.fill();ctx.fillRect(cx-r*.75,cy+r*.3,r*1.5,r*.5);
+  const hy=cy-r*.2,hr=r*.55;
+  if(n.prop==='hood'&&!n.fixed){ctx.fillStyle=n.color;ctx.beginPath();ctx.arc(cx,hy+r*.05,hr*1.28,0,7);ctx.fill();}
+  ctx.fillStyle='#F6D9C0';ctx.beginPath();ctx.arc(cx,hy+(n.prop==='hood'&&!n.fixed?r*.08:0),hr,0,7);ctx.fill();ctx.strokeStyle='#23303F';ctx.lineWidth=1.3;ctx.stroke();
+  if(n.prop!=='hood'||n.fixed){ctx.fillStyle=n.hair;ctx.beginPath();ctx.arc(cx,hy-hr*.15,hr*.98,Math.PI*1.05,Math.PI*1.95);ctx.fill();if(n.teacher){ctx.beginPath();ctx.arc(cx,hy-hr*1.05,hr*.35,0,7);ctx.fill();}}
+  faceC(cx,hy+(n.prop==='hood'&&!n.fixed?r*.08:0),hr,mood);
+  if(n.prop==='glasses'){ctx.strokeStyle='#23303F';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(cx-hr*.32,hy-hr*.1,hr*.24,0,7);ctx.moveTo(cx+hr*.56,hy-hr*.1);ctx.arc(cx+hr*.32,hy-hr*.1,hr*.24,0,7);ctx.stroke();
+    if(!n.fixed){ctx.strokeStyle='#23303F';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-r*.55,cy+r*.45);ctx.lineTo(cx+r*.55,cy+r*.55);ctx.moveTo(cx-r*.55,cy+r*.55);ctx.lineTo(cx+r*.55,cy+r*.45);ctx.stroke();}}
+  if(n.prop==='notes'&&!n.fixed){const f=RM?0:Math.sin(pulse*9)*r*.08;ctx.fillStyle='#fff';ctx.strokeStyle='#23303F';ctx.lineWidth=1;ctx.save();ctx.translate(cx+r*.75,cy+r*.35+f);ctx.rotate(.2);ctx.fillRect(-r*.28,-r*.35,r*.56,r*.7);ctx.strokeRect(-r*.28,-r*.35,r*.56,r*.7);ctx.fillStyle='#E8962E';ctx.fillRect(-r*.18,-r*.2,r*.36,r*.07);ctx.fillStyle='#5B8DEF';ctx.fillRect(-r*.18,0,r*.3,r*.07);ctx.restore();}
+  if(n.prop==='phone'&&!n.fixed){const on=RM||Math.sin(pulse*5)>0;ctx.fillStyle='#23303F';rr(cx+r*.55,cy+r*.05,r*.32,r*.52,2);ctx.fill();if(on){ctx.fillStyle='#7FD4FF';ctx.fillRect(cx+r*.6,cy+r*.11,r*.22,r*.36);}}
+  if(n.prop==='ball'){const b=RM||n.fixed?0:Math.abs(Math.sin(pulse*5))*r*.4;ctx.fillStyle='#fff';ctx.strokeStyle='#23303F';ctx.lineWidth=1.3;ctx.beginPath();ctx.arc(cx+r*1.05,cy+r*.6-b,r*.28,0,7);ctx.fill();ctx.stroke();ctx.fillStyle='#23303F';ctx.beginPath();ctx.arc(cx+r*1.05,cy+r*.6-b,r*.1,0,7);ctx.fill();}
+  if(n.prop==='pen'){ctx.strokeStyle='#E5484D';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+r*.5,cy+r*.6);ctx.lineTo(cx+r*.85,cy+r*.1);ctx.stroke();ctx.fillStyle='#fff';ctx.fillRect(cx-r*.95,cy+r*.15,r*.45,r*.55);}
+  ctx.font=FONT(700,Math.max(9,ts*.33));ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.strokeText(n.nm,cx,cy+r+ts*.2);ctx.fillStyle='#23303F';ctx.fillText(n.nm,cx,cy+r+ts*.2);
+}
+function drawTag(n){
+  const x=(n.x+.5)*ts,y=n.y*ts-ts*.08+(RM?0:Math.sin(pulse*3+n.x)*1.5);
+  let t,col,fg='#fff';
+  if(n.fixed){t='✓';col='#1F9D74';}
+  else if(n.crashed){t='CRASH';col='#E5484D';}
+  else{const v=Math.round(n.temp);t=(ts>=36?n.short+' ':'')+v+'°';col=v>=80?'#E5484D':v>=55?'#EE7B30':'#E8962E';}
+  ctx.font=`700 ${Math.max(9,ts*.32)}px "JetBrains Mono",ui-monospace,monospace`;const w=ctx.measureText(t).width+ts*.28,h=ts*.44;
+  ctx.fillStyle=col;rr(x-w/2,y-h/2,w,h,h/2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle=fg;ctx.fillText(t,x,y+1);
+}
+function drawPlayer(){
+  const cx=(player.x+.5)*ts,cy=(player.y+.5)*ts,r=ts*.4;
+  ctx.fillStyle='rgba(0,0,0,.14)';ctx.beginPath();ctx.ellipse(cx,cy+r*.95,r*.8,r*.24,0,0,7);ctx.fill();
+  ctx.fillStyle='#23303F';ctx.beginPath();ctx.arc(cx,cy+r*.3,r*.78,Math.PI,0);ctx.fill();ctx.fillRect(cx-r*.78,cy+r*.3,r*1.56,r*.5);
+  ctx.fillStyle='#7FB2FF';ctx.font=`700 ${Math.max(7,r*.42)}px "JetBrains Mono",monospace`;ctx.fillText('</>',cx,cy+r*.55);
+  ctx.fillStyle='#F6D9C0';ctx.beginPath();ctx.arc(cx,cy-r*.22,r*.56,0,7);ctx.fill();ctx.strokeStyle='#23303F';ctx.lineWidth=1.4;ctx.stroke();
+  ctx.fillStyle='#23303F';ctx.beginPath();ctx.arc(cx,cy-r*.32,r*.56,Math.PI*1.05,Math.PI*1.95);ctx.fill();
+  faceC(cx,cy-r*.22,r*.56,ST.down>0?'crash':ST.bat<30?'worry':'happy');
+  if(ST.down>0){ctx.strokeStyle='#E5484D';ctx.lineWidth=3;ctx.beginPath();const a=pulse*6;ctx.arc(cx,cy-r*.2,r*.95,a,a+Math.PI*1.3);ctx.stroke();
+    ctx.font=FONT(900,Math.max(9,ts*.3));ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.strokeText('重新開機…',cx,cy-r*1.6);ctx.fillStyle='#E5484D';ctx.fillText('重新開機…',cx,cy-r*1.6);}
+  else if(ST.bat<30){const bx=cx-r*.45,by=cy-r*1.55;ctx.fillStyle='#fff';ctx.strokeStyle='#E5484D';ctx.lineWidth=1.5;rr(bx,by,r*.9,r*.4,2);ctx.fill();ctx.stroke();ctx.fillStyle='#E5484D';ctx.fillRect(bx+2,by+2,Math.max(1,(r*.9-4)*ST.bat/100),r*.4-4);}
+  ctx.font=FONT(700,Math.max(9,ts*.33));ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.strokeText('你',cx,cy+r+ts*.22);ctx.fillStyle='#23303F';ctx.fillText('你',cx,cy+r+ts*.22);
+}
+
+// ================= 主迴圈、操作 =================
+let last=0,kb=null,kbT=0,listT=0;
+function onArrive(nx,ny){
+  useBat(.35*(ST.panic>0?2:1));L.walked++;
+  const k=nx+','+ny;if(STICKERS.some(([a,b])=>a===nx&&b===ny)&&!ST.stickers.includes(k)){ST.stickers.push(k);renderHud();toast(`找到好心情貼紙（${ST.stickers.length}/3）！${ST.stickers.length===3?'獲得「貼紙獵人」。':''}`,'good');}
+}
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000||0);last=now;
+  if(ST.phase==='play'){
+    const gs=dt*2;
+    if(!sheetOpen&&ST.down<=0){
+      if(player.path.length){const [nx,ny]=player.path[0];
+        if(blocked(nx,ny)&&!(Math.round(player.x)===nx&&Math.round(player.y)===ny)){const t=player.target;player.path=[];if(t){const [px,py]=ppos();player.x=px;player.y=py;const p=bfs(px,py,(x,y)=>isAdj(t,x,y));if(p){player.path=p;}}}
+        else{const dx=nx-player.x,dy=ny-player.y,d=Math.hypot(dx,dy),sp=(ST.bat<30?2.4:3.6)*(ST.panic>0?1.4:1)*dt;
+          if(d<=sp){player.x=nx;player.y=ny;player.path.shift();onArrive(nx,ny);}else{player.x+=dx/d*sp;player.y+=dy/d*sp;}}}
+      else if(player.target){const t=player.target;player.target=null;const [px,py]=ppos();if(isAdj(t,px,py))interact(t);}
+      else if(kb){kbT-=dt;if(kbT<=0){step(kb);kbT=.15;}}
+      if(!sheetOpen&&ST.evQ.length&&ST.phase==='play')openEvent(ST.evQ.shift());
+    }
+    advance(gs);
+    if(ST.needEnd){ST.needEnd=false;endGame('bell');}
+    listT-=dt;if(listT<=0){listT=.25;updateList();renderHud();
+      if(sheetOpen&&ST.with){const s=people().find(p=>p.id===ST.with);const h=$('htmp');if(s&&h&&!s.fixed)h.textContent=Math.round(s.temp)+'°';}}
+  }
+  draw(dt);requestAnimationFrame(frame);
+}
+function step(d){const [px,py]=ppos(),nx=px+d[0],ny=py+d[1];if(!blocked(nx,ny))player.path=[[nx,ny]];}
+cv.addEventListener('pointerdown',ev=>{
+  if(sheetOpen||ST.phase!=='play')return;const r=cv.getBoundingClientRect();const fx=(ev.clientX-r.left)/ts,fy=(ev.clientY-r.top)/ts;const x=Math.floor(fx),y=Math.floor(fy);
+  if(x<0||y<0||x>=W||y>=H)return;
+  // 點到同學身上、頭上的溫度泡泡或名字，都算點到這位同學（手指比格子大）
+  let n=null,bd=.8;const onBld=!!BINFO[grid[y][x]];
+  for(const p of people()){for(const [hx,hy] of (onBld?[[p.x+.5,p.y+.5],[p.x+.5,p.y-.1]]:[[p.x+.5,p.y+.5],[p.x+.5,p.y-.1],[p.x+.5,p.y+1.1]])){const d=Math.hypot(fx-hx,fy-hy);if(d<bd){bd=d;n=p;}}}
+  if(n){goTo({kind:'npc',n});return;}
+  // 地點頭上的工具泡泡
+  for(const k in BLD){const b=BLD[k];if(Math.hypot(fx-(b.x0+(b.x1-b.x0+1)/2),fy-b.y0)<.55){goTo({kind:'bld',key:k});return;}}
+  const c=grid[y][x];
+  if(BINFO[c]){goTo({kind:'bld',key:c});return;}
+  if(!walkable(c))return;
+  if(ST.down>0){toast(`當機中……還要 ${Math.ceil(ST.down)} 秒。`,'bad');return;}
+  const p=bfs(...ppos(),(a,b)=>a===x&&b===y);if(p){player.path=p;player.target=null;}
+});
+const KM={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0]};
+window.addEventListener('keydown',e=>{
+  if(sheetOpen){if(e.key==='Escape'&&(sheetKind==='dlg'))closeSheet();return;}
+  if(ST.phase!=='play'||ST.down>0)return;
+  if(KM[e.key]){e.preventDefault();if(kb!==KM[e.key]){kb=KM[e.key];player.target=null;if(!player.path.length){step(kb);kbT=.18;}}return;}
+  if(e.key==='e'||e.key==='E'||e.key===' '){e.preventDefault();const [px,py]=ppos();
+    const n=people().find(p=>adjTo(px,py,p.x,p.y));if(n){interact({kind:'npc',n});return;}
+    for(const k in BLD)if(adjBld(BLD[k],px,py)){interact({kind:'bld',key:k});return;}}
+});
+window.addEventListener('keyup',e=>{if(KM[e.key]&&kb===KM[e.key])kb=null;});
+window.addEventListener('resize',resize);
+$('endEarly').addEventListener('click',()=>{if(!sheetOpen)endGame('early');});
+resize();buildList();renderTools();renderHud();requestAnimationFrame(frame);showIntro();
+
+// 給自動測試用
+window.__mood={get ST(){return ST},get STU(){return STU},get TEACH(){return TEACH},get L(){return L},get player(){return player},get PS(){return PS},
+  get sheetOpen(){return sheetOpen},get sheetKind(){return sheetKind},get report(){return lastReport},
+  tileClient(x,y){const r=cv.getBoundingClientRect();return [r.left+(x+.5)*ts,r.top+(y+.5)*ts];},
+  BLD,BINFO,TOOLS,STICKERS,goTo,endGame,reflection,pathLen};
+})();
+</script>
+</body>
+</html>

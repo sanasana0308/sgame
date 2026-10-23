@@ -1,40 +1,126 @@
 {
-  "_說明": "動作庫。id 對到 Drive「Sandywich_動作資料庫_肩頸_v10」第一欄的編號。figure 是遊戲小人的畫法，由 Claude 設定。source：已查證／部分查證／Sandy手寫。",
-  "poses": [
-    {"id": 67, "name": "下犬式", "en": "Downward dog", "figure": "dog",
-     "intro": "屁股往天花板推，身體變成一個倒 V。",
-     "cue": "手把地板推遠，肩膀就會離開耳朵。腳跟踩不到地沒關係。",
-     "warn": "還是聳肩，就把膝蓋微彎、手往前放一點。",
-     "fact": "梵文叫 Adho Mukha Svanasana，意思是「臉朝下的狗」。",
-     "source": "部分查證", "video": {"url": "", "t": 0}},
-    {"id": 9, "name": "牛面手", "en": "Cow face arms", "figure": "cow-back",
-     "intro": "跪坐。右手往上舉、彎下來摸背，手肘朝天花板；左手從下面往背後爬，手肘朝地板。兩手在背後碰頭。",
-     "cue": "兩手碰不到，用瑜伽繩連起來就好。",
-     "warn": "不要急著勾到手，肩膀容易被夾到。",
-     "fact": "梵文 Gomukhasana，go 是牛、mukha 是臉。常見的說法是：疊在一起的膝蓋像牛的嘴，上下兩隻手肘像牛的耳朵。",
-     "source": "部分查證", "props": ["rope"], "video": {"url": "", "t": 0}},
-    {"id": 69, "name": "海豚式", "en": "Dolphin", "figure": "dolphin",
-     "intro": "像下犬式，但改用前臂撐地。",
-     "cue": "前臂像推土機，往下、往前推地板，肩胛骨往兩側滑開。",
-     "warn": "肩膀不舒服，膝蓋放地上也可以。",
-     "fact": "推土機是 Sandy 上課的比喻。",
-     "source": "部分查證", "video": {"url": "", "t": 0}},
-    {"id": 73, "name": "反向桌式", "en": "Reverse tabletop", "figure": "table",
-     "intro": "坐著，手放屁股後面，把屁股抬起來，肚子朝天花板。",
-     "cue": "肩胛骨往背後收、往下壓，胸口就打開了。",
-     "warn": "手腕不舒服，手指轉向兩側、握拳，或手下墊瑜伽磚。",
-     "fact": "剛好跟海豚式反過來：海豚把肩胛骨往前推開，反向桌式把它收回來。",
-     "source": "部分查證", "props": ["brick"], "video": {"url": "", "t": 0}},
-    {"id": 6, "name": "人面獅身", "en": "Sphinx", "figure": "sphinx",
-     "intro": "趴著，用前臂撐起上半身。",
-     "cue": "手肘放在肩膀正下方，胸口往前上方打開。",
-     "warn": "下背不要擠，肩膀不要聳到耳朵旁邊。",
-     "fact": "英文就叫 Sphinx pose，跟埃及的獅身人面像一樣抬頭挺胸。",
-     "source": "已查證", "video": {"url": "", "t": 0}},
-    {"id": 115, "name": "抱肩拍拍", "en": "Shoulder hug", "figure": "hug",
-     "intro": "抱住自己的肩膀，拍一拍。",
-     "cue": "說一句「肩膀，你辛苦了」。",
-     "warn": "", "fact": "Sandy 每次肩頸課的收尾。",
-     "source": "Sandy手寫", "video": {"url": "", "t": 0}}
-  ]
+ "_說明": "動作庫。id 對到 Drive「Sandywich_動作資料庫_肩頸_v10」第一欄的編號。figure 是遊戲小人的畫法，由 Claude 設定。source：已查證／部分查證／Sandy手寫。 drag：拉到位小遊戲。joint 是要拉的關節（hd 頭、sh 肩、hip 屁股、hand 手），from 是起點姿勢（town/figures.js 的姿勢名），label 是一句提示。",
+ "poses": [
+  {
+   "id": 67,
+   "name": "下犬式",
+   "en": "Downward dog",
+   "figure": "dog",
+   "intro": "屁股往天花板推，身體變成一個倒 V。",
+   "cue": "手把地板推遠，肩膀就會離開耳朵。腳跟踩不到地沒關係。",
+   "warn": "還是聳肩，就把膝蓋微彎、手往前放一點。",
+   "fact": "梵文叫 Adho Mukha Svanasana，意思是「臉朝下的狗」。",
+   "source": "部分查證",
+   "video": {
+    "url": "",
+    "t": 0
+   },
+   "drag": {
+    "joint": "hip",
+    "from": "fours",
+    "label": "把屁股往天花板拉，身體變成倒 V"
+   }
+  },
+  {
+   "id": 9,
+   "name": "牛面手",
+   "en": "Cow face arms",
+   "figure": "cow-back",
+   "intro": "跪坐。右手往上舉、彎下來摸背，手肘朝天花板；左手從下面往背後爬，手肘朝地板。兩手在背後碰頭。",
+   "cue": "兩手碰不到，用瑜伽繩連起來就好。",
+   "warn": "不要急著勾到手，肩膀容易被夾到。",
+   "fact": "梵文 Gomukhasana，go 是牛、mukha 是臉。常見的說法是：疊在一起的膝蓋像牛的嘴，上下兩隻手肘像牛的耳朵。",
+   "source": "部分查證",
+   "props": [
+    "rope"
+   ],
+   "video": {
+    "url": "",
+    "t": 0
+   },
+   "drag": {
+    "joint": "hand",
+    "from": "cow-back",
+    "label": "把下面那隻手往上爬，去找上面那隻手"
+   }
+  },
+  {
+   "id": 69,
+   "name": "海豚式",
+   "en": "Dolphin",
+   "figure": "dolphin",
+   "intro": "像下犬式，但改用前臂撐地。",
+   "cue": "前臂像推土機，往下、往前推地板，肩胛骨往兩側滑開。",
+   "warn": "肩膀不舒服，膝蓋放地上也可以。",
+   "fact": "推土機是 Sandy 上課的比喻。",
+   "source": "部分查證",
+   "video": {
+    "url": "",
+    "t": 0
+   },
+   "drag": {
+    "joint": "hip",
+    "from": "forearm",
+    "label": "前臂推地，把屁股往上拉"
+   }
+  },
+  {
+   "id": 73,
+   "name": "反向桌式",
+   "en": "Reverse tabletop",
+   "figure": "table",
+   "intro": "坐著，手放屁股後面，把屁股抬起來，肚子朝天花板。",
+   "cue": "肩胛骨往背後收、往下壓，胸口就打開了。",
+   "warn": "手腕不舒服，手指轉向兩側、握拳，或手下墊瑜伽磚。",
+   "fact": "剛好跟海豚式反過來：海豚把肩胛骨往前推開，反向桌式把它收回來。",
+   "source": "部分查證",
+   "props": [
+    "brick"
+   ],
+   "video": {
+    "url": "",
+    "t": 0
+   },
+   "drag": {
+    "joint": "hip",
+    "from": "tablesit",
+    "label": "手推地，把屁股抬起來"
+   }
+  },
+  {
+   "id": 6,
+   "name": "人面獅身",
+   "en": "Sphinx",
+   "figure": "sphinx",
+   "intro": "趴著，用前臂撐起上半身。",
+   "cue": "手肘放在肩膀正下方，胸口往前上方打開。",
+   "warn": "下背不要擠，肩膀不要聳到耳朵旁邊。",
+   "fact": "英文就叫 Sphinx pose，跟埃及的獅身人面像一樣抬頭挺胸。",
+   "source": "已查證",
+   "video": {
+    "url": "",
+    "t": 0
+   },
+   "drag": {
+    "joint": "hd",
+    "from": "prone",
+    "label": "前臂撐地，把胸口和頭往前上方抬"
+   }
+  },
+  {
+   "id": 115,
+   "name": "抱肩拍拍",
+   "en": "Shoulder hug",
+   "figure": "hug",
+   "intro": "抱住自己的肩膀，拍一拍。",
+   "cue": "說一句「肩膀，你辛苦了」。",
+   "warn": "",
+   "fact": "Sandy 每次肩頸課的收尾。",
+   "source": "Sandy手寫",
+   "video": {
+    "url": "",
+    "t": 0
+   }
+  }
+ ]
 }
