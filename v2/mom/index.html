@@ -1,0 +1,1548 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>兩寶媽的一天｜Sandywich</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&family=Chivo+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: phone-first single column — clock bar, six status meters, square floor-plan canvas, then the to-do list */
+:root{
+  --bg:#E8EFF3; --card:#FFFFFF; --ink:#1E2940; --muted:#5E6B82; --line:#D3DCE6;
+  --accent:#FF6F4E; --accent-ink:#FFFFFF;
+  --energy:#E9A800; --patience:#1FA595; --hunger:#E07B39; --bladder:#4BA3D9; --work:#5266F2; --family:#F0567F; --will:#8E4FD0;
+  --wall:#33405E; --floor:#E9D9BF; --floor-b:#D3E4EB; --floor-o:#E1E5EA; --floor-r:#D8DDEE;
+  --obj:#FFFFFF; --obj-line:#B9C3D3; --obj-ink:#1E2940;
+  --mom:#FF6F4E; --kid1:#5266F2; --kid2:#E9A800; --cowork:#9AA5B8; --spill:#7FC4E8;
+  --f-display:"Huninn","Noto Sans TC",system-ui,sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-num:"Chivo Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121826; --card:#1D2537; --ink:#EAF0FA; --muted:#A3AEC4; --line:#2E3850;
+  --accent:#FF8466; --accent-ink:#1A1010;
+  --energy:#FFC93D; --patience:#3FCDBB; --hunger:#F29A5C; --bladder:#6CBDF0; --work:#8C99FF; --family:#FF7EA0; --will:#C08CF0;
+  --wall:#0A0E16; --floor:#3A3428; --floor-b:#25343C; --floor-o:#283040; --floor-r:#2C3248;
+  --obj:#34405A; --obj-line:#4E5C7A; --obj-ink:#EAF0FA;
+  --mom:#FF8466; --kid1:#8C99FF; --kid2:#FFC93D; --cowork:#6B7690; --spill:#4F9BC4; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121826; --card:#1D2537; --ink:#EAF0FA; --muted:#A3AEC4; --line:#2E3850;
+  --accent:#FF8466; --accent-ink:#1A1010;
+  --energy:#FFC93D; --patience:#3FCDBB; --hunger:#F29A5C; --bladder:#6CBDF0; --work:#8C99FF; --family:#FF7EA0; --will:#C08CF0;
+  --wall:#0A0E16; --floor:#3A3428; --floor-b:#25343C; --floor-o:#283040; --floor-r:#2C3248;
+  --obj:#34405A; --obj-line:#4E5C7A; --obj-ink:#EAF0FA;
+  --mom:#FF8466; --kid1:#8C99FF; --kid2:#FFC93D; --cowork:#6B7690; --spill:#4F9BC4; color-scheme:dark}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;margin:0}
+.wrap{max-width:500px;margin:0 auto;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:12px 28px;display:flex;flex-direction:column;gap:10px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.top{display:flex;align-items:center;gap:10px}
+.top .name{display:flex;flex-direction:column;line-height:1.2;flex:1;min-width:0}
+.top .name b{font-family:var(--f-display);font-weight:400;font-size:17px}
+.top .name span{font-size:12px;color:var(--muted)}
+.clock{font-family:var(--f-num);font-weight:700;font-size:26px;font-variant-numeric:tabular-nums}
+.ctl{display:flex;gap:6px}
+.ctl button{border:2px solid var(--line);background:var(--card);border-radius:10px;padding:2px 9px;font-size:13px;font-weight:700;min-width:40px}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px 10px}
+.st{display:flex;flex-direction:column;gap:2px;min-width:0}
+.st-h{display:flex;justify-content:space-between;font-size:12px;font-weight:500}
+.st-h span:last-child{font-family:var(--f-num);font-variant-numeric:tabular-nums;color:var(--muted)}
+.bar{height:7px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;transition:width .3s}
+.st.warn .st-h span:first-child{color:var(--accent)}
+.st.num .v{font-family:var(--f-num);font-weight:700;font-size:18px;line-height:1.1;font-variant-numeric:tabular-nums}
+
+.stage{position:relative;border-radius:14px;overflow:hidden;background:var(--wall);touch-action:manipulation}
+#cv{display:block;width:100%;height:auto}
+.busy{position:absolute;left:8px;right:8px;top:8px;background:var(--card);border-radius:10px;padding:6px 10px;font-size:13px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 14px -6px rgba(0,0,0,.4)}
+.busy .pb{flex:1;height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.busy .pb i{display:block;height:100%;background:var(--accent)}
+.busy button{border:0;background:transparent;color:var(--muted);font-size:12px;text-decoration:underline}
+.dlg{position:absolute;inset:0;background:rgba(10,14,22,.45);display:flex;align-items:flex-end;padding:10px}
+.dlg-card{background:var(--card);border-radius:14px;padding:14px;width:100%;max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px;animation:up .25s ease}
+.who{align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.06em;padding:2px 10px;border-radius:99px;background:var(--bg);color:var(--muted)}
+.dlg-card p{margin:0;font-size:16px}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choice{text-align:left;background:transparent;border:2px solid var(--line);border-radius:12px;padding:9px 12px;font-size:15px}
+.choice:hover{border-color:var(--accent)}
+.mash{background:var(--will);color:var(--accent-ink);border:0;border-radius:16px;padding:18px;font-family:var(--f-display);font-size:30px;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.mash:active{transform:scale(.96)}
+.mash-bars{display:flex;align-items:center;gap:10px}
+.mash-bars .bar{flex:1;height:12px}
+.mash-bars span{font-family:var(--f-num);font-size:13px;font-variant-numeric:tabular-nums;min-width:4em;text-align:right}
+@keyframes up{from{transform:translateY(12px);opacity:.3}to{transform:none;opacity:1}}
+
+.ticker{font-size:13px;color:var(--muted);min-height:1.6em;padding-inline:2px}
+.tasks{display:flex;flex-direction:column;gap:6px}
+.tasks h3{font-size:16px;display:flex;justify-content:space-between;align-items:baseline}
+.tasks h3 span{font-family:var(--f-body);font-size:12px;color:var(--muted)}
+.task{display:flex;align-items:center;gap:10px;background:var(--card);border:0;border-radius:12px;padding:8px 12px;text-align:left;width:100%}
+.task .t{flex:1;min-width:0}
+.task .t b{display:block;font-weight:500;font-size:14px}
+.task .t small{color:var(--muted);font-size:12px}
+.task .left{font-family:var(--f-num);font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.task.urgent .left{color:var(--accent);font-weight:700}
+.task.urgent{box-shadow:inset 3px 0 0 var(--accent)}
+.empty{font-size:13px;color:var(--muted);margin:0}
+.help{font-size:12px;color:var(--muted);margin:0}
+
+/* intro & end: contact book page */
+.book{background:var(--card);border-radius:16px;padding:20px 18px;display:flex;flex-direction:column;gap:14px;background-image:repeating-linear-gradient(to bottom,transparent 0 31px,var(--line) 31px 32px);background-position:0 70px}
+.book-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.book-head h1{font-size:26px}
+.book-head span{font-family:var(--f-num);color:var(--muted);font-size:13px}
+.book ol,.book ul{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
+.book p{margin:0}
+.lab{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--muted)}
+.primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:16px}
+.ghost{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:10px 16px;font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 140px}
+.big-title{font-size:32px;line-height:1.2;color:var(--accent)}
+.grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 16px}
+.grid4 div{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);font-size:14px}
+.grid4 b{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.sign{display:flex;justify-content:flex-end;align-items:center;gap:10px}
+.sign span{font-family:var(--f-display);font-size:20px;border:2px solid var(--accent);color:var(--accent);border-radius:8px;padding:2px 12px;transform:rotate(-4deg)}
+.copied{font-size:13px;color:var(--patience);min-height:1.2em}
+@media (prefers-reduced-motion:reduce){.dlg-card{animation:none}.bar i{transition:none}}
+.homeLink{align-self:flex-start;font-size:13px;font-weight:700;color:#888780;text-decoration:none;padding:2px 0}
+.homeLink:hover{color:#2c2c2a}
+
+/* mini-games: all use pointer events (finger + mouse) */
+.mg p{font-size:15px}
+.mg-time{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.mg-time i{display:block;height:100%;width:100%;background:var(--accent)}
+.mg-res{font-weight:700;color:var(--accent)}
+.hold{background:var(--accent);color:var(--accent-ink);border:0;border-radius:14px;padding:14px;min-height:52px;font-weight:700;font-size:16px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.hold.on{transform:scale(.97);filter:brightness(.92)}
+.pan{display:flex;justify-content:center;align-items:center;height:96px;background:radial-gradient(circle,#4a4f5c 0 44px,#2c303a 45px 48px,transparent 49px)}
+.egg{width:70px;height:58px;border-radius:50% 46% 52% 48%;background:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;transition:background .15s}
+.egg i{width:24px;height:24px;border-radius:50%;background:#FFB300;display:block;transition:background .15s}
+.heat{position:relative;height:16px;border-radius:99px;background:var(--line);overflow:hidden}
+.heat .zone{position:absolute;top:0;bottom:0;background:var(--patience);opacity:.55}
+.heat i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--hunger);opacity:.85}
+.mg-area{position:relative;height:190px;border-radius:12px;background:var(--bg);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.kidT{position:absolute;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;background:var(--kid2);color:#1E2940;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;pointer-events:none;box-shadow:0 0 0 4px var(--card)}
+.chip{position:absolute;bottom:8px;min-width:64px;min-height:44px;border-radius:12px;border:2px solid var(--line);background:var(--card);font-weight:700;font-size:14px;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.chip.drag{cursor:grabbing;box-shadow:0 6px 14px -6px rgba(0,0,0,.5);z-index:2}
+.tub{position:absolute;left:8%;right:8%;bottom:6px;height:58%;border-radius:14px 14px 40px 40px;background:var(--bladder);opacity:.35}
+.spot{position:absolute;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:#8B5E3C;pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:700}
+.breath{position:relative;height:180px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:var(--bg);touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}
+.ring{position:absolute;width:150px;height:150px;border-radius:50%;border:4px solid var(--patience);transform:scale(.55)}
+.ring-core{width:96px;height:96px;border-radius:50%;background:var(--patience);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;transform:scale(.7);transition:transform .25s;text-align:center;line-height:1.2}
+.breath.on .ring-core{transform:scale(1)}
+
+/* ending reflection + badges */
+.reflect{border:2px dashed var(--accent);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--card)}
+.reflect h2{font-size:26px;color:var(--accent);line-height:1.2}
+.reflect .tag{font-size:14px;color:var(--muted)}
+.reflect ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.cost{font-size:14px}
+.tip{background:var(--bg);border-radius:10px;padding:10px 12px}
+.tip b{display:block;font-size:12px;letter-spacing:.08em;color:var(--muted)}
+.cta{display:block;text-align:center;text-decoration:none;min-height:44px;line-height:20px}
+.cta-text{font-size:14px;font-weight:700;color:var(--patience);margin:0;text-wrap:balance}
+.badges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.badge{display:flex;flex-direction:column;border-radius:10px;padding:6px 10px;background:var(--bg);font-size:13px;line-height:1.35;min-width:0}
+.badge b{font-weight:700}
+.badge small{color:var(--muted);font-size:11px}
+.badge.lock{color:var(--muted)}
+.badge.lock b{font-weight:500}
+.badge.lock b::before{content:"🔒 "}
+.badge.new{box-shadow:inset 0 0 0 2px var(--accent)}
+.badge.new b::after{content:" NEW";color:var(--accent);font-size:11px}
+.best{font-size:13px;color:var(--muted);margin:0}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <a class="homeLink" href="/" id="homeLink">‹ 回 Sandywich 首頁</a>
+  <section id="introScreen" class="book">
+    <div class="book-head"><h1>今日聯絡簿</h1><span id="today"></span></div>
+    <div>
+      <div class="lab">今日行程</div>
+      <ul>
+        <li>06:30 起床，07:40 前帶兩個小孩出門</li>
+        <li>08:30 上班，17:30 下班</li>
+        <li>18:00 前去幼兒園接小寶（中班），再去安親班接大寶（小一）</li>
+        <li>大寶今天安親班考國語生字，明天學校考數學</li>
+        <li>晚上：煮飯、寫作業、複習考試、簽聯絡簿、洗澡</li>
+        <li>21:00 陪睡（小孩會一直想聊天）</li>
+        <li>23:00 前躺上床</li>
+      </ul>
+    </div>
+    <div>
+      <div class="lab">家長注意事項</div>
+      <ul>
+        <li><b>精力、耐心、肚子、意志力</b>任何一個歸零，媽媽會原地爆炸或原地倒下。接著選一個方式回血（珍奶、瑜珈課、躲進廁所深呼吸……），這一天繼續。</li>
+        <li>記得吃飯、上廁所。肚子太餓精力掉更快，尿意滿了會一直扣耐心。</li>
+        <li>待辦有時間限制，錯過會扣分。小孩隨時會冒出新需求。</li>
+        <li>大寶小寶會吵架、搶東西、黏在你身上。被黏著的時候做什麼都變慢，要安撫還是要兇，你決定。</li>
+        <li>今日運動目標 30 分鐘：家裡有瑜珈墊，公司午休可以去健身房。越累越難爬起來，要靠<b>意志力</b>。</li>
+      </ul>
+    </div>
+    <div>
+      <div class="lab">怎麼玩</div>
+      <ul>
+        <li>點地圖走路，點東西或小孩，就會走過去處理。</li>
+        <li>也可以直接點下方「待辦」，自動走過去。</li>
+        <li>電腦：方向鍵走路、E 互動、P 暫停。</li>
+        <li>有些事要動手：按住、拖拉、搓一搓。手指或滑鼠都可以。</li>
+        <li>家具多點幾下，可能藏著東西。</li>
+      </ul>
+    </div>
+    <p class="best" id="introBest" hidden></p>
+    <button class="primary" id="start">開始這一天</button>
+  </section>
+
+  <section id="gameScreen" hidden>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="top">
+        <div class="name"><b>兩寶媽的一天</b><span id="phase">家・早上</span></div>
+        <div class="clock" id="clock">06:30</div>
+        <div class="ctl"><button id="pauseBtn" aria-label="暫停">暫停</button><button id="speedBtn" aria-label="切換速度">1×</button></div>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="stage" id="stage">
+        <canvas id="cv" aria-label="家裡或公司的平面圖"></canvas>
+        <div class="busy" id="busy" hidden></div>
+        <div class="dlg" id="dlg" hidden></div>
+      </div>
+      <div class="ticker" id="ticker" aria-live="polite"></div>
+      <div class="tasks"><h3>待辦 <span>點一下就走過去</span></h3><div id="tasks"></div></div>
+      <p class="help">點地圖移動，點家具或小孩互動。沙發可以休息，公司座位要站在旁邊才會一直工作。點「瑜珈墊」或公司「健身房」去運動。小孩黏著你的時候，點他可以安撫。家具多點幾下，可能有驚喜。</p>
+    </div>
+  </section>
+
+  <section id="endScreen" class="book" hidden></section>
+</div>
+
+<script>
+// ================= maps =================
+const MAPS={
+ home:{rows:[
+  "###############",
+  "#MM..#bb..o#tT#",
+  "#....#.....#..#",
+  "#....#.....#..#",
+  "#....#.....#S.#",
+  "##.####.#####.#",
+  "#.............#",
+  "#sss......H...#",
+  "#.............#",
+  "#.....GGG.....#",
+  "#.....GGG..YY.#",
+  "#.............#",
+  "#FCC......#..w#",
+  "#.........#...#",
+  "#######D#######"],
+  names:{M:'床',b:'小孩床',o:'玩具箱',t:'馬桶',T:'浴缸',S:'洗手台',s:'沙發',H:'書桌',G:'餐桌',F:'冰箱',C:'瓦斯爐',w:'洗衣機',D:'大門',Y:'瑜珈墊'}},
+ office:{rows:[
+  "###############",
+  "#.b..#........#",
+  "#....#.TTTTT..#",
+  "#....#.TTTTT..#",
+  "#....#........#",
+  "###.#####.#####",
+  "#.............#",
+  "#.dd..dd..XX..#",
+  "#.............#",
+  "#.dd..dd..dd..#",
+  "#.............#",
+  "###.###.####.##",
+  "#cm.F#....#t.t#",
+  "#....#.YY.#...#",
+  "#######D#######"],
+  names:{Y:'健身房',b:'主管',T:'會議桌',d:'',X:'你的座位',c:'咖啡機',m:'微波爐',F:'冰箱',t:'馬桶',D:'大門'}}
+};
+const W=15,H=15,DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
+const MIN_PER_SEC=2;
+let mapName,grid,comps,compAt;
+
+function loadMap(name){
+  mapName=name;
+  grid=MAPS[name].rows.map(r=>r.split(''));
+  comps=[];compAt=grid.map(r=>r.map(()=>null));
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const ch=grid[y][x];
+    if(ch==='#'||ch==='.'||compAt[y][x])continue;
+    const c={key:ch,tiles:[],x0:x,y0:y,x1:x,y1:y};
+    const st=[[x,y]];compAt[y][x]=c;
+    while(st.length){const [cx,cy]=st.pop();c.tiles.push([cx,cy]);
+      c.x0=Math.min(c.x0,cx);c.y0=Math.min(c.y0,cy);c.x1=Math.max(c.x1,cx);c.y1=Math.max(c.y1,cy);
+      for(const [dx,dy] of DIRS){const nx=cx+dx,ny=cy+dy;if(ny<0||ny>=H||nx<0||nx>=W)continue;
+        if(grid[ny][nx]===ch&&!compAt[ny][nx]){compAt[ny][nx]=c;st.push([nx,ny]);}}}
+    comps.push(c);
+  }
+}
+function walkable(x,y){return x>=0&&y>=0&&x<W&&y<H&&grid[y][x]==='.';}
+function bfs(sx,sy,goal){
+  if(goal(sx,sy))return [];
+  const K=(x,y)=>y*W+x,start=K(sx,sy),prev=new Map([[start,-1]]),q=[[sx,sy]];
+  while(q.length){const [x,y]=q.shift();
+    for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(!walkable(nx,ny))continue;const k=K(nx,ny);if(prev.has(k))continue;prev.set(k,K(x,y));
+      if(goal(nx,ny)){const path=[];let c=k;while(c!==start){path.unshift([c%W,(c/W)|0]);c=prev.get(c);}return path;}
+      q.push([nx,ny]);}}
+  return null;
+}
+
+// ================= state =================
+let S,phase,night,gameMin,playing,paused,speed,tasks,events,ents,kids,player,busy,cd,dq,dialogOpen,flags,count,taskSeq,warned,crisis=null,crisisFx=null,L,moveBoost=1;
+
+// ================= decision log (feeds the ending reflection) =================
+function newLog(){return {yellHungry:0,yellTired:0,yellPee:0,firstYell:null,comfort:0,rest:0,care:0,rescue:0,dad:0,solo:0,work:0,fam:0,exSkip:0,
+  peeMin:0,hungryMin:0,holdOn:0,cling:0,letCling:0,firstBoom:null,firstFaint:null,minE:100,minP:100,eggs:[],mg:{},eggPerfect:false,breathGood:0};}
+function cf(){L.comfort++;}           // chose to comfort / listen
+function rest(){L.rest++;}            // chose to rest before falling apart
+function noteYell(){count.scold++;if(S.h<30)L.yellHungry++;if(S.e<30)L.yellTired++;if(S.b>=85)L.yellPee++;if(!L.firstYell)L.firstYell=hhmm(gameMin);}
+
+// ================= storage (badges, best record) =================
+const STORE_KEY='sandywich.mom.v2';
+function loadStore(){try{const s=JSON.parse(localStorage.getItem(STORE_KEY)||'{}');return (s&&typeof s==='object')?s:{};}catch(_){return {};}}
+function saveStore(s){try{localStorage.setItem(STORE_KEY,JSON.stringify(s));}catch(_){}}
+const RM=(()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(_){return false}})();
+
+function hhmm(m){m=Math.floor(m);return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+function T(h,m){return h*60+m;}
+function rnd(a,b){return a+Math.random()*(b-a);}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+function clamp(v){return Math.max(0,Math.min(100,v));}
+
+const STAT_META={v:['意志力','--will'],e:['精力','--energy'],p:['耐心','--patience'],h:['肚子','--hunger'],b:['尿意','--bladder'],w:['工作','--work'],f:['家庭','--family']};
+
+function apply(d,quiet){
+  for(const k in d){
+    if(!d[k])continue;
+    if(k==='w'||k==='f')S[k]=Math.max(0,S[k]+d[k]);else S[k]=clamp(S[k]+d[k]);
+    if(!quiet){const v=Math.round(d[k]);if(v)floatText(`${STAT_META[k][0]} ${v>0?'+':'−'}${Math.abs(v)}`,STAT_META[k][1]);}
+  }
+  renderStats();checkDead();
+}
+function say(t){document.getElementById('ticker').textContent=t;}
+
+// ================= entities =================
+function makeKid(id,name,color,small){return {id,name,color,small,x:0,y:0,path:[],state:'sleep',timer:rnd(1,4),hold:false,away:false,cling:false};}
+function tileOf(e){return [Math.round(e.x),Math.round(e.y)];}
+
+// ================= targets =================
+function sameTarget(a,b){return a.kind===b.kind&&(a.key===b.key)&&(a.id===b.id);}
+function isAdj(tg,x,y){
+  if(tg.kind==='obj'){for(const c of comps)if(c.key===tg.key)for(const [tx,ty] of c.tiles)if(Math.abs(tx-x)+Math.abs(ty-y)===1)return true;return false;}
+  const e=tg.kind==='kid'?kids.find(k=>k.id===tg.id):ents.find(n=>n.id===tg.id);
+  if(!e||e.away)return false;const [ex,ey]=tileOf(e);return Math.abs(ex-x)+Math.abs(ey-y)<=1;
+}
+function targetName(tg){
+  if(tg.kind==='obj')return MAPS[mapName].names[tg.key]||'';
+  if(tg.kind==='kid')return kids.find(k=>k.id===tg.id).name;
+  const e=ents.find(n=>n.id===tg.id);return e?(e.type==='spill'?'地上的果汁':'玩具'):'';
+}
+function goTo(tg){
+  if(dialogOpen||!playing)return;
+  if(busy){cancelBusy();}
+  const [px,py]=tileOf(player);
+  player.target=tg;
+  if(isAdj(tg,px,py)){player.path=[];interact(tg);return;}
+  const p=bfs(px,py,(x,y)=>isAdj(tg,x,y));
+  if(!p){player.target=null;floatText('走不過去','--muted');return;}
+  player.path=p;
+}
+function walkTo(x,y){
+  if(dialogOpen||!playing)return;
+  if(busy)cancelBusy();
+  player.target=null;
+  const [px,py]=tileOf(player);
+  const p=bfs(px,py,(a,b)=>a===x&&b===y);
+  if(p)player.path=p;
+}
+
+// ================= busy =================
+function startBusy(o){busy={left:o.dur,...o};player.path=[];renderBusy();}
+function cancelBusy(){if(!busy)return;if(busy.task)busy.task.left=busy.left;if(!busy.cont)say(`先停下「${busy.label}」。${busy.task?'進度會保留，等一下回來接著做。':''}`);busy=null;renderBusy();}
+function renderBusy(){
+  const el=document.getElementById('busy');
+  if(!busy){el.hidden=true;return;}
+  el.hidden=false;
+  if(busy.cont){el.innerHTML=`<span>${busy.label}…</span><span style="flex:1"></span><button id="stopB">停下</button>`;}
+  else{const pct=(1-busy.left/busy.dur)*100;el.innerHTML=`<span>${busy.label}</span><span class="pb"><i style="width:${pct}%"></i></span><span style="font-family:var(--f-num);font-size:12px">${Math.ceil(busy.left)} 分</span><button id="stopB">停下</button>`;}
+  document.getElementById('stopB').onclick=()=>cancelBusy();
+}
+
+// ================= tasks =================
+function addTask(o){
+  const t={id:++taskSeq,optional:false,...o};
+  tasks.push(t);updateHolds();renderTasks();
+  if(!o.silent)say(`新待辦：${t.title}`);
+  return t;
+}
+function removeTask(t){tasks=tasks.filter(x=>x!==t);updateHolds();renderTasks();}
+function failTask(t){
+  removeTask(t);
+  if(!t.optional)count.miss++;
+  if(t.pen)apply(t.pen);
+  say(t.failText?`錯過「${t.title}」：${t.failText}`:`錯過「${t.title}」。`);
+  if(t.onFail)t.onFail();
+}
+function doneTask(t,tg){
+  removeTask(t);count.done++;
+  if(t.rew)apply(typeof t.rew==='function'?t.rew(tg):t.rew);
+  if(t.doneText)say(typeof t.doneText==='function'?t.doneText(tg):t.doneText);
+  if(t.onDone)t.onDone(tg);
+}
+function failAll(){tasks=tasks.filter(t=>!t.exitTask);for(const t of [...tasks]){if(t.optional)removeTask(t);else failTask(t);}}
+function updateHolds(){for(const k of kids)k.hold=tasks.some(t=>t.targets.some(g=>g.kind==='kid'&&g.id===k.id));}
+function renderTasks(){
+  const el=document.getElementById('tasks');
+  const list=[...tasks].sort((a,b)=>(a.dl||9999)-(b.dl||9999));
+  if(!list.length){el.innerHTML=`<p class="empty">${night?'沒有待辦了。可以去沙發滑手機，或回床上睡覺。':'目前沒有待辦。可以去休息、上廁所，或趁空檔做點事。'}</p>`;return;}
+  el.innerHTML=list.map(t=>{
+    const left=t.dl?Math.max(0,Math.ceil(t.dl-gameMin)):null;
+    const urgent=left!==null&&left<=10;
+    return `<button class="task${urgent?' urgent':''}" data-id="${t.id}"><span class="t"><b>${t.title}</b><small>${t.targets.map(targetName).join(' 或 ')}${t.optional?'・可做可不做':''}</small></span><span class="left">${left===null?'':left>=60?'到 '+hhmm(t.dl):'剩 '+left+' 分'}</span></button>`;
+  }).join('');
+  el.querySelectorAll('.task').forEach(b=>b.onclick=()=>{
+    const t=tasks.find(x=>x.id===+b.dataset.id);if(!t)return;
+    const [px,py]=tileOf(player);
+    let best=null,bl=1e9;
+    for(const g of t.targets){const p=isAdj(g,px,py)?[]:bfs(px,py,(x,y)=>isAdj(g,x,y));if(p&&p.length<bl){bl=p.length;best=g;}}
+    if(best)goTo(best);else floatText('走不過去','--muted');
+  });
+}
+
+// ================= interaction =================
+function interact(tg){
+  player.target=null;
+  const cand=tasks.filter(t=>t.targets.some(g=>sameTarget(g,tg))).sort((a,b)=>(a.dl||9999)-(b.dl||9999));
+  if(cand.length){
+    const t=cand[0];
+    if(t.mg&&!t.mgDone){
+      // hands-on mini-game first; its result sets how long the rest of the chore takes
+      if(t.onStart&&t.onStart(tg)===false)return;
+      t.mgDone=true;
+      MINI[t.mg](res=>{
+        const r=MG_RES[t.mg][res];apply(r.d||{});say(r.r);
+        if(!tasks.includes(t))return;
+        if(r.dur<=0){doneTask(t,tg);return;}
+        startBusy({label:t.label||t.title,dur:r.dur,task:t,onTick:t.onTick,onDone:()=>doneTask(t,tg)});
+      });
+      return;
+    }
+    const dur=t.left!=null?t.left:(t.durBy?t.durBy[tg.key]:t.dur);
+    if(t.onStart&&t.onStart(tg)===false)return;
+    if(dur<=0){doneTask(t,tg);return;}
+    startBusy({label:t.label||t.title,dur,task:t,onTick:t.onTick,onDone:()=>doneTask(t,tg)});
+    return;
+  }
+  if(tg.kind==='kid'){const k=kids.find(x=>x.id===tg.id);if(k.cling){clingDialog(k);return;}}
+  defaultUse(tg);
+}
+function cool(k,m){if(cd[k]!==undefined&&gameMin-cd[k]<m)return false;cd[k]=gameMin;return true;}
+
+function defaultUse(tg){
+  if(tg.kind==='kid'){
+    const k=kids.find(x=>x.id===tg.id);
+    if(k.state==='sleep'){say(`${k.name}睡得好熟。你忍住捏臉的衝動。`);return;}
+    if(!cool('kid'+k.id,40)){say(`${k.name}：「媽媽你很煩耶。」`);return;}
+    if(k.small){apply({p:4,f:2});say('小寶給你一個黏黏的親親，聞起來像早餐的果醬。');}
+    else{apply({p:2,f:3});say('大寶跟你講了十分鐘恐龍的事。你學到了「棘龍會游泳」。');}
+    return;
+  }
+  if(tg.kind==='ent'){
+    const e=ents.find(n=>n.id===tg.id);
+    if(e&&e.type==='toy'){startBusy({label:'撿玩具',dur:1,onDone:()=>{ents=ents.filter(n=>n!==e);count.toys++;apply({f:1});say(pick(['撿起一隻恐龍。','撿起一顆樂高，差點踩到第二顆。','撿起一台小汽車，輪子少一個。']));}});}
+    return;
+  }
+  const k=tg.key;
+  if(k==='Y'){exerciseStart();return;}
+  if(k==='t'){startBusy({label:'上廁所',dur:4,onDone:()=>{count.wc++;apply({b:-100},true);floatText('尿意清空','--bladder');say(mapName==='home'&&!night&&phase!=='home_am'?'門外傳來：「媽媽你在幹嘛？」「媽媽你好了沒？」':'終於。');}});return;}
+  if(mapName==='home'){
+    switch(k){
+      case 'S': if(cool('S',30)){rest();startBusy({label:'洗把臉',dur:2,onDone:()=>{apply({p:4,e:2});say('冷水拍在臉上，你又活過來一點。');}});}else say('臉已經洗過了。再洗就要脫皮了。');return;
+      case 'F': if(cool('F',60)){startBusy({label:'偷吃東西',dur:2,onDone:()=>{apply({h:15});say('你站在冰箱前吃掉小孩剩下的半塊起司。');}});}
+        else if(!findEgg('choco'))say('冰箱裡只剩半顆高麗菜在看著你。');return;
+      case 's': if(findEgg('coins'))return;
+        if(!busy||!busy.cont)rest();
+        startBusy({label:night?'躺在沙發滑手機':'坐在沙發喘口氣',cont:true,perMin:()=>{if(night){apply({p:.45,e:-.03},true);}else{apply({e:.12,p:.2},true);}}});say(night?'你打開手機。只看五分鐘。':'你坐下來。屁股一碰到沙發，就不想起來了。');return;
+      case 'M': if(night){dialog('床','終於可以躺平了。要睡了嗎？',[{l:'睡了',fn:()=>endDay('bed')},{l:'再撐一下',fn:()=>{}}]);}else if(phase==='home_am')say('現在躺下去就起不來了。');else say('小孩還沒睡，你不能先睡。');return;
+      case 'b': if(kids.every(x=>x.state==='sleep'))say('噓——');else if(!findEgg('note'))say('上鋪有一隻襪子，你不知道它怎麼上去的。');return;
+      case 'o': if(!findEgg('remote'))say('玩具箱。裡面的玩具永遠比地上少。');return;
+      case 'D': if(phase==='home_am')tryLeaveHome();else say('今天不出門了。誰都不准出門。');return;
+      case 'G': say('餐桌上有一灘不明的黏黏東西。');return;
+      case 'C': say('瓦斯爐現在不用開。');return;
+      case 'H': if(phase==='home_pm'&&findEgg('card'))return;say('書桌上有一張畫，畫裡的你頭髮是綠色的。');return;
+      case 'T': say('浴缸裡有三隻小鴨和一隻斷了尾巴的鯊魚。');return;
+      case 'w': say('洗衣機還在等你。它一直都在等你。');return;
+    }
+  }else{
+    switch(k){
+      case 'X': startBusy({label:'在座位上工作',cont:true,perMin:()=>{apply({w:.45,e:-.07,p:-.015},true);}});say('你戴上耳機，開始工作。');return;
+      case 'c':{
+        count.coffee++;
+        startBusy({label:'泡咖啡',dur:3,onDone:()=>{
+          if(count.coffee<=2){apply({e:12,b:20,p:3,v:3});say(count.coffee===1?'第一杯咖啡。世界重新開機。':'第二杯。還可以。');}
+          else{apply({e:5,b:25,p:-4});say(`今天第 ${count.coffee} 杯了，心跳有點快。`);}
+        }});return;}
+      case 'm': say('微波爐前排了三個人，每個人都要熱四分鐘。');return;
+      case 'F': if(cool('F',90)){startBusy({label:'翻冰箱',dur:2,onDone:()=>{apply({h:15});say('你吃了自己的優格。確認過了，上面寫的是你的名字。');}});}else say('冰箱裡的布丁上面寫著別人的名字。忍住。');return;
+      case 'b': say('主管正在講電話。你決定晚點再來。');return;
+      case 'T': if(findEgg('cake'))return;if(cool('T',60)){rest();startBusy({label:'在會議室偷躲',dur:5,onDone:()=>{apply({p:6});say('會議室空著，好安靜。你偷偷坐了五分鐘。');}});}else say('會議室現在有人。');return;
+      case 'D': tryLeaveOffice();return;
+    }
+  }
+}
+
+// ================= dialogs =================
+function dialog(who,text,choices){dq.push({who,text,choices:choices&&choices.length?choices:[{l:'好',fn:()=>{}}]});if(!dialogOpen)nextDialog();}
+function nextDialog(){
+  const el=document.getElementById('dlg');
+  if(!dq.length){dialogOpen=false;el.hidden=true;return;}
+  const d=dq.shift();dialogOpen=true;el.hidden=false;
+  el.innerHTML=`<div class="dlg-card"><span class="who">${hhmm(gameMin)}・${d.who}</span><p>${d.text}</p><div class="choices">${d.choices.map((c,i)=>`<button class="choice" data-i="${i}">${c.l}</button>`).join('')}</div></div>`;
+  el.querySelectorAll('.choice').forEach(b=>b.onclick=()=>{
+    const c=d.choices[+b.dataset.i];
+    dialogOpen=false;el.hidden=true;
+    c.fn&&c.fn();
+    if(playing&&!dialogOpen)nextDialog();
+  });
+  const f=el.querySelector('.choice');f&&f.focus({preventScroll:true});
+}
+
+// ================= scheduling =================
+function at(t,fn){events.push({at:t,phase,fn,fired:false});}
+
+// ================= scenes =================
+function newGame(){
+  S={e:75,p:80,v:60,h:55,b:35,w:0,f:0};
+  phase='home_am';night=false;gameMin=T(6,30);playing=true;paused=false;speed=1;
+  tasks=[];events=[];ents=[];busy=null;cd={};dq=[];dialogOpen=false;flags={};count={done:0,miss:0,coffee:0,wc:0,toys:0,scold:0,exMin:0,ex:0,boom:0,faint:0,hungry:0,will:0,pee:0};L=newLog();crisis=null;crisisFx=null;floats=[];taskSeq=0;warned={};
+  kids=[makeKid('big','大寶','--kid1',false),makeKid('small','小寶','--kid2',true)];
+  loadMap('home');
+  player={x:3,y:2,path:[],target:null};
+  kids[0].x=6;kids[0].y=1;kids[1].x=7;kids[1].y=1;
+  document.getElementById('introScreen').hidden=true;
+  document.getElementById('endScreen').hidden=true;
+  document.getElementById('gameScreen').hidden=false;
+  document.getElementById('speedBtn').textContent='1×';
+  document.getElementById('pauseBtn').textContent='暫停';
+  resize();renderStats();renderBusy();renderTasks();say('');
+  morning();
+}
+
+function wakeKid(k){k.state='wander';const spots=k.id==='big'?[[6,2],[7,2],[8,2]]:[[7,2],[8,2],[9,2]];const s=spots.find(([x,y])=>walkable(x,y))||[8,3];k.x=s[0];k.y=s[1];k.path=[];}
+
+function morning(){
+  dialog('鬧鐘','06:30。鬧鐘響了。隔壁房間兩個小孩還在睡。今天 07:40 前要全家出門。',[{l:'起床',fn:()=>{}}]);
+  addTask({title:'叫大寶起床',targets:[{kind:'kid',id:'big'}],dur:3,dl:T(7,0),rew:{f:3},
+    doneText:'大寶翻身說：「再五分鐘……」你把窗簾拉開，他坐起來了。',
+    onDone:()=>wakeKid(kids[0]),pen:{p:-6,f:-3},failText:'大寶自己醒了，但已經在床上發呆了半小時。',onFail:()=>{wakeKid(kids[0]);flags.late=true;}});
+  addTask({title:'做早餐',mg:'egg',targets:[{kind:'obj',key:'C'}],dur:15,dl:T(7,20),rew:{f:6,e:-4},silent:true,
+    doneText:'荷包蛋、吐司、一杯牛奶。小寶的蛋要「不能有黃黃的」。',
+    onDone:()=>addTask({title:'吃早餐',targets:[{kind:'obj',key:'G'}],dur:10,dl:T(7,45),rew:{h:40,e:5,f:3},doneText:'你坐下來吃完了。是熱的。',pen:{p:-3},failText:'空著肚子出門。'}),
+    pen:{p:-5,f:-5},failText:'只好塞一包餅乾給小孩在路上吃。'});
+  at(T(6,40),()=>addTask({title:'幫小寶換衣服',mg:'dress',targets:[{kind:'kid',id:'small'}],dur:8,dl:T(7,30),rew:{f:4,e:-3},
+    onStart:()=>{if(kids[1].state==='sleep')wakeKid(kids[1]);endCling(kids[1]);},
+    onDone:()=>dialog('小寶','換到一半，小寶抓著恐龍裝說：「我要穿這個！」外面在下雨。',[
+      {l:'穿吧，恐龍不怕雨',fn:()=>{apply({p:4,f:3});say('恐龍尾巴拖在地上。他很快樂。');}},
+      {l:'蹲下來好好溝通',fn:()=>{cf();apply({p:-8,e:-5,f:4});gameMin+=8;say('談判 8 分鐘：裡面穿恐龍裝，外面穿雨衣。');}},
+      {l:'直接套上制服',fn:()=>{apply({p:-4,f:-4});say('他哭了三分鐘，然後自己去找鞋子了。');}}]),
+    pen:{p:-6,f:-4},failText:'小寶穿著睡衣出門，外面套一件外套。',onFail:()=>{if(kids[1].state==='sleep')wakeKid(kids[1]);}}));
+  at(T(6,50),()=>addTask({title:'簽大寶的聯絡簿',targets:[{kind:'obj',key:'H'}],dur:2,dl:T(7,35),rew:{f:3},doneText:'簽好了。順便看到「明天美勞課」。',pen:{f:-4},failText:'大寶被老師登記一次。'}));
+  at(T(6,50),()=>addTask({title:'抽考大寶生字（安親班今天考）',optional:true,targets:[{kind:'kid',id:'big'},{kind:'obj',key:'G'}],dur:5,dl:T(7,35),rew:{f:3,p:-2},
+    onStart:()=>{if(kids[0].state==='sleep')wakeKid(kids[0]);},doneText:'「蝴蝶」的「蝶」寫錯兩次，第三次寫對了。',onDone:()=>{flags.quizAM=true;}}));
+  at(T(7,12),()=>{const k=kids[1];if(k.state==='sleep')wakeKid(k);startCling(k);});
+  at(T(7,5),()=>dialog('大寶','大寶跑過來：「媽！今天勞作要帶兩個空寶特瓶！」現在才講。',[
+    {l:'把冰箱的礦泉水倒掉',fn:()=>addTask({title:'倒掉礦泉水',targets:[{kind:'obj',key:'F'}],dur:3,dl:T(7,40),rew:{f:5},doneText:'兩個空瓶到手。礦泉水澆了陽台的花。',pen:{f:-3}})},
+    {l:'去陽台翻回收',fn:()=>addTask({title:'翻回收找寶特瓶',targets:[{kind:'obj',key:'w'}],dur:6,dl:T(7,40),rew:{f:7,p:-2},doneText:'找到了，還順便找到上週不見的湯匙。',pen:{f:-3}})},
+    {l:'「跟老師說明天帶」',fn:()=>{apply({f:-5,p:2});say('大寶的臉垮成一張被雨淋過的聯絡簿。');}}]));
+  at(Math.round(rnd(T(6,58),T(7,18))),()=>{if(phase!=='home_am')return;const k=kids[0];if(k.state==='sleep')wakeKid(k);
+    dialog('大寶','大寶張大嘴巴衝過來：「媽媽你看！我的牙齒在動！我可以拔掉嗎？牙仙子是真的嗎？她會給多少錢？」',[
+      {l:'蹲下來認真看（3 分鐘）',fn:()=>{cf();apply({f:5,p:2});advance(3);say('你們研究了三分鐘。那顆牙動了大概 0.1 公分。');}},
+      {l:'「晚上再說，先吃早餐！」',fn:()=>{apply({p:1,f:-1});say('大寶一邊吃吐司，一邊用舌頭頂那顆牙。');}},
+      {l:'「牙仙子說，她只收早上準時出門的小孩的牙。」',fn:()=>{apply({f:2});say('大寶跑去穿鞋了。你覺得自己是天才。');}}]);});
+  at(T(7,25),()=>addTask({title:'帶小孩出門',targets:[{kind:'obj',key:'D'}],dur:0,dl:T(7,50),silent:true,exitTask:true,
+    onStart:()=>{tryLeaveHome();return false;},pen:{},failText:'已經要遲到了。'}));
+  at(T(7,40),()=>{if(phase==='home_am')dialog('時鐘','07:40 了！再不出門就要遲到。',[{l:'衝出門',fn:()=>leaveHome()},{l:'再一下下',fn:()=>{}}]);});
+  at(T(7,55),()=>{if(phase==='home_am'){say('真的要遲到了，你抓起包包就走。');leaveHome();}});
+}
+
+function tryLeaveHome(){
+  const left=tasks.filter(t=>!t.optional&&t.title!=='帶小孩出門');
+  if(left.length&&!dialogOpen){
+    dialog('大門',`還有沒做完的：${left.map(t=>t.title).join('、')}。確定要出門？`,[{l:'出門',fn:()=>leaveHome()},{l:'回去處理',fn:()=>{}}]);
+  }else leaveHome();
+}
+function leaveHome(){
+  if(phase!=='home_am')return;
+  busy=null;renderBusy();
+  const leaveAt=gameMin;
+  failAll();
+  phase='commute';
+  const late=leaveAt>T(7,40);
+  const ev=pick(['kinder','mrt','umbrella']);
+  const go=extra=>arriveOffice(leaveAt+50+extra);
+  if(ev==='kinder')dialog('幼兒園門口','送小寶到幼兒園，他抱著你的腿不放：「媽媽不要去上班。」',[
+    {l:'蹲下來抱一下',fn:()=>{cf();L.fam++;apply({f:6,p:3});go(5);}},
+    {l:'交給老師，揮揮手就走',fn:()=>{L.work++;apply({p:-4});go(0);}}]);
+  else if(ev==='mrt')dialog('捷運','送完兩個小孩，捷運號誌故障，車停在隧道裡不動。',[
+    {l:'閉眼補眠',fn:()=>{rest();apply({e:8});go(10);}},
+    {l:'用手機回公事信',fn:()=>{L.work++;apply({w:6,p:-3});go(10);}}]);
+  else dialog('路上','走到一半，大寶說：「媽，我的雨傘忘在家裡了。」',[
+    {l:'跑回去拿',fn:()=>{apply({e:-6,f:4});go(10);}},
+    {l:'把你的傘給他，自己淋雨',fn:()=>{apply({f:5,p:-3});go(0);}}]);
+  if(late)say('出門晚了。');
+}
+
+function arriveOffice(t){
+  phase='office';gameMin=t;loadMap('office');
+  player={x:7,y:13,path:[],target:null};
+  kids.forEach(k=>{k.away=true;k.state='away';});
+  ents=[];resize();
+  if(t>T(8,35)){apply({w:-8,p:-5});dialog('主管',`主管看了一眼時鐘：「今天比較晚喔？」現在 ${hhmm(t)}。`,[{l:'「小孩……」',fn:()=>{}},{l:'微笑點頭',fn:()=>{}}]);}
+  addTask({title:'回覆早上的信',targets:[{kind:'obj',key:'X'}],dur:20,dl:T(10,0),rew:{w:10,e:-3},doneText:'收件匣從 47 封變 12 封。',pen:{w:-6}});
+  at(T(9,45),()=>addTask({title:'10:00 部門會議',targets:[{kind:'obj',key:'T'}],dur:40,dl:T(10,10),rew:{w:15,e:-6},doneText:'會議開了 40 分鐘，結論是「下次再討論」。',pen:{w:-12,p:-6},failText:'主管在群組裡標記你。'}));
+  const pool=['fever','homework','group'].sort(()=>Math.random()-.5);
+  at(Math.round(rnd(T(10,50),T(11,30))),()=>officeCall(pool[0]));
+  at(T(12,0),()=>addTask({title:'吃午餐',targets:[{kind:'obj',key:'m'}],dur:20,dl:T(13,30),rew:{h:55,e:8},doneText:'熱的便當，坐著吃完。這就是幸福。',pen:{p:-6},failText:'下午三點肚子咕嚕叫。'}));
+  at(Math.round(rnd(T(13,30),T(14,20))),()=>{if(!flags.sickLeave)officeCall(pool[1]==='fever'?'client':pool[1]);});
+  at(T(14,45),()=>addTask({title:'跟主管報告進度',targets:[{kind:'obj',key:'b'}],dur:15,dl:T(15,30),
+    rew:()=>S.w>=35?{w:12,p:4}:{p:-8},doneText:()=>S.w>=35?'主管點點頭：「不錯。」你在心裡放了一串煙火。':'主管：「嗯……再加油。」你知道這不是稱讚。',pen:{w:-10,p:-6},failText:'主管自己走到你座位旁邊來了。'}));
+  at(T(16,30),()=>dialog('主管','主管：「明天早上要的報告，今天可以先弄一下嗎？」',[
+    {l:'「好，沒問題。」',fn:()=>(L.work++,addTask)({title:'趕明天的報告',targets:[{kind:'obj',key:'X'}],dur:40,dl:T(17,30),rew:{w:18,e:-8},doneText:'報告寄出。你看了一下時間，倒吸一口氣。',pen:{w:-10},failText:'報告只做了一半。'})},
+    {l:'「我五點半要去接小孩，明早一到就做。」',fn:()=>{L.fam++;apply({w:-4,f:3});say('主管回：「OK。」你猜不透是哪一種 OK。');}}]));
+  at(T(17,30),()=>{if(!flags.sickLeave)addTask({title:'下班去接小孩',exitTask:true,targets:[{kind:'obj',key:'D'}],dur:0,dl:T(17,45),onStart:()=>{leaveOffice();return false;},pen:{f:-8,p:-8},failText:'幼兒園老師陪小寶在門口等你。'});});
+  at(T(18,30),()=>{if(phase==='office'){say('不能再待了。');leaveOffice();}});
+}
+
+function officeCall(kind){
+  if(phase!=='office')return;
+  if(kind==='fever')dialog('幼兒園來電','「小寶媽媽嗎？小寶有點發燒，37.9 度，要麻煩來接。」你手上的事還沒做完。',[
+    {l:'請阿嬤先去接',fn:()=>{L.work++;apply({p:-10,f:-2});flags.feverLight=true;say('阿嬤接到了。你整個下午每十分鐘看一次手機。');}},
+    {l:'請假，現在去接',fn:()=>{L.fam++;apply({w:-18,f:10});flags.sickLeave=true;flags.fever=true;leaveOffice(true);}}]);
+  else if(kind==='homework')dialog('安親班來電','「大寶的作業簿忘在家裡了，今天的作業沒辦法寫。」',[
+    {l:'請老師讓他明天補',fn:()=>{apply({f:-3});}},
+    {l:'拍照傳給老師印出來',fn:()=>{L.fam++;apply({w:-3,f:4,p:-3});say('你在會議中偷偷翻相簿，找到一張上週拍的作業頁。');}}]);
+  else if(kind==='group')dialog('班親群','「明天穿運動服、帶水彩、繳 350 元。」下面接了 31 張「收到」貼圖。',[
+    {l:'現在記進手機備忘錄',fn:()=>{apply({w:-2,f:3});flags.noted=true;}},
+    {l:'晚點再看',fn:()=>{flags.forgot=true;}}]);
+  else dialog('客戶來電','客戶：「那個簡報，我們想把藍色改成『比較有活力的藍』。」',[
+    {l:'「好的，馬上改。」',fn:()=>(L.work++,addTask)({title:'改簡報的藍色',targets:[{kind:'obj',key:'X'}],dur:30,dl:T(16,30),rew:{w:12,p:-4},doneText:'改了三種藍。客戶選了原本那個。',pen:{w:-8}})},
+    {l:'「明天給您三個版本。」',fn:()=>{apply({w:-3,p:3});}}]);
+}
+
+function tryLeaveOffice(){
+  if(flags.sickLeave)return;
+  if(gameMin<T(17,30)){say('還沒下班。主管的門開著。');return;}
+  leaveOffice();
+}
+function leaveOffice(early){
+  if(phase!=='office')return;
+  busy=null;renderBusy();
+  const leaveAt=gameMin;
+  failAll();
+  phase='commute';
+  if(early){dialog('幼兒園','小寶臉紅紅的靠在老師身上，看到你就伸手要抱。你順路去安親班接了大寶。',[{l:'回家',fn:()=>arriveHome(leaveAt+50)}]);return;}
+  const late=leaveAt>T(17,45);
+  if(late)dialog('幼兒園門口','你到的時候，教室只剩小寶一個人，在跟老師一起疊積木。',[
+    {l:'「對不起對不起！」',fn:()=>{apply({p:-3});examResult(()=>arriveHome(leaveAt+40));}}]);
+  else dialog('幼兒園門口',pick(['小寶第一個衝出來，手上拿著一幅畫，說畫的是你。你看不出來，但你說好像。','小寶衝出來說：「媽媽，今天午餐有布丁！」這是他今天最重要的新聞。']),[
+    {l:'去安親班接大寶',fn:()=>examResult(()=>arriveHome(leaveAt+40))}]);
+}
+function examResult(next){
+  const sc=flags.quizAM?pick([95,98,100]):pick([68,72,80,85]);
+  dialog('安親班',`大寶背著書包走出來，手上拿著考卷：「國語生字考 ${sc} 分。」${flags.quizAM?'早上抽考的「蝶」寫對了。':'錯的剛好是「蝴蝶」的「蝶」。'}`,sc>=90?[
+    {l:'「哇！好厲害！」擊掌',fn:()=>{apply({f:5,v:3});next();}}]:[
+    {l:'「沒關係，回家一起看哪裡錯。」',fn:()=>{cf();apply({f:4,p:-2});next();}},
+    {l:'「怎麼又寫錯！上課有沒有在聽？」',fn:()=>{scold();say('大寶一路上都沒有講話。');next();}},
+    {l:'摸摸頭：「下次再加油。」',fn:()=>{apply({f:2});next();}}]);
+}
+
+function arriveHome(t){
+  phase='home_pm';gameMin=t;loadMap('home');flags.home=true;
+  player={x:7,y:13,path:[],target:null};
+  kids.forEach(k=>{k.away=false;k.state='wander';k.path=[];k.timer=rnd(1,3);});
+  kids[0].x=9;kids[0].y=8;kids[1].x=4;kids[1].y=8;
+  ents=[];resize();
+  const a=t;
+  say('到家了。兩個人同時喊：「我肚子餓！」');
+  if(flags.fever)addTask({title:'餵小寶吃退燒藥',targets:[{kind:'kid',id:'small'}],dur:5,dl:a+30,rew:{f:6},doneText:'藥是草莓口味的。他喝完還要第二杯。',pen:{p:-8,f:-5}});
+  addTask({title:'煮晚餐',targets:[{kind:'obj',key:'C'},{kind:'obj',key:'F'}],durBy:{C:25,F:12},dl:Math.max(a+50,T(19,15)),label:'煮晚餐',
+    rew:g=>g.key==='C'?{f:8,e:-8}:{f:3,e:-3},doneText:g=>g.key==='C'?'炒了一盤青菜、一盤蛋，煮了湯。大寶吃了兩碗。':'冷凍水餃。小孩覺得很好吃，你決定不揭穿。',
+    onDone:()=>addTask({title:'一起吃晚餐',targets:[{kind:'obj',key:'G'}],dur:20,dl:gameMin+50,rew:{h:60,e:5,f:6},doneText:'小寶只吃白飯，但有吃就好。',pen:{p:-5}}),
+    pen:{p:-8,f:-5},failText:'小孩餓到在地上滾，你叫了外送。',
+    onFail:()=>addTask({title:'吃外送',targets:[{kind:'obj',key:'G'}],dur:20,dl:gameMin+60,rew:{h:55,f:2},doneText:'外送到了。今天就這樣吧。'})});
+  addTask({title:'丟衣服進洗衣機',targets:[{kind:'obj',key:'w'}],dur:5,dl:T(22,0),rew:{f:2},doneText:'洗衣機開始轉了。45 分鐘後要記得晾。',
+    onDone:()=>at(gameMin+45,()=>addTask({title:'晾衣服',targets:[{kind:'obj',key:'w'}],dur:10,dl:T(23,0),rew:{f:3,e:-4},doneText:'晾好了。有一隻襪子又不見了。',pen:{p:-3}})),pen:{p:-3},failText:'明天沒有乾淨的制服了。'});
+  at(Math.max(a+20,T(18,40)),()=>addTask({title:'陪大寶寫作業',targets:[{kind:'obj',key:'H'}],dur:20,dl:T(20,30),rew:{f:8,p:-5},
+    onDone:()=>dialog('大寶','寫到數學，你教了一遍，大寶說：「老師不是這樣教的。」',[
+      {l:'深呼吸，換個方法再教',fn:()=>{cf();apply({p:-6,f:4});say('第三種方法他終於懂了。');}},
+      {l:'「那明天問老師。」',fn:()=>{apply({p:2,f:-2});say('大寶在題目旁邊畫了一個很用力的問號。');}}]),
+    pen:{f:-8},failText:'大寶的作業明天會被登記。'}));
+  at(Math.max(a+30,T(19,0)),()=>addTask({title:'陪大寶複習（明天考數學）',targets:[{kind:'obj',key:'H'}],dur:25,dl:T(21,0),rew:{f:8,p:-4,e:-3},
+    onTick:(f,el)=>{if(el>=10&&!flags.askDino){flags.askDino=true;dialog('大寶','複習到一半，大寶突然說：「媽，你知道棘龍會游泳嗎？」',[
+      {l:'「先寫完再聊。」',fn:()=>apply({p:-2})},
+      {l:'「真的嗎？然後呢？」',fn:()=>{cf();apply({f:3});if(busy)busy.left+=4;say('你們聊了四分鐘的棘龍，然後回到乘法。');}}]);}},
+    doneText:'考卷上的題型大寶都會了。他說：「明天我要考 100 分。」',onDone:()=>{flags.reviewed=true;},
+    pen:{f:-6},failText:'來不及複習。大寶說他明天會用猜的。'}));
+  at(Math.max(a+5,T(19,30)),()=>addTask({title:'簽聯絡簿',targets:[{kind:'obj',key:'H'}],dur:2,dl:T(21,30),rew:{f:3},pen:{f:-4}}));
+  at(T(19,45),()=>{
+    addTask({title:'幫小寶洗澡',mg:'scrub',targets:[{kind:'obj',key:'T'}],dur:15,dl:T(21,0),rew:{f:6,e:-6},doneText:'浴室淹水了，但他笑得好大聲。',pen:{f:-5,p:-4}});
+    addTask({title:'叫大寶去洗澡',targets:[{kind:'obj',key:'T'}],dur:8,dl:T(21,0),rew:{f:4,e:-2},doneText:'大寶自己洗。洗了 4 分鐘，頭髮是乾的。',pen:{f:-4}});
+  });
+  at(T(19,50),()=>{if(night||flags.bedtime)return;const bath=tasks.find(t=>t.title==='幫小寶洗澡');
+    dialog('爸爸回來了','爸爸加班回來，把包包一丟，倒在沙發上：「今天好累喔。」你看了一眼還沒做完的事。',[
+      ...(bath?[{l:'「那你幫小寶洗澡。」',fn:()=>{L.dad++;removeTask(bath);apply({p:4,f:2});say('浴室傳來兩個人的尖叫和笑聲。你決定不去看。');}}]:[]),
+      {l:'「碗交給你了。」',fn:()=>{L.dad++;apply({p:3,e:2});say('爸爸洗碗洗得很慢，還一直問碗要放哪裡。但碗是乾淨的。');}},
+      {l:'「沒關係，我自己來比較快。」',fn:()=>{L.solo++;apply({p:-3});say('爸爸：「好喔。」然後他就真的沒有動了。');}}]);});
+  if(flags.forgot)at(T(20,30),()=>dialog('大寶','大寶刷完牙突然說：「媽，明天要穿運動服、帶水彩，還要繳 350 元。」運動服在洗衣籃裡，是髒的。',[
+    {l:'現在洗，用吹風機吹乾',fn:()=>addTask({title:'救援運動服',targets:[{kind:'obj',key:'w'}],dur:20,dl:T(22,0),rew:{f:5,e:-8},doneText:'運動服半乾，你的手臂全酸。',pen:{f:-5}})},
+    {l:'穿制服去，寫聯絡簿跟老師道歉',fn:()=>{apply({p:3,f:-5});}}]));
+  at(T(21,0),()=>addTask({title:'陪睡覺',targets:[{kind:'obj',key:'b'},{kind:'kid',id:'big'},{kind:'kid',id:'small'}],dur:0,dl:T(21,45),rew:{},
+    onDone:()=>startBedtime(),
+    pen:{p:-10},failText:'兩個人還在床上跳。',onFail:()=>at(T(22,0),()=>{if(!night){apply({f:-4});kidsSleepOn([[1,6],[2,6]]);say('22:00，兩個人在沙發上睡著了，嘴邊還有餅乾屑。');startNight(true);}})}));
+  // random kid requests
+  let tt=a+rnd(12,20);
+  const reqs=['cling','pee','eraser','grab','spill','toys','ask','drama','cling','grab','ask','pee','spill','drama','cling','grab'].sort(()=>Math.random()-.5);
+  let i=0;
+  while(tt<T(20,50)&&i<reqs.length){at(Math.round(tt),((r)=>()=>kidRequest(r))(reqs[i]));tt+=rnd(18,30);i++;}
+  at(T(23,0),()=>endDay('late'));
+}
+
+function freeTileNear(cx,cy,r){
+  const c=[];for(let y=cy-r;y<=cy+r;y++)for(let x=cx-r;x<=cx+r;x++)if(walkable(x,y))c.push([x,y]);
+  return c.length?pick(c):null;
+}
+let entSeq=0;
+function kidRequest(r){
+  if(night||phase!=='home_pm'||flags.bedtime)return;
+  const small={kind:'kid',id:'small'},big={kind:'kid',id:'big'};
+  if(r==='cling')startCling(Math.random()<.7?kids[1]:kids[0]);
+  else if(r==='pee')addTask({title:'帶小寶上廁所',targets:[{kind:'obj',key:'t'}],dur:5,dl:gameMin+8,rew:{f:3},
+    onStart:()=>{kids[1].x=12;kids[1].y=2;kids[1].path=[];},doneText:'趕上了。小寶自己沖水，沖了三次。',
+    pen:{p:-8},failText:'來不及了……',onFail:()=>addTask({title:'洗小寶的褲子',targets:[{kind:'obj',key:'w'}],dur:8,dl:gameMin+40,rew:{f:1},pen:{p:-4}})});
+  else if(r==='eraser')addTask({title:'大寶找不到橡皮擦',targets:[{kind:'obj',key:'o'}],dur:4,dl:gameMin+20,rew:{f:3},doneText:'在玩具箱最底下，旁邊還有三個。',pen:{p:-4},failText:'大寶用手指擦，紙破了。'});
+  else if(r==='grab')kidsGrab();
+  else if(r==='spill'){
+    const s=freeTileNear(7,11,2)||freeTileNear(7,8,3);if(!s)return;
+    const e={id:'e'+(++entSeq),type:'spill',x:s[0],y:s[1]};ents.push(e);
+    addTask({title:'擦掉打翻的果汁',targets:[{kind:'ent',id:e.id}],dur:5,dl:gameMin+20,rew:{f:1},onDone:()=>{ents=ents.filter(n=>n!==e);},doneText:'擦乾淨了。拖鞋還是黏黏的。',pen:{p:-6},failText:'有人踩到了，黏腳印一路到房間。',onFail:()=>{ents=ents.filter(n=>n!==e);}});
+    say('小寶：「媽媽，果汁自己倒了。」');
+  }
+  else if(r==='ask'){
+    const q=pick([['為什麼天空是藍色的？','你講了光、空氣、還有「因為天空喜歡藍色」。'],['如果暴龍跟鯊魚打架，誰會贏？','你們討論了場地是在陸地還是海裡。結論是棘龍贏。'],['媽媽你小時候有手機嗎？','你說沒有。大寶用看古人的眼神看著你。'],['為什麼大人不用寫功課？','你說大人的功課叫「上班」。大寶覺得很可憐。']]);
+    dialog('大寶有問題',`大寶跟在你後面：「媽媽，${q[0]}」這是他今天第 ${Math.floor(rnd(23,48))} 個問題。`,[
+      {l:'停下來，認真回答（4 分鐘）',fn:()=>{cf();apply({f:5,p:-2});advance(4);say(q[1]);}},
+      {l:'「你覺得呢？」把問題丟回去',fn:()=>{apply({f:2,p:1});say('大寶自己講了五分鐘，講完很滿意地走了。');}},
+      {l:'「去問爸爸。」',fn:()=>{apply({p:1,f:-1});say('一分鐘後，大寶回來：「爸爸說去問媽媽。」');}}]);
+  }
+  else if(r==='drama'){
+    const k=kids[1];if(k.away||k.state!=='wander')return;
+    dialog('小寶的八點檔','小寶在客廳跌倒了。沒流血、沒破皮，但他哭得像在演八點檔：「我的腳斷掉了——我再也不能走路了——」',[
+      {l:'呼呼，再貼一張恐龍 OK 繃',fn:()=>{cf();apply({f:5,p:-1});advance(2);say('OK 繃貼上去的瞬間，小寶的腳就好了。醫學奇蹟。');}},
+      {l:'「沒事沒事，起來。」',fn:()=>{apply({p:1,f:-2});if(Math.random()<.5){startCling(k);}else say('小寶自己爬起來，一邊哭一邊去找恐龍了。');}},
+      {l:'你也假裝跌倒，哭得比他大聲',fn:()=>{apply({f:6,e:-3});say('小寶愣住三秒，然後笑到忘記自己在哭。');}}]);
+  }
+  else if(r==='toys'){
+    for(let i=0;i<4;i++){const s=freeTileNear(6,8,4);if(s&&!ents.some(n=>n.x===s[0]&&n.y===s[1]))ents.push({id:'e'+(++entSeq),type:'toy',x:s[0],y:s[1],c:pick(['--kid1','--kid2','--family','--patience'])});}
+    say('客廳突然長出一地玩具。點玩具可以撿起來。');
+  }
+}
+function gatherKidsToBed(){kidsSleepOn([[6,1],[7,1]]);}
+function kidsSleepOn(sp){kids.forEach((k,i)=>{k.state='sleep';k.path=[];k.x=sp[i][0];k.y=sp[i][1];});}
+function startNight(onSofa,msg){
+  if(night)return;night=true;flags.bedtime=false;
+  kids.forEach(k=>k.cling=false);
+  for(const t of [...tasks])if(t.targets.some(g=>g.kind==='kid')||t.title.includes('小寶')||t.title.includes('大寶')){removeTask(t);}
+  gatherIfNot(onSofa);
+  const ex=Math.round(count.exMin);
+  dialog('客廳',(msg||'房子終於安靜了。這是今天第一個屬於你的時間。')+(ex<30?`<br><br>今天運動了 ${ex} 分鐘。瑜珈墊在客廳，沙發也在客廳。`:''),[{l:'好',fn:()=>{}}]);
+  renderTasks();
+}
+function gatherIfNot(onSofa){if(!onSofa)gatherKidsToBed();}
+
+// ================= kids: cling & fights =================
+function scold(){noteYell();apply({f:-3,v:-3});}
+function startCling(k){
+  if(!k||k.away||k.state!=='wander'||k.cling||night||flags.bedtime)return;
+  k.cling=true;k.path=[];k.clingUntil=gameMin+rnd(18,28);L.cling++;
+  say(k.small?'小寶黏上來了：「媽媽抱～媽媽陪我～」你做什麼都變慢了。':'大寶整個人掛在你身上：「媽媽我好無聊。」你做什麼都變慢了。');
+}
+function endCling(k){
+  if(!k.cling)return;k.cling=false;
+  const [px,py]=tileOf(player);const t=freeTileNear(px,py,1)||[px,py];
+  k.x=t[0];k.y=t[1];k.path=[];k.timer=rnd(2,4);
+}
+function clingDialog(k){
+  dialog(`${k.name}黏在你身上`,k.small?'小寶抱著你的腿不放：「媽媽抱抱，媽媽不要做家事。」':'大寶貼在你背上：「媽媽，陪我玩一下啦。」',[
+    {l:'蹲下來抱一下，說說話（3 分鐘）',fn:()=>(cf(),startBusy)({label:`抱抱${k.name}`,dur:3,noSlow:true,onDone:()=>{endCling(k);apply({f:4,p:3,v:2});say(`${k.name}被抱飽了，自己跑去玩。`);}})},
+    {l:'給他一個任務：「幫媽媽拿襪子來！」',fn:()=>{if(Math.random()<.65){endCling(k);apply({f:2});say(`${k.name}很認真地去找襪子。拿回來的是爸爸的。`);}else{apply({p:-2});say(`${k.name}：「我不要，我要媽媽。」`);}}},
+    {l:'「媽媽在忙！自己去玩！」',fn:()=>{scold();if(Math.random()<.5){endCling(k);say(`${k.name}哭著走開了。你心裡揪了一下。`);}else{apply({p:-5});say(`${k.name}哭得更大聲，而且抱得更緊了。`);}}},
+    {l:'讓他黏著，繼續做事',fn:()=>{L.letCling++;}}]);
+}
+function kidsGrab(){
+  const item=pick(['恐龍','電視遙控器','同一支藍色色筆','平板','最後一塊餅乾','同一個枕頭']);
+  kids.forEach(k=>endCling(k));
+  const s=freeTileNear(6,8,3);
+  if(s){kids[0].x=s[0];kids[0].y=s[1];const n=freeTileNear(s[0],s[1],1)||s;kids[1].x=n[0];kids[1].y=n[1];kids.forEach(k=>k.path=[]);}
+  const t=addTask({title:`大小寶在搶${item}`,targets:[{kind:'kid',id:'big'},{kind:'kid',id:'small'}],dur:0,dl:gameMin+8,silent:true,
+    onStart:()=>{fightDialog(t,item);return false;},
+    pen:{p:-8},failText:'小寶哭到打嗝了。',
+    onFail:()=>addTask({title:'安撫大哭的小寶',targets:[{kind:'kid',id:'small'}],dur:5,dl:gameMin+15,rew:{f:3,p:2},doneText:'哭完以後，小寶在你懷裡打了一個好大的嗝。',pen:{p:-8,f:-4}})});
+  if(busy&&!busy.cont){
+    dialog('客廳',`客廳傳來尖叫：「那是我的${item}！」你手上正在${busy.label}。`,[
+      {l:'放下手邊的事，過去處理',fn:()=>goTo({kind:'kid',id:'small'})},
+      {l:'在原地大吼：「不要吵！」',fn:()=>{scold();if(Math.random()<.5){removeTask(t);say('瞬間安靜。你繼續手上的事，心裡有點過意不去。');}else say('安靜了三秒，又開始了。');}},
+      {l:'假裝沒聽到，繼續做',fn:()=>{apply({p:-2});}}]);
+  }else say(`客廳傳來尖叫：「那是我的${item}！」`);
+}
+function fightDialog(t,item){
+  dialog('搶東西',`大寶：「是我先拿的！」小寶：「是我先看到的！」兩個人都抓著${item}不放。`,[
+    {l:'蹲下來，讓兩個人輪流講',fn:()=>{cf();removeTask(t);count.done++;startBusy({label:'聽兩個人輪流講',dur:6,noSlow:true,onDone:()=>{apply({p:-6,e:-3,f:6,v:2});say('講完以後，兩個人決定一起玩。你不知道剛剛發生了什麼事。');}});}},
+    {l:'拿出計時器：一人玩五分鐘',fn:()=>{removeTask(t);count.done++;startBusy({label:'設定計時器',dur:2,noSlow:true,onDone:()=>{apply({p:-2,f:4});say('計時器響了三次。輪流的規矩意外地有效。');}});}},
+    {l:'沒收！誰都不准玩',fn:()=>{removeTask(t);apply({f:-3,p:1});startCling(kids[1]);say(`${item}被你放到冰箱上面。小寶哭著黏上來了。`);}},
+    {l:'「再吵兩個都去罰站！」',fn:()=>{removeTask(t);scold();apply({p:2});say('兩個人站在牆邊互瞪。三分鐘後又在一起笑了。');}}]);
+}
+
+// ================= exercise =================
+function exerciseStart(){
+  if(busy&&busy.ex){say('已經在運動了。');return;}
+  if(mapName==='office'&&(gameMin<T(12,0)||gameMin>T(13,30))){say('上班時間去健身房，主管會看到。午休（12:00–13:30）再來。');return;}
+  const req=Math.round(Math.max(4,Math.min(24,5+(60-S.e)/4+(60-S.v)/6)));
+  const mood=S.e<25?'你累到眼睛快閉起來了。沙發就在旁邊，發出溫柔的呼喚。':S.e<50?'身體說「今天就算了吧」，心裡有個小小的聲音說「動一下會比較舒服」。':'精神還不錯。趁現在！';
+  mash(req,mood,()=>{
+    dialog('意志力戰勝！','你站起來了。要做什麼？',[
+      {l:'瑜珈 15 分鐘：拜日式＋下犬式',fn:()=>startExercise('yoga')},
+      {l:'重訓 20 分鐘：深蹲、硬舉、划船',fn:()=>startExercise('weights')},
+      {l:'還是算了',fn:()=>{}}]);
+  },()=>{L.exSkip++;apply({v:-3,p:-2});say('沙發贏了。今天先放過自己。');});
+}
+function startExercise(kind){
+  const yoga=kind==='yoga';
+  startBusy({ex:true,label:yoga?'瑜珈：拜日式、下犬式':'重訓：深蹲、硬舉、划船',dur:yoga?15:20,
+    onTick:(f,el)=>{count.exMin+=f;apply({e:yoga?-.2:-.4,h:-.05},true);
+      if(el===6&&mapName==='home'&&!night&&kids.some(k=>k.state==='wander'&&!k.away)&&Math.random()<.7){
+        if(yoga)dialog('瑜珈墊','你在下犬式，小寶從你肚子底下鑽過去：「山洞！山洞！」',[
+          {l:'讓他當山洞，繼續做',fn:()=>{cf();apply({f:4});say('小寶鑽了十二次。你的下犬式從來沒撐這麼久過。');}},
+          {l:'乾脆帶他一起做嬰兒式',fn:()=>{cf();apply({f:6,p:3});if(busy)busy.left+=3;say('小寶的嬰兒式做得比你標準。');}},
+          {l:'「讓媽媽做完好嗎？」',fn:()=>{apply({p:-2});say('他躺在墊子旁邊等你，等了二十秒就跑走了。');}}]);
+        else dialog('瑜珈墊','你在深蹲，大寶跳到你背上：「媽媽，我幫你加重量！」',[
+          {l:'加重量就加重量！',fn:()=>{apply({e:-5,f:6});say('揹著大寶深蹲五下。你覺得自己是神力女超人。');}},
+          {l:'「下來，這樣會受傷。」',fn:()=>{apply({p:-1});say('大寶下來了，改坐在旁邊幫你數數，數到七就數錯。');}}]);
+      }},
+    onDone:()=>{count.ex++;apply({p:10,v:15,e:6});say(yoga?'做完了。肩膀鬆開，呼吸變深，你又是一個完整的人了。':'做完了。腿在抖，但心情很好。你是全家最強壯的人。');}});
+  say('開始運動！');
+}
+function mash(req,mood,win,lose){
+  dialogOpen=true;const el=document.getElementById('dlg');el.hidden=false;
+  let n=0,started=false,timer=null,done=false;
+  el.innerHTML=`<div class="dlg-card"><span class="who">${hhmm(gameMin)}・意志力對決</span><p>${mood}</p>
+    <p style="font-size:14px;color:var(--muted)">4 秒內點 <b>${req}</b> 下「起來！」，按第一下開始計時。</p>
+    <div class="mash-bars"><div class="bar"><i id="mashN" style="width:0%;background:var(--will)"></i></div><span id="mashT">4.0 秒</span></div>
+    <button class="mash" id="mashBtn">起來！</button><button class="choice" id="mashGive">算了，今天先放過自己</button></div>`;
+  const finish=ok=>{if(done)return;done=true;clearInterval(timer);dialogOpen=false;el.hidden=true;(ok?win:lose)();if(playing&&!dialogOpen)nextDialog();};
+  document.getElementById('mashBtn').onclick=()=>{
+    if(done)return;
+    if(!started){started=true;const t0=performance.now();timer=setInterval(()=>{const left=Math.max(0,4-(performance.now()-t0)/1000);const tEl=document.getElementById('mashT');if(tEl)tEl.textContent=left.toFixed(1)+' 秒';if(left<=0)finish(false);},50);}
+    n++;document.getElementById('mashN').style.width=Math.min(100,n/req*100)+'%';
+    if(n>=req)finish(true);
+  };
+  document.getElementById('mashGive').onclick=()=>finish(false);
+  document.getElementById('mashBtn').focus({preventScroll:true});
+}
+
+// ================= bedtime =================
+let bed={sleep:0,used:new Set()};
+const BED=[
+ {id:'angry',who:'小寶',pri:true,cond:()=>count.scold>=3,on:()=>{L.askedAngry=true;},q:'黑暗中，小寶小聲問：「媽媽，你今天為什麼一直生氣？」',ch:()=>[
+   {l:'抱著他說對不起',fn:()=>{cf();apply({v:5});say('小寶說：「沒關係，我也有吵。」');bedStep(3,18,{f:8});}},
+   {l:'「因為你們一直吵架啊。」',fn:()=>bedStep(2,12,{f:-3})}]},
+ {id:'exam',who:'大寶',pri:true,q:'「媽媽，明天數學考試，如果考不好怎麼辦？」',ch:()=>[
+   {l:flags.reviewed?'「我們今天複習過了，你可以的。」':'「沒關係，盡力就好。」',fn:()=>{say(flags.reviewed?'大寶點點頭，在被子裡偷偷比了一個讚。':'大寶說：「那我用猜的。」');bedStep(3,flags.reviewed?20:10,{f:4});}}]},
+ {id:'dino',who:'小寶',q:'「媽媽，恐龍會不會刷牙？」',ans:'你們討論了暴龍到底有幾顆牙。小寶越講越有精神。',ansSleep:4},
+ {id:'death',who:'大寶',q:'「媽媽，人為什麼會死掉？你會不會死掉？」',ans:'你很認真地回答。大寶抱住你的手臂，安靜了很久。',ansSleep:10,ansF:8},
+ {id:'teacher',who:'大寶',q:'「媽媽，你小時候有沒有被老師罵過？」',ans:'你講了國小把作業忘在公車上的事。大寶笑到整張床都在抖。'},
+ {id:'water',who:'小寶',q:'「我口渴。」',ch:()=>[{l:'起來去倒一杯水',fn:()=>{say('小寶喝了兩口，說：「好了。」');bedStep(3,10,{e:-2,f:2});}}]},
+ {id:'pee',who:'小寶',q:'「媽媽，我要尿尿。」',ch:()=>[{l:'帶他去廁所',fn:()=>{say('尿完回來，他又清醒了一點。');bedStep(4,6,{e:-2,f:2});}}]},
+ {id:'baby',who:'小寶',q:'「大寶說我是小寶寶！」大寶：「你本來就是！」',ch:()=>[
+   {l:'「你們兩個都是媽媽的寶貝。」',fn:()=>{cf();bedStep(3,15,{f:4});}},
+   {l:'「再講話就各自去睡！」',fn:()=>{scold();say('兩個人瞬間安靜。');bedStep(1,25,{});}}]},
+ {id:'dinoday',who:'小寶',q:'「我明天要當恐龍去學校。」',ans:'你們決定明天要當三角龍。小寶開心地踢了你兩腳。',ansSleep:6},
+ {id:'love',who:'大寶',q:'「媽媽，你最愛誰？」小寶搶著說：「愛我！」大寶：「愛我！」',ch:()=>[{l:'「最愛你們兩個，一樣多。」',fn:()=>bedStep(3,14,{f:5})}]},
+ {id:'song',who:'小寶',q:'「媽媽唱歌。唱小星星。唱兩遍。」',ch:()=>[{l:'唱小星星',fn:()=>{say('唱到第二遍「一閃一閃」，左邊開始有打呼聲。');bedStep(4,22,{e:-2,f:3});}}]}
+];
+function startBedtime(){
+  flags.bedtime=true;busy=null;renderBusy();kids.forEach(k=>{k.cling=false;});gatherKidsToBed();
+  bed={sleep:10,used:new Set()};
+  dialog('小孩房','燈關了，你躺在兩個小孩中間。三秒後，黑暗中傳來小寶的聲音：「媽媽……」',[{l:'「嗯？」',fn:bedRound}]);
+}
+function bedRound(){
+  if(!playing||night)return;
+  if(bed.sleep>=100){dialog('小孩房','左邊傳來小寶的打呼聲，右邊大寶的手還搭在你身上。兩個都睡著了。你像拆炸彈一樣，慢慢爬下床。',[{l:'成功脫身',fn:()=>startNight(false)}]);return;}
+  if(gameMin>=T(22,20)){dialog('小孩房','聊到一半，兩個人終於沒有聲音了。你看了一下時間，嘆了一口氣。',[{l:'爬下床',fn:()=>startNight(false)}]);return;}
+  if(S.e<28&&Math.random()<(28-S.e)/28*.7){momFellAsleep();return;}
+  const pool=BED.filter(p=>!bed.used.has(p.id)&&(!p.cond||p.cond()));
+  if(!pool.length){bed.sleep=100;bedRound();return;}
+  const pri=pool.filter(p=>p.pri&&Math.random()<.5);
+  const p=pri.length?pri[0]:pick(pool);bed.used.add(p.id);if(p.on)p.on();
+  const ch=p.ch?p.ch():[{l:'認真回答',fn:()=>{say(p.ans);bedStep(5,p.ansSleep||10,{f:p.ansF||4,e:-3});}}];
+  ch.push({l:'「噓，閉上眼睛，睡覺了。」',fn:()=>bedStep(2,20,{f:-1})});
+  ch.push({l:'假裝睡著',fn:()=>{if(Math.random()<.5){say('你發出很逼真的打呼聲。旁邊安靜下來了。');bedStep(3,28,{});}else{say(`${p.who}戳你的臉：「媽媽你在假睡！」`);bedStep(2,5,{p:-3});}}});
+  dialog(`${p.who}・睡不著`,p.q,ch);
+}
+function bedStep(min,gain,d){apply(d);bed.sleep+=gain;advance(min);if(playing&&!night)bedRound();}
+function advance(n){for(let i=0;i<n&&playing;i++){gameMin=Math.floor(gameMin)+1;minuteTick(gameMin);}}
+function momFellAsleep(){
+  dialog('小孩房','小寶在講恐龍的事，你的眼皮越來越重。「然後暴龍就……媽媽？媽媽？」',[{l:'zzz……',fn:()=>{
+    count.momSlept=true;flags.napping=true;advance(Math.max(30,T(22,35)-gameMin));flags.napping=false;
+    if(playing&&!night){apply({p:-4});startNight(false,`你在小孩床上驚醒，脖子扭到了。現在 ${hhmm(gameMin)}，兩個小孩早就睡著了。`);}
+  }}]);
+}
+
+
+// ================= hidden eggs (tap furniture) =================
+const EGGS={
+ card:{name:'大寶的卡片',t:'書桌抽屜裡夾著一張卡片，歪歪的字寫著：「媽媽我愛你，你是世界上最棒的媽媽。（第二棒是暴龍）」',d:{v:15,p:5}},
+ coins:{name:'沙發縫的零錢',t:'你的手滑進沙發縫，摸到 37 元、一顆樂高、一片不知道哪一年的洋芋片。零錢歸你。',d:{p:4,v:3}},
+ choco:{name:'冰箱上面的巧克力',t:'你踮腳往冰箱上面摸——上個月藏起來的那盒巧克力，還在！小孩不知道。爸爸也不知道。',d:{h:8,p:8,e:4}},
+ note:{name:'枕頭下的紙條',t:'枕頭底下有一張紙條：「給媽媽：我長大要買一台會洗碗的機器人給你。」注音寫錯三個，你看了五遍。',d:{v:10,f:3}},
+ remote:{name:'失蹤的遙控器',t:'玩具箱最底下：上禮拜失蹤的電視遙控器，還有爸爸找了三天的車鑰匙。你決定晚點再告訴他。',d:{p:6,v:3}},
+ cake:{name:'會議室的鳳梨酥',t:'會議桌底下有一盒沒人拿的鳳梨酥。開會的人都走了。現在它是你的了。',d:{h:15,p:3}}
+};
+function findEgg(id){
+  if(L.eggs.includes(id))return false;
+  L.eggs.push(id);const e=EGGS[id];
+  apply(e.d);floatText('彩蛋！','--will');
+  dialog(`彩蛋 ${L.eggs.length}/${Object.keys(EGGS).length}・${e.name}`,e.t,[{l:'收下',fn:()=>{}}]);
+  return true;
+}
+
+// ================= mini-games (pointer events: finger + mouse) =================
+function openMini(name,who,html,init,cb){
+  dialogOpen=true;const el=document.getElementById('dlg');el.hidden=false;
+  el.innerHTML=`<div class="dlg-card mg" data-mg="${name}"><span class="who">${hhmm(gameMin)}・${who}</span>${html}<p class="mg-res" id="mgRes" aria-live="polite"></p></div>`;
+  let done=false;const stops=[];
+  const api={
+    q:sel=>el.querySelector(sel),
+    raf(fn){let id;const loop=t=>{if(done)return;fn(t);id=requestAnimationFrame(loop);};id=requestAnimationFrame(loop);stops.push(()=>cancelAnimationFrame(id));},
+    finish(res,msg){
+      if(done)return;done=true;stops.forEach(f=>f());
+      (L.mg[name]=L.mg[name]||[]).push(res);
+      const r=el.querySelector('#mgRes');if(r)r.textContent=msg||'';
+      el.querySelector('.dlg-card').dataset.res=res;
+      setTimeout(()=>{dialogOpen=false;el.hidden=true;cb(res);if(playing&&!dialogOpen)nextDialog();},msg?1100:0);
+    }
+  };
+  init(api);
+}
+function holdable(elm,onDown,onUp){
+  // press-and-hold that works with mouse, touch and keyboard
+  let on=false;
+  const down=e=>{if(on)return;on=true;elm.classList.add('on');if(e&&e.pointerId!=null){try{elm.setPointerCapture(e.pointerId);}catch(_){}}onDown();};
+  const up=()=>{if(!on)return;on=false;elm.classList.remove('on');onUp();};
+  elm.addEventListener('pointerdown',e=>{e.preventDefault();down(e);});
+  elm.addEventListener('pointerup',up);elm.addEventListener('pointercancel',up);
+  elm.addEventListener('contextmenu',e=>e.preventDefault());
+  elm.addEventListener('keydown',e=>{if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();down();}});
+  elm.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();up();}});
+  elm.tabIndex=0;
+  return ()=>on;
+}
+const MINI={
+ egg(cb){
+  const g0=Math.round(rnd(50,62)),g1=g0+18;
+  openMini('egg','煎蛋',`<p>小寶的規定：蛋「不能有黃黃的流出來」，也不能焦。</p>
+    <div class="pan"><div class="egg" id="egg"><i></i></div></div>
+    <div class="heat" id="heat" data-g0="${g0}" data-g1="${g1}"><span class="zone" style="left:${g0}%;width:${g1-g0}%"></span><i id="heatI"></i></div>
+    <button class="hold" id="holdB">按住開火，到綠色區放開</button>`,api=>{
+    let v=0,started=false,last=performance.now();const t0=last;
+    const heat=api.q('#heat'),hi=api.q('#heatI'),egg=api.q('#egg'),b=api.q('#holdB');
+    const end=()=>{const res=v<g0?'soft':v>g1?'burnt':'great';api.finish(res,{great:'完美全熟！',soft:'蛋黃流出來了……',burnt:'焦了。'}[res]);};
+    const isOn=holdable(b,()=>{started=true;b.textContent='煎煎煎……';},()=>end());
+    api.raf(now=>{const dt=Math.min(.05,(now-last)/1000);last=now;
+      if(isOn()){v+=dt*30;if(v>=100){v=100;end();}}
+      hi.style.width=v+'%';heat.dataset.v=v.toFixed(1);
+      egg.style.background=v>g1?`rgba(176,110,40,${Math.min(1,.5+(v-g1)/30)})`:`rgba(255,255,255,${.35+Math.min(.65,v/g0*.65)})`;
+      egg.firstElementChild.style.background=v>g0?'#F2C14E':'#FFB300';
+      if(!started&&now-t0>10000)end();});
+  },cb);
+ },
+ dress(cb){
+  const items=['上衣','褲子','襪子'],LIM=9;
+  openMini('dress','換衣服',`<p>小寶在扭來扭去。把衣服拖到他身上！</p>
+    <div class="mg-area" id="area"><div class="kidT" id="kidT">小寶 0/3</div>${items.map((n,i)=>`<button class="chip" data-i="${i}" style="left:${6+i*32}%">${n}</button>`).join('')}</div>
+    <div class="mg-time"><i id="mgT"></i></div>`,api=>{
+    const area=api.q('#area'),kid=api.q('#kidT'),bar=api.q('#mgT');let got=0,kx=0,ky=0;const t0=performance.now();
+    const finish=()=>{const res=got>=3?'great':got>=1?'partial':'fail';api.finish(res,{great:'穿好了！還有時間幫他梳頭。',partial:`穿了 ${got} 件，剩下的邊走邊穿。`,fail:'他跑掉了，光著屁股。'}[res]);};
+    area.querySelectorAll('.chip').forEach(ch=>{
+      let drag=false,ox=0,oy=0;
+      ch.addEventListener('pointerdown',e=>{e.preventDefault();drag=true;ch.classList.add('drag');try{ch.setPointerCapture(e.pointerId);}catch(_){}
+        const r=ch.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;});
+      ch.addEventListener('pointermove',e=>{if(!drag)return;const a=area.getBoundingClientRect();
+        ch.style.left=(e.clientX-a.left-ox)+'px';ch.style.top=(e.clientY-a.top-oy)+'px';ch.style.bottom='auto';});
+      const drop=()=>{if(!drag)return;drag=false;ch.classList.remove('drag');
+        const a=area.getBoundingClientRect(),r=ch.getBoundingClientRect();const cx=r.left+r.width/2-a.left,cy=r.top+r.height/2-a.top;
+        if(Math.hypot(cx-kx,cy-ky)<58){ch.hidden=true;got++;kid.textContent=`小寶 ${got}/3`;if(got>=3)finish();}
+        else{ch.style.top='';ch.style.bottom='8px';ch.style.left=(6+(+ch.dataset.i)*32)+'%';}};
+      ch.addEventListener('pointerup',drop);ch.addEventListener('pointercancel',drop);
+    });
+    api.raf(now=>{const t=(now-t0)/1000,a=area.clientWidth;
+      kx=a/2+Math.sin(t*2.1)*a*.3;ky=58+Math.sin(t*3.3)*12;kid.style.left=kx+'px';kid.style.top=ky+'px';
+      kid.dataset.x=kx.toFixed(0);kid.dataset.y=ky.toFixed(0);
+      bar.style.width=Math.max(0,100-t/LIM*100)+'%';if(t>=LIM)finish();});
+  },cb);
+ },
+ scrub(cb){
+  const LIM=8,N=6,NEED=110;
+  const spots=Array.from({length:N},(_,i)=>({x:18+(i%3)*32+rnd(-6,6),y:30+Math.floor(i/3)*36+rnd(-6,6),rub:0}));
+  openMini('scrub','洗澡',`<p>小寶身上有今天的晚餐、泥巴和麥克筆。按住搓一搓！</p>
+    <div class="mg-area" id="area"><div class="tub"></div><div class="kidT" style="left:50%;top:58%">小寶</div>${spots.map((p,i)=>`<span class="spot" data-i="${i}" style="left:${p.x}%;top:${p.y}%">髒</span>`).join('')}</div>
+    <div class="mg-time"><i id="mgT"></i></div>`,api=>{
+    const area=api.q('#area'),bar=api.q('#mgT'),els=[...area.querySelectorAll('.spot')];let down=false,lx=0,ly=0,clean=0,started=false,t0=performance.now();
+    const finish=()=>{const res=clean>=N?'great':clean>=3?'partial':'fail';api.finish(res,{great:'洗得亮晶晶！',partial:`洗掉 ${clean} 塊。剩下的明天再說。`,fail:'泡泡全在你身上。'}[res]);};
+    const pos=e=>{const a=area.getBoundingClientRect();return [e.clientX-a.left,e.clientY-a.top,a.width,a.height];};
+    area.addEventListener('pointerdown',e=>{e.preventDefault();down=true;if(!started){started=true;t0=performance.now();}try{area.setPointerCapture(e.pointerId);}catch(_){}[lx,ly]=pos(e);});
+    area.addEventListener('pointermove',e=>{if(!down)return;const [x,y,w,h]=pos(e);const d=Math.hypot(x-lx,y-ly);lx=x;ly=y;
+      spots.forEach((p,i)=>{if(p.rub>=NEED)return;if(Math.hypot(x-p.x/100*w,y-p.y/100*h)<34){p.rub+=d;els[i].style.opacity=Math.max(0,1-p.rub/NEED);els[i].textContent=p.rub>NEED*.5?'泡':'髒';
+        if(p.rub>=NEED){clean++;if(clean>=N)finish();}}});});
+    const up=()=>{down=false;};area.addEventListener('pointerup',up);area.addEventListener('pointercancel',up);
+    api.raf(now=>{const t=(now-t0)/1000;const lim=started?LIM:LIM+4;bar.style.width=Math.max(0,100-t/lim*100)+'%';if(t>=lim)finish();});
+  },cb);
+ },
+ breath(cb){
+  // 2 rounds: inhale 2s, exhale 3s (exhale a bit longer than inhale) = 10s
+  const SEQ=[['in',2],['out',3],['in',2],['out',3]],TOT=10;
+  openMini('breath','跟著圈圈呼吸',`<p>圈圈變大：按住吸氣。圈圈變小：放開吐氣。</p>
+    <div class="breath" id="br"><div class="ring" id="ring"></div><div class="ring-core" id="core">按住<br>開始</div></div>
+    <div class="mg-time"><i id="mgT"></i></div>`,api=>{
+    const br=api.q('#br'),ring=api.q('#ring'),core=api.q('#core'),bar=api.q('#mgT');
+    let t0=null,good=0,tot=0,last=0;const born=performance.now();
+    const isOn=holdable(br,()=>{if(t0===null){t0=performance.now();last=t0;}},()=>{});
+    api.raf(now=>{
+      if(t0===null){if(now-born>9000)api.finish('meh','沒關係，光是停下來就有用。');return;}
+      const t=(now-t0)/1000,dt=(now-last)/1000;last=now;
+      if(t>=TOT){const acc=tot?good/tot:0;const res=acc>=.72?'great':acc>=.45?'ok':'meh';api.finish(res,res==='great'?`跟得很好（${Math.round(acc*100)}%）`:`跟上了 ${Math.round(acc*100)}%`);return;}
+      let acc0=0,ph='in',pt=0,pl=2;for(const [p,l] of SEQ){if(t<acc0+l){ph=p;pt=t-acc0;pl=l;break;}acc0+=l;}
+      const k=pt/pl,sc=ph==='in'?.55+.45*k:1-.45*k;ring.style.transform=`scale(${sc})`;br.dataset.phase=ph;
+      core.textContent=ph==='in'?'吸——':'吐———';
+      if(pt>.3){tot+=dt;if(isOn()===(ph==='in'))good+=dt;}
+      bar.style.width=Math.max(0,100-t/TOT*100)+'%';});
+  },cb);
+ }
+};
+const MG_RES={
+ egg:{great:{dur:10,d:{f:4,p:3},r:'全熟，沒有黃黃的。小寶檢查了三次，點頭通過。'},
+      soft:{dur:14,d:{p:-4},r:'蛋黃流出來了。小寶：「有黃黃的！」你自己吃掉，再煎一顆。'},
+      burnt:{dur:11,d:{p:-2,f:1},r:'有點焦。大寶說這叫「脆脆蛋」，他很喜歡。小寶不吃。'}},
+ dress:{great:{dur:3,d:{f:3,p:2},r:'三件全中。小寶自己都嚇到了。'},
+        partial:{dur:6,d:{p:-2},r:'穿到一半，他鑽進桌子底下。你跪在地上把剩下的穿完。'},
+        fail:{dur:9,d:{p:-5,e:-3},r:'你追著光屁股的小寶繞了客廳兩圈。'}},
+ scrub:{great:{dur:8,d:{f:4,p:2},r:'洗得亮晶晶。小寶說他現在是「乾淨的恐龍」。'},
+        partial:{dur:12,d:{p:-1},r:'耳朵後面還有一點麥克筆。明天再說。'},
+        fail:{dur:15,d:{p:-4,e:-3},r:'泡泡全在你身上，小寶身上只有一點點。'}}
+};
+
+// ================= ending reflection =================
+const CTA={label:'跟著 Sandywich 一起練',url:''};
+const BADGES=[
+ {id:'noYell',n:'一次都沒吼',h:'撐到晚上，吼人 0 次'},
+ {id:'ex30',n:'運動達標',h:'一天運動 30 分鐘'},
+ {id:'stand',n:'撐到 23:00 不倒',h:'待到 23:00，一次都沒倒下'},
+ {id:'eggs',n:'彩蛋獵人',h:`累計找到全部 ${Object.keys(EGGS).length} 個彩蛋`},
+ {id:'hug',n:'抱抱機器',h:'一天蹲下來抱抱／聽小孩 6 次'},
+ {id:'team',n:'神隊友召喚師',h:'一天請爸爸幫忙 2 次'},
+ {id:'chef',n:'完美荷包蛋',h:'煎出沒有黃黃的蛋'},
+ {id:'breath',n:'深呼吸大師',h:'崩潰時跟著圈圈呼吸，跟得很好'},
+ {id:'noMiss',n:'一件都沒漏',h:'一天錯過 0 件事'},
+ {id:'charge',n:'先把自己顧好',h:'主動休息 3 次，而且沒爆炸'}
+];
+function earnedBadges(){
+  const reachedNight=flags.home&&gameMin>=T(21,0),got=[];
+  if(reachedNight&&count.scold===0)got.push('noYell');
+  if(count.exMin>=30)got.push('ex30');
+  if(flags.endHow==='late'&&count.faint===0)got.push('stand');
+  if(L.comfort>=6)got.push('hug');
+  if(L.dad>=2)got.push('team');
+  if((L.mg.egg||[]).includes('great'))got.push('chef');
+  if(L.breathGood>0)got.push('breath');
+  if(reachedNight&&count.miss===0)got.push('noMiss');
+  if(L.rest>=3&&count.boom===0)got.push('charge');
+  return got;
+}
+function reflection(){
+  const ex=Math.round(count.exMin),y=count.scold,miss=count.miss,crashes=count.faint+count.boom;
+  const types={
+    burn:{n:'燃燒自己型',tag:'先顧全世界，最後才想到自己。通常是想不到。',
+      s:count.faint*3.5+count.hungry*1.5+count.pee*1.5+(L.peeMin>=20?1.5:0)+(L.hungryMin>=40?1.5:0)+(L.rest===0?1.5:0)+L.holdOn+(L.minE<15?1.5:0),
+      cost:count.faint?`代價：身體先替你喊停了。精力最低掉到 ${Math.round(L.minE)}，還原地倒下 ${count.faint} 次。`:`代價：膀胱和肚子一直在排隊等你，排到最後都在抗議。精力最低掉到 ${Math.round(L.minE)}。`,
+      tip:'下次尿意那一格變紅的時候，先去上廁所，再回來顧世界。世界會等你四分鐘。'},
+    volcano:{n:'火山爆發型',tag:'平常很能忍，忍到某一刻就……轟。',
+      s:count.boom*3+Math.max(0,y-1)*1.3,
+      cost:`代價：吼一次扣一點家庭分，今天大約扣掉 ${y*3+count.boom*8} 分。${L.askedAngry?'睡前小寶還問了你為什麼一直生氣。':'吼完你自己心裡也揪了一下。'}`,
+      tip:L.yellHungry>=L.yellTired&&L.yellHungry>0?'下次想吼之前，先看一眼「肚子」那一格。餓了就先塞一口東西，再開口。':'下次快爆炸之前，先吐一口長長的氣，吐得比吸的還長，再說話。'},
+    fire:{n:'救火隊長型',tag:'哪裡冒煙就衝哪裡，什麼都自己扛。',
+      s:(L.dad===0?1.5:0)+L.solo*2.5+(count.done>=22?1.5:count.done>=16?.8:0)+L.cling*.3+(L.rest<=1?1:-Math.max(0,L.rest-2)*.8),
+      cost:L.minP<40?`代價：每一件事都接住了，就是沒接住你自己。耐心最低剩 ${Math.round(L.minP)}。`:`代價：完成 ${count.done} 件事，主動休息 ${L.rest} 次。你是全家跑最多步的人。`,
+      tip:'下次又想說「我自己來比較快」的時候，先挑一件小事交出去。爸爸洗的碗不完美，但碗是乾淨的。'},
+    all:{n:'全部都要型',tag:'工作要顧、小孩要顧、運動也要。貪心，但很拚。',
+      s:(L.work>=1&&L.fam>=1?1.5:0)+Math.min(L.work,L.fam)+(S.w>=45&&S.f>=50?2.5:0)+(ex>=15?1:0)+(miss<=2?1.5:0),
+      cost:`代價：工作 ${Math.round(S.w)}、家庭 ${Math.round(S.f)}，都很漂亮。但精力剩 ${Math.round(S.e)}，明天還要再來一次。`,
+      tip:'明天挑一件事，允許它只做到 70 分。就一件。'},
+    charge:{n:'懂得充電型',tag:'你知道沒電的人照顧不了任何人。',
+      s:L.rest*1.2+count.ex*2.5+L.dad*1.5+L.breathGood*1.5+L.care*.5+(count.boom+count.faint===0?1.5:0)-count.boom*2-count.faint*2.5,
+      cost:miss?`代價：有 ${miss} 件事沒做完。但你的電量撐到了最後，這筆很划算。`:'代價：幾乎沒有。可能是沙發被你坐出一個凹洞。',
+      tip:'你已經很會了。明天繼續：起床後，先伸個懶腰，再拿手機。'},
+    zen:{n:'放生大師型',tag:'做不完的就放著，天不會塌。……應該不會。',
+      s:(miss>=5?2+Math.min(miss-5,6)*.4:0)+L.letCling*.8+(S.p>=50?1:0)+(L.exSkip?1:0),
+      cost:`代價：錯過了 ${miss} 件事。明天它們可能會排隊來找你。`,
+      tip:'下次待辦一次冒出很多件，先做「剩下時間最少」的那一件，其他的放生沒關係。'}
+  };
+  let best='charge',bs=-1e9;for(const k in types)if(types[k].s>bs){bs=types[k].s;best=k;}
+  const T0=types[best];
+  // observations with real numbers
+  const O={
+    yell:y?`你今天吼了 ${y} 次${L.yellHungry&&L.yellHungry>=L.yellTired?`，其中 ${L.yellHungry} 次是在肚子餓的時候`:L.yellTired?`，其中 ${L.yellTired} 次是在快沒電的時候`:''}。`:'你今天一次都沒吼。小孩可能會以為你被掉包了。',
+    boom:count.boom?`理智線斷了 ${count.boom} 次，第一次在 ${L.firstBoom}。`:null,
+    faint:count.faint?`原地倒下 ${count.faint} 次，第一次在 ${L.firstFaint}。`:null,
+    pee:L.peeMin>=8?`尿意爆表之後，你又憋了 ${L.peeMin} 分鐘。`:null,
+    hungry:L.hungryMin>=15?`你餓著肚子撐了 ${L.hungryMin} 分鐘。`:null,
+    rest:`主動停下來休息：${L.rest} 次。`,
+    dad:L.dad?`請爸爸幫忙：${L.dad} 次。`:'請爸爸幫忙：0 次。',
+    solo:L.solo?`「我自己來比較快」說了 ${L.solo} 次。`:null,
+    workfam:L.work+L.fam>=2?`工作和家裡撞在一起 ${L.work+L.fam} 次：你選工作 ${L.work} 次、選家裡 ${L.fam} 次。`:null,
+    comfort:L.comfort?`小孩需要你的時候，你蹲下來抱抱、好好聽了 ${L.comfort} 次。`:null,
+    ex:ex>=30?`運動 ${ex} 分鐘，達標。`:L.exSkip?`跟沙發的意志力對決，輸了 ${L.exSkip} 次。運動 ${ex} 分鐘。`:`運動 ${ex} 分鐘。`,
+    miss:miss?`錯過 ${miss} 件事。`:'一件事都沒漏。',
+    cling:L.cling?`小孩黏上來 ${L.cling} 次${L.letCling?`，你讓他黏著繼續做事 ${L.letCling} 次`:''}。`:null,
+    care:L.care?`崩潰後選了照顧自己的方式回血 ${L.care} 次。`:null
+  };
+  const ORDER={burn:['faint','pee','hungry','rest','dad'],volcano:['yell','boom','hungry','rest'],fire:['solo','dad','cling','comfort','rest'],
+    all:['workfam','ex','miss','rest'],charge:['rest','ex','care','dad','yell'],zen:['miss','cling','yell','ex']};
+  const obs=[];for(const k of [...ORDER[best],'yell','ex','rest'])if(O[k]&&!obs.includes(O[k])&&obs.length<3)obs.push(O[k]);
+  // collapse from energy or patience -> point to self-care
+  const tip=(count.faint||count.boom)?'媽媽也需要被照顧。這週挑一天，小孩睡了以後，給自己 15 分鐘，跟著 Sandywich 的瑜伽影片動一動。':T0.tip;
+  return {id:best,name:T0.n,tag:T0.tag,obs,cost:T0.cost,tip,crashes,scores:Object.fromEntries(Object.entries(types).map(([k,v])=>[k,+v.s.toFixed(2)]))};
+}
+
+// ================= ending =================
+function checkDead(){
+  if(!playing||crisis)return;
+  if(S.p<=0)startCrisis('boom');else if(S.e<=0)startCrisis('faint');else if(S.h<=0)startCrisis('hungry');else if(S.v<=0)startCrisis('will');
+}
+// ================= crisis & rescue =================
+const CRISIS={
+ boom:{who:'理智線斷了',home:'你大吼一聲：「全部給我安靜！」連冰箱都嚇到停止運轉，小孩躲到桌子底下。',office:'你對著螢幕大喊一聲，整層樓的同事都轉過來看你。',fx:'崩潰！'},
+ faint:{who:'原地倒下',home:'你坐下來想喘口氣，然後整個人就倒在地上了。',office:'你趴在鍵盤上，文件裡多了一整排「ffffffffff」。',fx:'zzz'},
+ hungry:{who:'餓到發抖',home:'手在發抖，眼前的東西都長得像雞排。',office:'手在發抖，同事的頭看起來像一顆肉包。',fx:'好餓…'},
+ will:{who:'意志力歸零',home:'你什麼都不想做，只想變成沙發上的一顆馬鈴薯。',office:'你什麼都不想做，只想變成辦公椅上的一顆馬鈴薯。',fx:'不想動…'},
+ pee:{who:'膀胱最後通牒',home:'尿意已經滿了好久，膀胱發出最後通牒。',office:'尿意已經滿了好久，膀胱發出最後通牒。',fx:'快爆了！'}
+};
+function crisisPool(type){
+  const H=mapName==='home',O=mapName==='office',pm=phase==='home_pm',am=phase==='home_am',m=gameMin,L=[];
+  const add=(c,o)=>{if(c)L.push(o);};
+  if(type==='boom'){
+    add(O,{l:'去樓下買一杯珍奶（全糖、大杯）',min:15,d:{p:35,h:10,b:20},r:'第一口珍珠下去，你又可以當人了。'});
+    add(H&&!am,{l:'叫一杯珍奶外送',min:20,d:{p:35,h:10,b:20},r:'外送員按電鈴的那一刻，你差點感動到哭。'});
+    add(true,{care:1,l:'躲進廁所，深呼吸十次',min:5,d:{p:20,v:3},r:'吸氣四秒，吐氣六秒。門外有人在敲門，但你很平靜。'});
+    add(true,{care:1,l:'打給閨蜜抱怨',min:10,d:{p:28},r:'閨蜜說：「我懂，我家那兩個今天也這樣。」你們笑了十分鐘。'});
+    add(H&&!night,{care:1,l:'放一首歌，全家一起大聲唱',min:5,d:{p:22,f:5},r:'小寶唱錯詞，大寶跳奇怪的舞。剛剛的火山好像沒發生過。'});
+    add(true,{l:'吃一片黑巧克力',min:2,d:{p:12,e:5},r:'苦苦甜甜的。你決定原諒全世界五分鐘。'});
+    add(pm&&!night&&m<T(20,0),{care:1,dad:1,l:'把小孩交給爸爸，去上一堂瑜珈課',min:60,d:{p:40,e:20,v:25,f:-4},ex:60,r:'大休息的時候，你終於聽見自己的呼吸。回到家，小孩已經吃完飯了。'});
+    add(O&&m>=T(12,0)&&m<=T(13,0),{care:1,l:'午休去附近的瑜珈教室上課',min:45,d:{p:40,e:12,v:20,h:-10},ex:45,r:'下犬式的時候，你把主管的臉從腦袋裡吐出去了。'});
+    add(night,{care:1,l:'跟著 Sandywich 的瑜珈影片做 15 分鐘',min:15,d:{p:25,e:5,v:10},ex:15,r:'影片裡說「把今天放下」，你真的放下了一點點。'});
+    add(night,{care:1,l:'洗一個很長的熱水澡',min:15,d:{p:30,e:5},r:'浴室裡只有水聲，沒有人在喊媽媽。'});
+    add(am,{care:1,l:'抱著小孩，聞一下頭頂',min:2,d:{p:18,f:4},r:'奶香味。你的理智線自己接回去了。'});
+  }
+  if(type==='faint'){
+    add(true,{care:1,l:'原地睡一下',min:30,nap:true,d:{e:15},r:'醒來的時候臉上有地板的紋路，但你活過來了。'});
+    add(true,{l:'沖一杯三合一咖啡',min:3,d:{e:20,b:20},r:'糖和咖啡因同時上線。'});
+    add(true,{l:'吃一片巧克力',min:2,d:{e:12,h:8},r:'糖分緊急救援成功。'});
+    add(O,{l:'喝一罐提神飲料',min:2,d:{e:25,p:-5},r:'心跳有點快，但眼睛睜開了。'});
+    add(H&&!night&&!am,{care:1,dad:1,l:'請爸爸接手，去床上躺一下',min:40,nap:true,d:{e:20,p:10,f:-3},r:'你聽到客廳傳來爸爸說：「媽媽在休息，不要吵。」好感動。'});
+    add(pm&&!night&&m<T(20,0),{care:1,dad:1,l:'請爸爸顧小孩，去上一堂修復瑜珈課',min:60,d:{e:30,p:30,v:20,f:-4},ex:60,r:'老師幫你蓋上毯子。你差點在教室睡著。'});
+    add(night,{l:'直接上床睡覺（今天到此為止）',min:0,end:true,r:''});
+  }
+  if(type==='hungry'){
+    add(O,{l:'衝去便利商店：御飯糰＋茶葉蛋',min:10,d:{h:45,e:8},r:'站在店門口就吃完了。'});
+    add(O,{l:'叫一碗牛肉麵外送',min:25,d:{h:70,e:12,w:-3},r:'湯頭很濃，你吃到流汗。'});
+    add(O,{l:'偷吃同事桌上的餅乾',min:1,d:{h:15,p:-2},r:'你留了一張「對不起，明天還你」的便利貼。'});
+    add(H,{l:'吃小孩剩下的飯',min:3,d:{h:25,f:1},r:'冷掉的飯配半顆滷蛋。媽媽的標準套餐。'});
+    add(H,{l:'煮一碗泡麵加蛋',min:10,d:{h:50,e:5},r:'加了蛋就是料理。'});
+    add(H&&!night,{l:'偷吃小孩的乖乖',min:1,d:{h:15,f:-2},r:'大寶從門口探頭：「媽媽你在吃什麼？」'});
+    add(true,{l:'喝一杯珍奶當正餐',min:15,d:{h:30,p:15,b:20},r:'有澱粉、有奶、有茶。營養師看到會哭，但你很開心。'});
+  }
+  if(type==='will'){
+    add(true,{l:'躺平滑手機',min:20,d:{v:20,p:15,e:5},r:'看了 37 支貓咪影片。意志力慢慢充電中。'});
+    add(true,{care:1,l:'翻相簿，看小孩小時候的照片',min:3,d:{v:25,p:8},r:'原來他們曾經那麼小。你突然又有力氣了。'});
+    add(true,{care:1,l:'寫下今天的三件好事',min:3,d:{v:30},r:'一、咖啡是熱的。二、小寶說愛你。三、你還站著。'});
+    add(true,{care:1,l:'傳一則訊息給自己：「你很棒」',min:1,d:{v:15,p:5},r:'有點害羞，但有用。'});
+  }
+  if(type==='pee'){
+    add(true,{l:'衝去廁所，什麼都不管了',min:4,d:{p:-2},b0:true,r:'差一點點。真的只差一點點。'});
+    add(true,{l:'夾緊，再撐一下',min:0,hold:true,d:{p:-8},r:'你走路的樣子變得很奇怪。'});
+  }
+  return L;
+}
+function kidsFlee(){
+  if(mapName!=='home')return;
+  const [px,py]=tileOf(player);
+  for(const k of kids){
+    if(k.away||k.state!=='wander')continue;
+    endCling(k);
+    let best=null,bd=-1;
+    for(let i=0;i<40;i++){const x=1+Math.floor(Math.random()*13),y=1+Math.floor(Math.random()*13);if(!walkable(x,y))continue;const d=Math.abs(x-px)+Math.abs(y-py);if(d>bd){bd=d;best=[x,y];}}
+    if(best){const [kx,ky]=tileOf(k);const p=bfs(kx,ky,(x,y)=>x===best[0]&&y===best[1]);if(p)k.path=p;}
+  }
+}
+function startCrisis(type){
+  if(crisis||!playing)return;
+  crisis=type;crisisFx={type,start:performance.now()};
+  if(busy)cancelBusy();player.path=[];player.target=null;
+  if(type==='boom'){count.boom++;noteYell();if(!L.firstBoom)L.firstBoom=hhmm(gameMin);S.p=10;apply({f:-8,v:-6},true);kidsFlee();}
+  if(type==='faint'){count.faint++;if(!L.firstFaint)L.firstFaint=hhmm(gameMin);S.e=8;kids.forEach(k=>endCling(k));}
+  if(type==='hungry'){count.hungry++;S.h=5;}
+  if(type==='will'){count.will++;S.v=8;}
+  if(type==='pee')count.pee++;
+  renderStats();
+  const c=CRISIS[type];
+  setTimeout(()=>{
+    if(!playing||crisis!==type)return;
+    let opts=crisisPool(type).sort(()=>Math.random()-.5).slice(0,4);
+    if(type==='boom'||type==='will')opts=[{care:1,breath:true,l:'停十秒：跟著圈圈呼吸（按住吸氣、放開吐氣）',min:2,d:{}},...opts.slice(0,3)];
+    dialog(c.who,`${mapName==='office'?c.office:c.home}<br><br><b>先幫自己回血：</b>`,opts.map(o=>({l:o.min?`${o.l}（${o.min} 分鐘）`:o.l,fn:()=>rescue(o)})));
+  },1300);
+}
+function rescue(o){
+  if(o.breath){
+    MINI.breath(res=>{
+      const d=res==='great'?{p:30,v:8}:res==='ok'?{p:22,v:4}:{p:14};
+      if(res==='great')L.breathGood++;
+      rescue({...o,breath:false,d,r:res==='great'?'吸、吐、吸、吐。剛剛那個想吼人的你，慢慢坐下來了。':res==='ok'?'節奏有點亂，但吐氣有變長。夠用了。':'呼吸亂七八糟，但至少停下來了十秒。'});
+    });
+    return;
+  }
+  crisisFx=null;L.rescue++;if(o.care)L.care++;if(o.dad)L.dad++;if(o.hold)L.holdOn++;
+  if(o.end){crisis=null;endDay('bed');return;}
+  if(o.nap)flags.napping=true;
+  advance(o.min);flags.napping=false;
+  if(!playing)return;
+  if(o.b0){apply({b:-100},true);count.wc++;}
+  if(o.ex)count.exMin+=o.ex;
+  apply(o.d);say(o.r);
+  crisis=null;renderStats();renderTasks();checkDead();
+}
+function gameOver(r){
+  playing=false;
+  showEnd(r==='e'?'累倒了':'理智線斷了',r==='e'?`${hhmm(gameMin)}，你坐下來想休息五分鐘，再睜開眼，家裡像被颱風掃過。精力歸零了。`:`${hhmm(gameMin)}，你大吼了一聲。全家安靜，連貓都躲進衣櫃。耐心歸零了。`,true);
+}
+function endDay(how){
+  if(!playing)return;
+  playing=false;flags.endHow=how;
+  if(how==='late'&&!night){apply({f:-5},true);}
+  let title,line;
+  const {w,f,e}=S;
+  const ex=count.exMin;
+  if(w>=75&&f>=70&&ex>=30){title='時間管理大師（自稱）';line='工作、家裡、運動全都顧到了。請問你是不是偷偷多了幾個小時？';}
+  else if(ex>=30){title='意志力戰勝沙發';line='這麼累還是去動了。你的肌肉和你的耐心都會記得今天。';}
+  else if(count.boom>=3){title='人體火山（有在冷卻）';line=`今天爆炸了 ${count.boom} 次，每次都自己找到方法冷卻下來。這也是一種本事。`;}
+  else if(count.scold>=5){title='今天有點火山';line=`今天吼了 ${count.scold} 次。明天的你會更溫柔一點，今天的你也已經很努力了。`;}
+  else if(w>f+25){title='職場女超人';line='報告準時、會議沒漏。明天記得準時下班一次。';}
+  else if(f>w+20){title='全家的太陽';line='小孩今天過得很好，因為有你。也分一點光給自己。';}
+  else if(count.miss>=6){title='活著就好';line='今天漏了不少事，但你撐到了最後。這本身就是成就。';}
+  else if(e>=45){title='懂得休息的智者';line='你知道沒電的人照顧不了任何人。';}
+  else{title='今天也平安下莊';line='沒有特別厲害，也沒有特別糟。就是很普通、很辛苦、很了不起的一天。';}
+  const head=how==='bed'?`${hhmm(gameMin)} 躺上床`:night?'23:00 在沙發上睡著了':'23:00 還沒忙完就睡著了';
+  showEnd(title,`${head}。${line}`,false);
+}
+let shareText='';
+function showEnd(title,line,dead){
+  busy=null;renderBusy();document.getElementById('dlg').hidden=true;dq=[];dialogOpen=false;
+  const score=Math.round(S.w+S.f+S.e/2+S.p/2+S.v/2+Math.min(40,count.exMin));
+  const R=reflection();window.__lastReflection=R;
+  // persist badges / eggs / best record
+  const st=loadStore();st.plays=(st.plays||0)+1;st.badges=st.badges||{};st.eggs=Array.isArray(st.eggs)?st.eggs:[];st.types=st.types||{};
+  for(const e of L.eggs)if(!st.eggs.includes(e))st.eggs.push(e);
+  const got=earnedBadges();if(st.eggs.length>=Object.keys(EGGS).length)got.push('eggs');
+  const fresh=got.filter(b=>!st.badges[b]);got.forEach(b=>st.badges[b]=true);
+  st.types[R.id]=(st.types[R.id]||0)+1;
+  const isBest=!st.best||score>st.best.score;
+  if(isBest)st.best={score,title,type:R.name,time:hhmm(gameMin)};
+  saveStore(st);
+  shareText=`我在「兩寶媽的一天」撐到 ${hhmm(gameMin)}，拿到「${title}」，總分 ${score}。\n今天的我是「${R.name}」。\n工作 ${Math.round(S.w)}｜家庭 ${Math.round(S.f)}｜精力 ${Math.round(S.e)}｜耐心 ${Math.round(S.p)}\n完成 ${count.done} 件事、運動 ${Math.round(count.exMin)} 分鐘、吼了 ${count.scold} 次、喝了 ${count.coffee} 杯咖啡。換你試試看？`;
+  const cta=CTA.url?`<a class="primary cta" href="${CTA.url}" target="_blank" rel="noopener">${CTA.label}</a>`:`<p class="cta-text">${CTA.label}（影片準備中）</p>`;
+  const el=document.getElementById('endScreen');
+  el.innerHTML=`<div class="book-head"><h1>今日聯絡簿・家長版</h1><span>${todayStr()}</span></div>
+   <div><div class="lab">${dead?'提早下線':'今日稱號'}</div><h2 class="big-title">${title}</h2></div>
+   <p>${line}</p>
+   <section class="reflect" id="reflect" data-type="${R.id}">
+    <div class="lab">今天的你，是哪一種媽媽？</div>
+    <h2>${R.name}</h2>
+    <p class="tag">${R.tag}</p>
+    <ul>${R.obs.map(o=>`<li>${o}</li>`).join('')}</ul>
+    <p class="cost">${R.cost}</p>
+    <div class="tip"><b>下次先試一個小小的</b>${R.tip}</div>
+    ${cta}
+   </section>
+   <div><div class="lab">今日成績　總分 ${score}${isBest&&st.plays>1?'・新紀錄！':''}</div>
+   <div class="grid4">
+    <div><span>工作</span><b>${Math.round(S.w)}</b></div><div><span>家庭</span><b>${Math.round(S.f)}</b></div>
+    <div><span>精力</span><b>${Math.round(S.e)}</b></div><div><span>耐心</span><b>${Math.round(S.p)}</b></div>
+    <div><span>完成的事</span><b>${count.done}</b></div><div><span>錯過的事</span><b>${count.miss}</b></div>
+    <div><span>運動</span><b>${Math.round(count.exMin)} 分鐘</b></div><div><span>吼人</span><b>${count.scold} 次</b></div>
+    <div><span>原地爆炸</span><b>${count.boom} 次</b></div><div><span>原地倒下</span><b>${count.faint} 次</b></div>
+    <div><span>咖啡</span><b>${count.coffee} 杯</b></div><div><span>彩蛋</span><b>${L.eggs.length}/${Object.keys(EGGS).length}</b></div>
+   </div>
+   <p class="best">最佳紀錄：總分 ${st.best.score}（${st.best.title}）・一共過了 ${st.plays} 天</p></div>
+   <div><div class="lab">成就徽章　${Object.keys(st.badges).length}/${BADGES.length}</div>
+   <div class="badges">${BADGES.map(b=>`<div class="badge${st.badges[b.id]?'':' lock'}${fresh.includes(b.id)?' new':''}"><b>${b.n}</b><small>${b.h}${b.id==='eggs'?`（${st.eggs.length}/${Object.keys(EGGS).length}）`:''}</small></div>`).join('')}</div></div>
+   ${flags.home?`<div><div class="lab">明日預告</div><p>${flags.reviewed?'大寶數學考試：今天複習過了，他說要考 100 分。':'大寶數學考試：沒複習到，他說會用猜的。'}${count.momSlept?'另外，你的脖子明天應該還會痛。':''}</p></div>`:''}
+   <div class="sign"><span class="lab" style="border:0;color:var(--muted);transform:none;padding:0;font-family:var(--f-body);font-size:12px">家長簽名</span><span>辛苦了</span></div>
+   <div class="row"><button class="primary" id="again">再過一天</button><button class="ghost" id="copy">複製結果分享</button></div>
+   <div class="copied" id="copied" aria-live="polite"></div>`;
+  document.getElementById('gameScreen').hidden=true;el.hidden=false;
+  window.scrollTo(0,0);
+  document.getElementById('again').onclick=newGame;
+  document.getElementById('copy').onclick=async()=>{
+    const out=document.getElementById('copied');
+    try{await navigator.clipboard.writeText(shareText);out.textContent='已複製，可以貼到 LINE 或 IG 限動。';}
+    catch(_){out.innerHTML='';const ta=document.createElement('textarea');ta.value=shareText;ta.rows=4;ta.style.width='100%';out.appendChild(ta);ta.select();}
+  };
+}
+function showIntroBest(){const st=loadStore();const el=document.getElementById('introBest');if(st.best){el.hidden=false;el.textContent=`最佳紀錄：總分 ${st.best.score}（${st.best.title}）・徽章 ${Object.keys(st.badges||{}).length}/${BADGES.length}`;}}
+function todayStr(){const d=new Date();return `${d.getMonth()+1} 月 ${d.getDate()} 日（${'日一二三四五六'[d.getDay()]}）`;}
+
+// ================= per-minute =================
+function minuteTick(m){
+  // body
+  let drain=.045;if(S.h<15)drain+=.05;if(flags.napping)drain=-.35;
+  apply({e:-drain,h:-.11,b:.11,p:-.01},true);
+  if(S.h<15&&!warned.h){warned.h=true;say('肚子好餓，精力掉得更快了。');}
+  if(S.h>=30)warned.h=false;
+  L.minE=Math.min(L.minE,S.e);L.minP=Math.min(L.minP,S.p);if(S.h<15)L.hungryMin++;
+  if(S.b>=100){L.peeMin++;apply({p:-.6},true);if(!warned.b){warned.b=true;say('快憋不住了！去上廁所！');}flags.bFull=(flags.bFull||0)+1;if(flags.bFull>=15&&!crisis){flags.bFull=0;startCrisis('pee');}}else{flags.bFull=0;if(S.b<80)warned.b=false;}
+  if(S.e<20&&!warned.e){warned.e=true;say('精力好低，走路變慢了。找機會休息或喝咖啡。');}
+  if(S.e>=30)warned.e=false;
+  const kidWaiting=tasks.filter(t=>t.targets.some(g=>g.kind==='kid')).length;
+  if(kidWaiting)apply({p:-.03*kidWaiting},true);
+  for(const k of kids)if(k.cling){apply({p:-.06,e:-.02},true);if(m>=k.clingUntil){endCling(k);say(`${k.name}終於放開你，自己跑去玩了。`);}}
+  apply({v:S.e<20?-.06:-.015},true);
+  // busy
+  if(busy){
+    if(busy.cont)busy.perMin();
+    else{
+      const f=(!busy.noSlow&&kids.some(k=>k.cling))?.5:1;
+      busy.left-=f;busy.elapsed=(busy.elapsed||0)+1;
+      if(busy.onTick)busy.onTick(f,busy.elapsed);
+      if(busy&&busy.left<=0){const b=busy;busy=null;b.onDone();}
+    }
+    renderBusy();
+  }
+  // deadlines
+  for(const t of [...tasks])if(t.dl&&m>t.dl&&!(busy&&busy.task===t))failTask(t);
+  // events
+  for(const e of events)if(!e.fired&&e.phase===phase&&m>=e.at){e.fired=true;e.fn();if(!playing)return;}
+  renderTasks();
+}
+
+// ================= loop =================
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let ts=24,cssW=360,floats=[],tokens={};
+function readTokens(){const cs=getComputedStyle(document.documentElement);for(const k of ['--will','--wall','--floor','--floor-b','--floor-o','--floor-r','--obj','--obj-line','--obj-ink','--mom','--kid1','--kid2','--cowork','--spill','--accent','--energy','--patience','--hunger','--bladder','--work','--family','--muted','--card','--ink','--family'])tokens[k]=cs.getPropertyValue(k).trim();}
+function resize(){
+  const st=document.getElementById('stage');cssW=st.clientWidth||360;ts=cssW/W;
+  const dpr=window.devicePixelRatio||1;cv.width=Math.round(cssW*dpr);cv.height=Math.round(cssW*dpr);cv.style.height=cssW+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);readTokens();
+}
+function floatText(t,c){floats.push({t,c,x:player?player.x:7,y:player?player.y:7,age:0,off:floats.filter(f=>f.age<.3).length});}
+
+function moveEnt(e,dt,spd){
+  if(!e.path.length)return false;
+  const [nx,ny]=e.path[0];const dx=nx-e.x,dy=ny-e.y,d=Math.hypot(dx,dy),s=spd*dt;
+  if(d<=s){e.x=nx;e.y=ny;e.path.shift();}else{e.x+=dx/d*s;e.y+=dy/d*s;}
+  return true;
+}
+let last=0,minAcc=0,kbHeld=null,kbT=0;
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000||0);last=now;
+  if(playing&&!paused&&!dialogOpen&&!crisis&&phase!=='commute'){
+    minAcc+=dt*MIN_PER_SEC*speed;
+    while(minAcc>=1&&playing&&!dialogOpen){minAcc-=1;gameMin=Math.floor(gameMin)+1;minuteTick(gameMin);}
+    // player move
+    const spd=(S.e<20?2.4:4.2)*Math.min(speed,2)*moveBoost*(kids.some(k=>k.cling)?.7:1);
+    const moving=moveEnt(player,dt,spd);
+    if(!moving&&player.target){const [px,py]=tileOf(player);if(isAdj(player.target,px,py))interact(player.target);else{const p=bfs(px,py,(x,y)=>isAdj(player.target,x,y));if(p&&p.length)player.path=p;else player.target=null;}}
+    if(!moving&&!player.target&&kbHeld){kbT-=dt;if(kbT<=0){stepKey(kbHeld);kbT=.16;}}
+    // kids
+    if(mapName==='home')for(const k of kids){
+      if(k.cling){const a=Math.min(1,dt*8);k.x+=(player.x+.42-k.x)*a;k.y+=(player.y+.3-k.y)*a;continue;}
+      if(k.state!=='wander'||k.away)continue;
+      if(k.hold){k.path=k.path.slice(0,1);}
+      if(!moveEnt(k,dt,k.small?1.6:2)&&!k.hold){k.timer-=dt;if(k.timer<=0){k.timer=rnd(2.5,6);
+        const [kx,ky]=tileOf(k);const tgt=freeTileNear(night?7:7,night?8:8,6);if(tgt){const p=bfs(kx,ky,(x,y)=>x===tgt[0]&&y===tgt[1]);if(p)k.path=p.slice(0,8);}}}
+    }
+  }
+  if(crisis&&mapName==='home')for(const k of kids)if(k.state==='wander'&&!k.away&&!k.cling)moveEnt(k,dt,4.5);
+  document.getElementById('clock').textContent=hhmm(gameMin);
+  document.getElementById('phase').textContent=phase==='office'?'公司':phase==='home_am'?'家・早上':phase==='commute'?'路上':night?'家・深夜':'家・晚上';
+  if(!document.getElementById('gameScreen').hidden)draw(dt);
+  requestAnimationFrame(frame);
+}
+
+// ================= drawing =================
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function floorColor(x,y){
+  if(mapName==='home'){if((x>=12&&y<=4)||(x>=11&&y>=12))return tokens['--floor-b'];return tokens['--floor'];}
+  if(x>=11&&y>=12)return tokens['--floor-b'];if(y<=4)return tokens['--floor-r'];return tokens['--floor-o'];
+}
+let pulse=0;
+function draw(dt){
+  pulse+=dt;
+  const tk=tokens;
+  ctx.save();
+  if(crisisFx&&crisisFx.type==='boom'&&!RM){const age=(performance.now()-crisisFx.start)/1000;if(age<.8){const k=10*(1-age/.8);ctx.translate((Math.random()-.5)*k,(Math.random()-.5)*k);}}
+  ctx.fillStyle=tk['--wall'];ctx.fillRect(0,0,cssW,cssW);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(grid[y][x]!=='#'){ctx.fillStyle=floorColor(x,y);ctx.fillRect(x*ts,y*ts,ts+.5,ts+.5);}}
+  // task target set
+  const hot=new Set();for(const t of tasks)for(const g of t.targets)if(g.kind==='obj')hot.add(g.key);
+  // objects
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  for(const c of comps){
+    const x=c.x0*ts+2,y=c.y0*ts+2,w=(c.x1-c.x0+1)*ts-4,h=(c.y1-c.y0+1)*ts-4;
+    const isDoor=c.key==='D';
+    rr(x,y,w,h,Math.min(6,ts*.25));
+    ctx.fillStyle=isDoor?tk['--accent']:tk['--obj'];ctx.fill();
+    ctx.lineWidth=1.5;ctx.strokeStyle=tk['--obj-line'];ctx.stroke();
+    if(hot.has(c.key)){ctx.lineWidth=3;ctx.strokeStyle=tk['--accent'];ctx.globalAlpha=.55+.45*Math.sin(pulse*5);rr(x-1,y-1,w+2,h+2,7);ctx.stroke();ctx.globalAlpha=1;}
+    const name=MAPS[mapName].names[c.key];
+    if(name){const fs=Math.max(9,Math.min(ts*.42,(w/name.length)*.9));ctx.font=`500 ${fs}px "Noto Sans TC",sans-serif`;ctx.fillStyle=isDoor?(tk['--card']):tk['--obj-ink'];ctx.fillText(name,x+w/2,y+h/2+1);}
+    if(hot.has(c.key))bubble(c.x0+(c.x1-c.x0+1)/2,c.y0);
+  }
+  // coworkers
+  if(mapName==='office'){for(const c of comps)if(c.key==='d'){ctx.fillStyle=tk['--cowork'];ctx.beginPath();ctx.arc((c.x0+.5)*ts,(c.y0+1.15)*ts,ts*.28,0,7);ctx.fill();}
+    const b=comps.find(c=>c.key==='b');if(b){ctx.fillStyle=tk['--cowork'];ctx.beginPath();ctx.arc((b.x0+.5)*ts,(b.y0+1.2)*ts,ts*.32,0,7);ctx.fill();}}
+  // ents
+  for(const e of ents){
+    const cx=(e.x+.5)*ts,cy=(e.y+.5)*ts;
+    if(e.type==='spill'){ctx.fillStyle=tk['--spill'];ctx.globalAlpha=.85;ctx.beginPath();ctx.ellipse(cx,cy,ts*.42,ts*.28,.4,0,7);ctx.fill();ctx.globalAlpha=1;}
+    else{ctx.fillStyle=tk[e.c];rr(cx-ts*.17,cy-ts*.17,ts*.34,ts*.34,3);ctx.fill();}
+    if(tasks.some(t=>t.targets.some(g=>g.kind==='ent'&&g.id===e.id)))bubble(e.x+.5,e.y);
+  }
+  // kids
+  if(mapName==='home')for(const k of kids){
+    if(k.away)continue;
+    const cx=(k.x+.5)*ts,cy=(k.y+.5)*ts,r=ts*(k.small?.3:.36);
+    drawPerson(cx,cy,r,tk[k.color],k.state==='sleep');
+    ctx.font=`700 ${Math.max(9,ts*.36)}px "Noto Sans TC",sans-serif`;ctx.fillStyle=tk['--ink'];
+    ctx.fillText(k.cling?k.name+'・黏':k.name,cx,cy-r-ts*.25);
+    if(k.state==='sleep'){ctx.fillStyle=tk['--muted'];ctx.font=`700 ${ts*.32}px sans-serif`;ctx.fillText('z',cx+r+2,cy-r+Math.sin(pulse*2)*2);}
+    if(k.hold)bubble(k.x+.5,k.y-.55);
+  }
+  // player
+  const px=(player.x+.5)*ts,py=(player.y+.5)*ts,pr=ts*.4;
+  const shakeX=(crisis==='hungry'&&!RM)?Math.sin(pulse*40)*1.5:0;
+  if(crisis==='faint'){ctx.save();ctx.translate(px,py+pr*.3);ctx.rotate(Math.PI/2);drawPerson(0,0,pr,tk['--muted'],true,true);ctx.restore();}
+  else drawPerson(px+shakeX,py,pr,tk['--mom'],crisis==='will',true);
+  ctx.font=`700 ${Math.max(9,ts*.36)}px "Noto Sans TC",sans-serif`;ctx.fillStyle=tk['--ink'];ctx.fillText('你',px,py-pr-ts*.25);
+  if(crisisFx)drawFx(px,py,pr,(performance.now()-crisisFx.start)/1000);
+  if(busy&&!busy.cont){ctx.fillStyle=tk['--card'];rr(px-ts*.5,py+pr+3,ts,5,2);ctx.fill();ctx.fillStyle=tk['--accent'];rr(px-ts*.5,py+pr+3,ts*(1-busy.left/busy.dur),5,2);ctx.fill();}
+  // night dim
+  if(night){ctx.fillStyle='rgba(10,14,40,.28)';ctx.fillRect(0,0,cssW,cssW);}
+  // floats
+  floats=floats.filter(f=>f.age<1.6);
+  for(const f of floats){f.age+=dt;ctx.globalAlpha=Math.max(0,1-f.age/1.6);ctx.font=`700 ${Math.max(11,ts*.46)}px "Noto Sans TC",sans-serif`;
+    const tx=Math.min(cssW-50,Math.max(50,(f.x+.5)*ts)),ty=(f.y-.4)*ts-f.age*26-f.off*16;
+    ctx.lineWidth=3;ctx.strokeStyle=tk['--card'];ctx.strokeText(f.t,tx,ty);ctx.fillStyle=tk[f.c]||tk['--ink'];ctx.fillText(f.t,tx,ty);ctx.globalAlpha=1;}
+  ctx.restore();
+}
+function drawFx(px,py,pr,age){
+  const tk=tokens,t=crisisFx.type,lab=CRISIS[t].fx;
+  if(t==='boom'&&age<1.4){const R=pr*(1.4+age*3.2);ctx.strokeStyle=tk['--accent'];ctx.lineWidth=4;ctx.globalAlpha=Math.max(0,1-age/1.4);for(let i=0;i<12;i++){const a=i/12*Math.PI*2;ctx.beginPath();ctx.moveTo(px+Math.cos(a)*R*.55,py+Math.sin(a)*R*.55);ctx.lineTo(px+Math.cos(a)*R,py+Math.sin(a)*R);ctx.stroke();}ctx.globalAlpha=1;}
+  if(t==='boom'){const fl=RM?0:Math.sin(pulse*20)*2;ctx.fillStyle=tk['--accent'];ctx.beginPath();ctx.moveTo(px-pr*.55,py-pr*1.05);ctx.quadraticCurveTo(px-pr*.7,py-pr*2+fl,px,py-pr*2.5-fl);ctx.quadraticCurveTo(px+pr*.7,py-pr*2+fl,px+pr*.55,py-pr*1.05);ctx.fill();ctx.fillStyle=tk['--energy'];ctx.beginPath();ctx.moveTo(px-pr*.28,py-pr*1.05);ctx.quadraticCurveTo(px,py-pr*1.95,px+pr*.28,py-pr*1.05);ctx.fill();}
+  const fs=Math.max(13,ts*.62);ctx.font=`700 ${fs}px "Huninn","Noto Sans TC",sans-serif`;
+  const ty=Math.max(fs,py-pr-ts*(t==='boom'?2:1.05)),tx=Math.min(cssW-44,Math.max(44,px));
+  ctx.lineWidth=4;ctx.strokeStyle=tk['--card'];ctx.strokeText(lab,tx,ty);
+  ctx.fillStyle={boom:tk['--accent'],faint:tk['--muted'],hungry:tk['--hunger'],will:tk['--will'],pee:tk['--bladder']}[t];ctx.fillText(lab,tx,ty);
+}
+function drawPerson(cx,cy,r,col,sleep,mom){
+  ctx.fillStyle=col;ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.fill();
+  ctx.lineWidth=2;ctx.strokeStyle=tokens['--card'];ctx.stroke();
+  if(mom){ctx.fillStyle=tokens['--ink'];ctx.beginPath();ctx.arc(cx,cy-r*.95,r*.32,0,7);ctx.fill();}
+  ctx.fillStyle=tokens['--card'];
+  if(sleep){ctx.fillRect(cx-r*.45,cy-r*.12,r*.3,2);ctx.fillRect(cx+r*.15,cy-r*.12,r*.3,2);}
+  else{ctx.beginPath();ctx.arc(cx-r*.32,cy-r*.12,Math.max(1.5,r*.12),0,7);ctx.arc(cx+r*.32,cy-r*.12,Math.max(1.5,r*.12),0,7);ctx.fill();}
+}
+function bubble(tx,ty){
+  const x=tx*ts,y=ty*ts-ts*.15+Math.sin(pulse*4)*2;
+  ctx.fillStyle=tokens['--accent'];ctx.beginPath();ctx.arc(x,y,ts*.26,0,7);ctx.fill();
+  ctx.fillStyle=tokens['--card'];ctx.font=`700 ${ts*.36}px sans-serif`;ctx.fillText('!',x,y+1);
+}
+
+// ================= HUD =================
+function renderStats(){
+  const el=document.getElementById('stats');
+  const bar=(k,label)=>{const v=Math.round(S[k]);const warn=(k==='b'?v>=85:v<=20);
+    return `<div class="st${warn?' warn':''}"><div class="st-h"><span>${label}</span><span>${v}</span></div><div class="bar"><i style="width:${v}%;background:var(${STAT_META[k][1]})"></i></div></div>`;};
+  const num=(k,label)=>`<div class="st num"><div class="st-h"><span>${label}</span></div><div class="v" style="color:var(${STAT_META[k][1]})">${Math.round(S[k])}</div></div>`;
+  const exv=`<div class="st num"><div class="st-h"><span>運動</span></div><div class="v" style="color:var(--will)">${Math.round(count.exMin)}<small style="font-size:11px;color:var(--muted);font-weight:500"> /30分</small></div></div>`;
+  el.innerHTML=bar('e','精力')+bar('p','耐心')+bar('v','意志力')+bar('h','肚子')+bar('b','尿意')+num('w','工作分')+num('f','家庭分')+exv;
+}
+
+// ================= input =================
+cv.addEventListener('pointerdown',ev=>{
+  if(!playing||dialogOpen)return;
+  const r=cv.getBoundingClientRect();const fx=(ev.clientX-r.left)/ts,fy=(ev.clientY-r.top)/ts;const x=Math.floor(fx),y=Math.floor(fy);
+  if(x<0||y<0||x>=W||y>=H)return;
+  if(mapName==='home'){for(const k of kids){if(k.away)continue;if(Math.hypot(k.x+.5-fx,k.y+.5-fy)<.65){goTo({kind:'kid',id:k.id});return;}}}
+  for(const e of ents){if(Math.hypot(e.x+.5-fx,e.y+.5-fy)<.6){goTo({kind:'ent',id:e.id});return;}}
+  const ch=grid[y][x];
+  if(ch==='#')return;
+  if(ch==='.'){walkTo(x,y);return;}
+  if(ch==='d')return;
+  goTo({kind:'obj',key:ch});
+});
+const KEYMAP={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0]};
+function stepKey(d){
+  if(busy)cancelBusy();player.target=null;
+  const [px,py]=tileOf(player);if(walkable(px+d[0],py+d[1]))player.path=[[px+d[0],py+d[1]]];
+}
+window.addEventListener('keydown',ev=>{
+  if(document.getElementById('gameScreen').hidden)return;
+  const k=ev.key.length===1?ev.key.toLowerCase():ev.key;
+  if(k==='p'){togglePause();return;}
+  if(!playing||dialogOpen||paused)return;
+  if(KEYMAP[k]){ev.preventDefault();if(kbHeld!==KEYMAP[k]){kbHeld=KEYMAP[k];if(!player.path.length){stepKey(kbHeld);kbT=.18;}}return;}
+  if(k==='e'||k===' '){ev.preventDefault();
+    const [px,py]=tileOf(player);
+    for(const t of tasks)for(const g of t.targets)if(isAdj(g,px,py)){interact(g);return;}
+    if(mapName==='home')for(const kd of kids)if(!kd.away&&isAdj({kind:'kid',id:kd.id},px,py)){interact({kind:'kid',id:kd.id});return;}
+    for(const e of ents)if(isAdj({kind:'ent',id:e.id},px,py)){interact({kind:'ent',id:e.id});return;}
+    for(const [dx,dy] of DIRS){const ch=grid[py+dy]&&grid[py+dy][px+dx];if(ch&&ch!=='#'&&ch!=='.'&&ch!=='d'){interact({kind:'obj',key:ch});return;}}
+  }
+});
+window.addEventListener('keyup',ev=>{const k=ev.key.length===1?ev.key.toLowerCase():ev.key;if(KEYMAP[k]&&kbHeld===KEYMAP[k])kbHeld=null;});
+function togglePause(){if(!playing)return;paused=!paused;document.getElementById('pauseBtn').textContent=paused?'繼續':'暫停';say(paused?'暫停中。時間和小孩都停住了（只有在遊戲裡）。':'');}
+document.getElementById('pauseBtn').onclick=togglePause;
+document.getElementById('speedBtn').onclick=()=>{speed=speed===1?2:speed===2?3:1;document.getElementById('speedBtn').textContent=speed+'×';};
+document.getElementById('start').onclick=newGame;
+document.getElementById('today').textContent=todayStr();
+window.addEventListener('resize',()=>{if(!document.getElementById('gameScreen').hidden)resize();});
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readTokens);}catch(_){}
+new MutationObserver(readTokens).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&playing&&!paused)togglePause();});
+readTokens();showIntroBest();
+// small test hook (used by the auto-player; harmless for players)
+window.__mom={get S(){return S},get L(){return L},get count(){return count},get phase(){return phase},get night(){return night},get playing(){return playing},
+  get gameMin(){return gameMin},get tasks(){return tasks.map(t=>t.title)},get crisis(){return crisis},setSpeed(n,b){speed=n;moveBoost=b||1;},reflection:()=>reflection()};
+requestAnimationFrame(frame);
+</script>
+
+</body>
+</html>
