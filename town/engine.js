@@ -19,12 +19,15 @@ try{
   Z=(want&&zones.find(z=>z.id===want&&z.unlock<=today))||open[open.length-1];
   if(!Z){const next=zones[0];$('toast').textContent=`三明治鎮 ${next.unlock} 開放，敬請期待！`;return;}
 }catch(e){$('toast').textContent='小鎮的地圖還沒載入，請重新整理一次。';console.error(e);return;}
+// 網站設定（IG 帳號）。讀不到也沒關係，結尾就不顯示 IG 按鈕。
+let SITE={};try{SITE=await getJSON('/content/site.json');}catch(_){}
+const IG=(()=>{const h=String((SITE.ig||{}).handle||'').trim().replace(/^@/,'');return h?{handle:h,url:(SITE.ig.url||'').trim()||`https://www.instagram.com/${encodeURIComponent(h)}/`}:null;})();
 
 // ================= 規則（數值） =================
 const DEF={dayStart:'08:00',dayEnd:'17:00',minPerSec:2,walkTilesPerSec:3.2,lessonMin:40,retryMin:20,talkMin:20,noRopeMin:15,wrongQuizMin:8,
   startTension:[20,50],failTension:20,monsterBoost:1.8,monsterNear:2,cardAt:3,fastBefore:'15:00',
   energy:{start:100,perfect:12,pass:16,fail:28,walkTile:.25,low:30,lowZone:-.05,zeroRestMin:50,zeroRefill:50},
-  hold:{zone:.26,minZone:.12,breaths:3,breathSec:3.2,perfect:.85,pass:.6,outMax:1.8,brickZone:.1}};
+  hold:{zone:.42,minZone:.28,breaths:2,inSec:4,exSec:5,low:.3,high:.7,up:.17,down:.14,wobble:.04,perfect:.8,pass:.5,outMax:3,brickZone:.1}};
 const R=Object.assign({},DEF,Z.rules||{});R.energy=Object.assign({},DEF.energy,(Z.rules||{}).energy);R.hold=Object.assign({},DEF.hold,(Z.rules||{}).hold);
 const hm=s=>{const [h,m]=String(s).split(':').map(Number);return h*60+(m||0);};
 const DAY0=hm(R.dayStart),DAYLEN=hm(R.dayEnd)-DAY0;
@@ -81,7 +84,7 @@ function newRun(){
     coupon:Z.coupon&&Z.coupon.at&&Z.coupon.at.length?{at:pick(Z.coupon.at),have:false,used:false}:null,
     cheese:null,
     mon:{x:MON.start[0],y:MON.start[1],fx:MON.start[0],fy:MON.start[1],path:[],target:null,acc:0,daze:0,cool:0,linger:0,taps:[]},
-    st:{picks:0,hiPick:0,nearPick:0,talk:0,direct:0,rests:0,zero:0,fails:0,perfects:0,passes:0,walk:0,wasted:0,pend:0,monster:0,scares:0,minEnergy:R.energy.start,wrong:0,order:[]},
+    st:{picks:0,hiPick:0,nearPick:0,talk:0,direct:0,rests:0,zero:0,fails:0,perfects:0,passes:0,walk:0,wasted:0,pend:0,monster:0,scares:0,minEnergy:R.energy.start,wrong:0,noRope:0,badAp:0,order:[]},
     origin:[Z.map.start[0],Z.map.start[1]],newBadges:[]};
   if(SEC&&SEC.window){
     const sp=SEC.spots&&SEC.spots.length?pick(SEC.spots):{at:SEC.at,hint:''};
@@ -254,6 +257,9 @@ function renderHud(){
    ${run.coupon&&run.coupon.have&&!run.coupon.used?`<span class="slot got" title="${Z.coupon.name}">${couponSvg()}按摩券</span>`:''}
    ${run.rainUntil>=0?'<span class="slot rain">下雨中</span>':''}`;
   if(renderHud.bag!==bag){renderHud.bag=bag;$('bagRow').innerHTML=bag;}
+  const sv=NPCS.filter(n=>resOf(n).state==='saved').length,left=R.cardAt-sv;
+  const goal=`<span class="pips">${Array.from({length:R.cardAt},(_,i)=>`<i class="${i<sv?'on':''}"></i>`).join('')}</span>${left>0?`再救 <b>${left}</b> 位，解鎖序列圖卡`:'今天解鎖序列圖卡了！再多救幾位'}`;
+  if(renderHud.goal!==goal){renderHud.goal=goal;$('goal').innerHTML=goal;}
 }
 function renderUI(){
   const saved=NPCS.filter(n=>resOf(n).state==='saved').length,stuckN=NPCS.filter(n=>resOf(n).state==='stuck').length;
@@ -371,6 +377,7 @@ function startLesson(n,kind,ap){
   }
   productive();
   run.st[kind]++;r.approach=kind;
+  {const other=n.ap[kind==='talk'?'direct':'talk']||{};if((ap.zone||0)<(other.zone||0))run.st.badAp++;}
   if(kind==='talk')spend(R.talkMin||20);
   r.t=Math.max(0,r.t+(ap.tension||0));
   if(r.t>=100){run.active=null;stuck(n);closeSheet();return;}
@@ -411,7 +418,7 @@ function dragGame(n,o){
       <circle cx="${hx}" cy="${hy}" r="13" fill="#ffc233" stroke="#2c2c2a" stroke-width="3" class="handle"/>
       <circle cx="${hx}" cy="${hy}" r="24" fill="#ffc233" opacity="${dragging?.25:.12}"/>${gap}`);
   };
-  const finish=()=>{if(done)return;done=true;cancelAnimationFrame(raf);
+  const finish=()=>{if(done)return;done=true;cancelAnimationFrame(raf);keyHandler=null;key=false;
     if(cow&&!rope){noRope(n);return;}
     t=1;render();const lb=$('lb');if(lb)lb.innerHTML=`<p class="patmsg">到位！</p>`;
     setTimeout(()=>holdGame(n,o),RM?200:550);};
@@ -428,7 +435,7 @@ function dragGame(n,o){
   render();raf=requestAnimationFrame(loop);
 }
 function noRope(n){
-  const r=resOf(n);r.tries--;
+  const r=resOf(n);r.tries--;run.st.noRope++;
   run.energy-=4;spend(R.noRopeMin);
   const lb=$('lb');
   lb.innerHTML=`<p class="say">${n.noitem||'兩手碰不到。要用瑜伽繩。'}</p><p class="note">沒有繩子，兩隻手中間永遠差一截。白白花了 ${R.noRopeMin} 分鐘。</p><button class="primary" id="ok">好，去拿瑜伽繩</button>`;
@@ -436,46 +443,71 @@ function noRope(n){
 }
 
 // ================= 小遊戲 2：穩住 =================
+// 呼吸：吸氣 inSec 秒（綠色往上，按住），吐氣 exSec 秒（綠色往下，放開）
+function breathAt(T){const H_=R.hold,cyc=H_.inSec+H_.exSec,k=Math.floor(T/cyc),ph=T-k*cyc;
+  if(ph<H_.inSec)return {b:(1-Math.cos(Math.PI*ph/H_.inSec))/2,inh:true,k};
+  return {b:(1+Math.cos(Math.PI*(ph-H_.inSec)/H_.exSec))/2,inh:false,k};}
+let holdSet=null;
 function holdGame(n,o){
-  const L=n.L,H_=R.hold,dur=H_.breaths*H_.breathSec;
+  const L=n.L,H_=R.hold;
   if(!BACK[L.fig]){fig.cur=clone(P[L.fig]||P.stand);fig.view='side';}else{fig.view='back';fig.cowT=1;fig.rope=true;}
   const box=$('fbox');box.classList.remove('drag');box.classList.add('hold');
   box.querySelector('.tag').textContent='2 穩住';
-  box.insertAdjacentHTML('beforeend',`<div class="gauge" aria-hidden="true"><div class="band" id="band"></div><div class="needle" id="needle"></div></div>
-    <div class="breath"><div class="ring" id="ring"></div><span id="btxt">準備</span></div><div class="peek" id="peek" hidden>${monsterSvg('pk')}</div>`);
-  $('lb').innerHTML=`<p class="lead" style="margin:0"><b>穩住 ${H_.breaths} 個呼吸。</b>按住，指針往上；放開，往下。讓指針待在綠色裡。</p>
-   <button class="holdpad" id="hold"><b>按住</b><small id="hstat">按下去就開始</small></button>
-   <div class="tip"><i>口令</i><p>${L.cue||L.tip}</p></div>`;
-  const pad=$('hold'),band=$('band'),needle=$('needle'),ring=$('ring'),btxt=$('btxt'),peek=$('peek'),hstat=$('hstat');
-  let holding=false,started=false,T=0,v=.5,vel=0,inT=0,outRun=0,done=false,last=performance.now(),raf=0;
-  const ph1=Math.random()*6,ph2=Math.random()*6,wob=n.wobble;
-  const setHold=h=>{holding=h;pad.classList.toggle('on',h);if(h&&!started){started=true;last=performance.now();}};
-  const bindPress=el=>{el.addEventListener('pointerdown',e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId);}catch(_){}setHold(true);});
-    el.addEventListener('pointerup',()=>setHold(false));el.addEventListener('pointercancel',()=>setHold(false));el.addEventListener('lostpointercapture',()=>setHold(false));};
-  bindPress(pad);bindPress(box);
+  box.insertAdjacentHTML('beforeend',`<div class="gauge" aria-hidden="true"><div class="band" id="band" style="bottom:${(H_.low-o.zone/2)*100}%;height:${o.zone*100}%"></div><div class="needle" id="needle"></div></div>
+    <div class="breath"><div class="ring" id="ring"></div><span id="btxt"></span></div><div class="bigcue in" id="bigcue">吸氣：按住 ↑</div><div class="peek" id="peek" hidden>${monsterSvg('pk')}</div>`);
+  drawFig();
+  box.addEventListener('pointerdown',e=>{if(!holdSet)return;e.preventDefault();try{box.setPointerCapture(e.pointerId);}catch(_){}holdSet(true);});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(t=>box.addEventListener(t,()=>holdSet&&holdSet(false)));
+  const go=isPractice=>runHold(n,o,isPractice,(frac,early)=>{
+    if(isPractice){
+      G.tut=G.tut||{};G.tut.hold=true;save();
+      $('lb').innerHTML=`<p class="patmsg">${frac>=.5?'很好，就是這樣！':'抓到感覺了嗎？'}</p><p class="note" style="text-align:center">練習：指針在綠色裡 ${Math.round(frac*100)}%（不計分）。<br>正式的要穩住 ${H_.breaths} 個呼吸，一半以上在綠色裡就過關。</p><button class="primary" id="real">開始正式</button><button class="link" id="again2">再練一次</button>`;
+      $('real').onclick=()=>go(false);$('again2').onclick=()=>go(true);return;}
+    const grade=early?'fail':frac>=H_.perfect?'perfect':frac>=H_.pass?'pass':'fail';
+    lessonResult(n,grade,frac,o);});
+  if(!(G.tut&&G.tut.hold)){
+    $('lb').innerHTML=`<span class="eyebrow">第一次？先試一次（不計分）</span>
+     <ol class="how"><li><b>吸氣：按住</b>，指針往上，跟著綠色一起升。</li><li><b>吐氣：放開</b>，指針往下，跟著綠色一起降。</li><li>指針待在<b>綠色</b>裡就對了。圓圈變大是吸氣，變小是吐氣。</li></ol>
+     <button class="primary" id="try">先試一次</button>`;
+    $('try').onclick=()=>go(true);
+  }else go(false);
+}
+function runHold(n,o,practice,onEnd){
+  const L=n.L,H_=R.hold,breaths=practice?1:H_.breaths,dur=breaths*(H_.inSec+H_.exSec);
+  $('lb').innerHTML=`<p class="lead" style="margin:0"><b>${practice?'練習 1 個呼吸':`穩住 ${breaths} 個呼吸`}。</b>跟著圓圈：吸氣按住，吐氣放開。</p>
+   <button class="holdpad" id="hold"><span class="pt" id="pt" aria-hidden="true">按住這裡開始 ↓</span><b id="hcue">吸氣：按住</b><small id="hstat">按下去就開始</small></button>
+   ${practice?'':`<div class="tip"><i>口令</i><p>${L.cue||L.tip}</p></div>`}`;
+  const pad=$('hold'),band=$('band'),needle=$('needle'),ring=$('ring'),btxt=$('btxt'),peek=$('peek'),hstat=$('hstat'),hcue=$('hcue'),big=$('bigcue'),pt=$('pt');
+  let holding=false,started=false,T=0,v=H_.low,vel=0,inT=0,outRun=0,done=false,last=performance.now(),raf=0;
+  const ph1=Math.random()*6,ph2=Math.random()*6,wob=n.wobble*H_.wobble;
+  const setHold=h=>{if(done)return;holding=h;pad.classList.toggle('on',h);if(h&&!started){started=true;last=performance.now();pt.hidden=true;}};
+  holdSet=setHold;
+  pad.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();try{pad.setPointerCapture(e.pointerId);}catch(_){}setHold(true);});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(t=>pad.addEventListener(t,()=>setHold(false)));
   pad.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter')e.preventDefault();});
   keyHandler=(e,isDown)=>{if([' ','Enter','ArrowUp'].includes(e.key)){e.preventDefault();setHold(isDown);}};
-  const center=()=>{const b=(1-Math.cos(2*Math.PI*T/H_.breathSec))/2;return .38+.24*b;};
-  const paint=()=>{const c=center(),z=o.zone;band.style.bottom=((c-z/2)*100)+'%';band.style.height=(z*100)+'%';needle.style.bottom=(v*100)+'%';
-    const inZ=Math.abs(v-c)<=z/2;needle.classList.toggle('out',!inZ);
-    const ph=(T%H_.breathSec)/H_.breathSec,inh=ph<.5;
-    ring.style.transform=`scale(${.55+.45*((1-Math.cos(2*Math.PI*T/H_.breathSec))/2)})`;
-    btxt.textContent=started?`${inh?'吸氣':'吐氣'} ${Math.min(H_.breaths,Math.floor(T/H_.breathSec)+1)}/${H_.breaths}`:'準備';
-    fig.shrug=inZ?0:8;peek.hidden=inZ||!started;fig.bt=RM?0:T*2;drawFig();
+  let disp=v,c=H_.low;
+  const paint=()=>{const br=breathAt(T),z=o.zone;c=H_.low+(H_.high-H_.low)*br.b;
+    const w=started?wob*(Math.sin(T*1.3+ph1)+.6*Math.sin(T*2.9+ph2))/1.6:0;disp=Math.max(0,Math.min(1,v+w));
+    band.style.bottom=((c-z/2)*100)+'%';band.style.height=(z*100)+'%';needle.style.bottom=(disp*100)+'%';
+    const inZ=Math.abs(disp-c)<=z/2;needle.classList.toggle('out',!inZ);
+    ring.style.transform=`scale(${.5+.5*br.b})`;
+    const inh=!started||br.inh;
+    big.textContent=inh?'吸氣：按住 ↑':'吐氣：放開 ↓';big.className='bigcue '+(inh?'in':'out');
+    hcue.textContent=inh?'吸氣：按住':'吐氣：放開';pad.classList.toggle('exh',!inh);
+    btxt.textContent=started?`${Math.min(breaths,br.k+1)}/${breaths}`:'';
+    fig.shrug=inZ?0:8;peek.hidden=inZ||!started;fig.bt=RM?0:br.b*Math.PI/2;drawFig();
     return inZ;};
-  const end=(early)=>{if(done)return;done=true;cancelAnimationFrame(raf);keyHandler=null;
-    const frac=early?inT/dur*.5:inT/dur;const grade=early?'fail':frac>=H_.perfect?'perfect':frac>=H_.pass?'pass':'fail';
-    lessonResult(n,grade,frac,o);};
+  const end=early=>{if(done)return;done=true;cancelAnimationFrame(raf);keyHandler=null;holdSet=null;onEnd(inT/dur,early);};
   const loop=now=>{const dt=Math.min(.05,(now-last)/1000);last=now;if(done)return;
     if(started){T+=dt;
-      const acc=(holding?2.6:-2.2)+wob*(1.1*Math.sin(T*2.1+ph1)+.7*Math.sin(T*4.7+ph2)+(Math.random()-.5)*.8);
-      vel+=acc*dt;vel*=Math.exp(-2.5*dt);v+=vel*dt;if(v<0){v=0;vel=0;}if(v>1){v=1;vel=0;}
+      const tv=holding?H_.up:-H_.down;vel+=(tv-vel)*(1-Math.exp(-dt/.25));v+=vel*dt;if(v<0){v=0;vel=0;}if(v>1){v=1;vel=0;}
       const inZ=paint();
       if(inZ){inT+=dt;outRun=0;}else outRun+=dt;
-      hstat.textContent=inZ?'很穩，繼續':'聳肩怪來了！拉回綠色';
-      if(outRun>H_.outMax){end(true);return;}
+      hstat.textContent=inZ?'很穩，繼續':disp>c?'太高了，放開一下':'太低了，按住一下';
+      if(!practice&&outRun>H_.outMax){end(true);return;}
       if(T>=dur){end(false);return;}
-    }else{v=center();paint();}
+    }else paint();
     raf=requestAnimationFrame(loop);};
   raf=requestAnimationFrame(loop);
 }
@@ -484,7 +516,7 @@ function lessonResult(n,grade,frac,o){
   run.energy-=grade==='perfect'?E.perfect:grade==='pass'?E.pass:E.fail;st.minEnergy=Math.min(st.minEnergy,run.energy);
   spend(r.tries>1?R.retryMin:R.lessonMin);
   fig.shrug=0;drawFig();
-  const lb=$('lb');const box=$('fbox');box&&box.querySelectorAll('.gauge,.breath,.peek').forEach(x=>x.remove());
+  const lb=$('lb');const box=$('fbox');box&&box.querySelectorAll('.gauge,.breath,.peek,.bigcue').forEach(x=>x.remove());
   const pct=Math.round(frac*100);
   if(grade==='fail'){
     st.fails++;r.fails++;r.t+=R.failTension;
@@ -547,7 +579,7 @@ function openBench(forced){
    <button class="holdpad" id="hold"><b>按住＝吸氣</b><small id="hstat">圓圈變大時按住，變小時放開</small></button>
    ${forced?'':'<button class="link" id="nob">算了，不休息</button>'}</div>`,{kind:'bench'});
   const pad=$('hold'),ring=$('bring'),btxt=$('btxt'),hstat=$('hstat');
-  let holding=false,started=false,T=0,good=0,done=false,last=performance.now(),raf=0;const per=H_.breathSec*1.2,dur=per*3;
+  let holding=false,started=false,T=0,good=0,done=false,last=performance.now(),raf=0;const per=H_.inSec+H_.exSec,dur=per*2;
   const setHold=h=>{holding=h;pad.classList.toggle('on',h);if(h&&!started){started=true;last=performance.now();}};
   pad.addEventListener('pointerdown',e=>{e.preventDefault();try{pad.setPointerCapture(e.pointerId);}catch(_){}setHold(true);});
   pad.addEventListener('pointerup',()=>setHold(false));pad.addEventListener('pointercancel',()=>setHold(false));
@@ -561,8 +593,8 @@ function openBench(forced){
     $panel.querySelector('.pb').innerHTML=`<p class="patmsg">${sc>=.75?'呼吸好順。':'呼吸有點亂，但有休息到。'}</p><p class="note" style="text-align:center">體力回到 ${Math.round(run.energy)}・${forced?R.energy.zeroRestMin:b.min} 分鐘過去了</p><button class="primary" id="ok">回到小鎮</button>`;
     $('ok').onclick=closeSheet;};
   const loop=now=>{const dt=Math.min(.05,(now-last)/1000);last=now;if(done)return;
-    if(started){T+=dt;const ph=(T%per)/per,inh=ph<.5;const s=.5+.5*((1-Math.cos(2*Math.PI*T/per))/2);ring.style.transform=`scale(${s})`;
-      btxt.textContent=`${inh?'吸氣':'吐氣'} ${Math.min(3,Math.floor(T/per)+1)}/3`;
+    if(started){T+=dt;const br=breathAt(T),inh=br.inh;const s=.5+.5*br.b;ring.style.transform=`scale(${s})`;
+      btxt.textContent=`${inh?'吸氣：按住':'吐氣：放開'} ${Math.min(2,br.k+1)}/2`;
       if(holding===inh)good+=dt;hstat.textContent=holding===inh?'對，就是這樣':(inh?'吸氣，按住':'吐氣，放開');
       if(T>=dur){fin();return;}}
     raf=requestAnimationFrame(loop);};
@@ -587,7 +619,7 @@ function endDay(){
   if(run.over)return;
   run.over=true;player.path=[];
   if(sheetOpen){sheetOpen=false;$sheet.hidden=true;}
-  keyHandler=null;
+  keyHandler=null;holdSet=null;
   const all=run.allDoneAt!==null&&!run.timeUp;
   fig.cur=clone(P.stand);fig.view='side';fig.brick=false;fig.shrug=0;
   openSheet(`${head(LETTUCE)}<div class="pb" style="padding-bottom:0"><p class="say">${all?'大家的事都處理完了，':`${R.dayEnd} 收工。`}${F.line}</p></div><div class="figbox"><svg id="fig" viewBox="0 0 220 214" role="img" aria-label="${F.title}"></svg><span class="tag">收尾</span></div><div class="pb" id="lb"></div>`,{kind:'hug'});
@@ -609,22 +641,28 @@ function styleOf(){
     rush:35
   };
   let best='rush';for(const k in sc)if(sc[k]>sc[best])best=k;
-  const S_=(Z.styles||[]).find(s=>s.id===best)||{id:best,name:best,obs:[],cost:'',habit:''};
-  return S_;
+  return (Z.styles||[]).find(s=>s.id===best)||{id:best,name:best,obs:[],cost:'',habit:''};
 }
+// 稱號：titles[救回人數] 可以是一個字串，或一串隨機挑一個
+function titleList(k){const T=Z.titles||[];const t=T[Math.max(0,Math.min(T.length-1,k))];return Array.isArray(t)?t:[t||''];}
+const titleFor=k=>pick(titleList(k));
+const bestTitle=()=>S.best?(S.best.title||titleList(S.best.saved)[0]):'';
+const savedRun=()=>NPCS.filter(n=>resOf(n).state==='saved');
 function finishRun(){
-  const saved=NPCS.filter(n=>resOf(n).state==='saved'),stuckL=NPCS.filter(n=>resOf(n).state!=='saved');
+  const saved=savedRun(),stuckL=NPCS.filter(n=>resOf(n).state!=='saved');
   const st=run.st;st.wasted+=st.pend;st.pend=0;
   const endMin=Math.min(DAYLEN,run.allDoneAt!==null?run.allDoneAt:run.min);
-  const sty=styleOf();run.style=sty;run.endMin=endMin;
+  const sty=styleOf();run.style=sty;run.endMin=endMin;run.title=titleFor(saved.length);
+  for(const n of saved)if(!S.helped.includes(n.id))S.helped.push(n.id);
   S.runs=(S.runs||0)+1;S.perfects=(S.perfects||0)+st.perfects;
   S.styles=S.styles||{};S.styles[sty.id]=(S.styles[sty.id]||0)+1;
   const b=S.best;
-  if(!b||saved.length>b.saved||(saved.length===b.saved&&(b.min===null||endMin<b.min)))S.best={saved:saved.length,min:endMin,date:PL.today(),style:sty.id};
-  S.last={saved:saved.map(n=>n.id),stuck:stuckL.map(n=>n.id),style:sty.id,min:endMin,date:PL.today()};
+  if(!b||saved.length>b.saved||(saved.length===b.saved&&(b.min===null||endMin<b.min)))S.best={saved:saved.length,min:endMin,date:PL.today(),style:sty.id,title:run.title};
+  S.last={saved:saved.map(n=>n.id),stuck:stuckL.map(n=>n.id),style:sty.id,min:endMin,date:PL.today(),title:run.title};
   if(saved.length>=R.cardAt&&!S.done){S.done=true;S.doneAt=PL.today();}
-  const T=Z.titles||[];G.title=T[Math.min(T.length-1,S.best.saved)]||G.title;
-  const give=id=>{if(PL.badge(id))run.newBadges.push(id);};
+  G.title=bestTitle()||run.title;
+  const give=id=>{if(BADGES[id]&&PL.badge(id))run.newBadges.push(id);};
+  give('first-day');
   if(saved.length===NPCS.length)give('all-saved');
   if(saved.length>=3&&st.fails===0)give('no-fail');
   if(saved.length>=3&&st.zero===0)give('energy-master');
@@ -632,79 +670,171 @@ function finishRun(){
   if(S.perfects>=5)give('perfect5');
   save();
 }
+// 沒解鎖圖卡時，依照這一天的狀況給兩個具體提示（文字在 zone 檔 tips）
+function tipsFor(){
+  const st=run.st,T=Z.tips||{},out=[];const p=st.picks;
+  const post=NPCS.find(n=>n.need==='rope');
+  const sc={
+    rope:post&&resOf(post).state!=='saved'&&(st.noRope>0||!hasRope())?9:0,
+    hold:st.fails>0?8+st.fails:0,
+    energy:st.zero>0||st.minEnergy<15?7:0,
+    hi:p===0||st.hiPick/p<.6?6:0,
+    approach:st.badAp>0?5.5:0,
+    monster:st.monster>=2&&st.scares===0?5:0,
+    walk:st.wasted>=15?4:0,
+  };
+  const ids=Object.keys(sc).filter(k=>sc[k]>0&&T[k]).sort((a,b)=>sc[b]-sc[a]);
+  for(const k of [...ids,'hi','hold','energy'])if(T[k]&&!out.includes(T[k])&&out.length<2)out.push(T[k]);
+  return out;
+}
+const shortName=n=>/先生|小姐$/.test(n.nm)?n.nm.replace(/先生|小姐$/,''):n.nm.slice(-2);
+function medalSvg(on){return `<svg class="medal" viewBox="0 0 40 40" aria-hidden="true"><path d="M13 3 L20 14 L27 3" fill="none" stroke="${on?'#d7263d':'#c9c3b8'}" stroke-width="5" stroke-linejoin="round"/><circle cx="20" cy="25" r="12" fill="${on?'#ffc233':'#e6e1d8'}" stroke="${on?'#2c2c2a':'#c9c3b8'}" stroke-width="3"/><path d="M20 18 l2 4.5 5 .5 -3.8 3.3 1.2 4.9 -4.4 -2.6 -4.4 2.6 1.2 -4.9 -3.8 -3.3 5 -.5z" fill="${on?'#fff':'#f3efe8'}"/></svg>`;}
+function badgeCard(id,isNew){const got=G.badges.includes(id),b=BADGES[id]||[id,''];return `<div class="card bd ${got?'':'off'}">${medalSvg(got)}<b>${b[0]}</b><small>${b[1]}</small>${isNew?'<span class="new">新！</span>':''}</div>`;}
+function igLink(){return IG?IG.url:'';}
 function ending(){
-  const st=run.st,saved=NPCS.filter(n=>resOf(n).state==='saved'),stuckL=NPCS.filter(n=>resOf(n).state!=='saved');
-  const sty=run.style;const T=Z.titles||[];const title=T[Math.min(T.length-1,saved.length)]||'';
+  const st=run.st,saved=savedRun(),stuckL=NPCS.filter(n=>resOf(n).state!=='saved');
+  const sty=run.style,title=run.title;
   const V={saved:saved.length,stuck:stuckL.length,hiPick:st.hiPick,nearPick:st.nearPick,picks:st.picks,talk:st.talk,direct:st.direct,rests:st.rests,zero:st.zero,zeroMin:st.zero*R.energy.zeroRestMin,
     fails:st.fails,perfects:st.perfects,walk:st.walk,wasted:st.wasted,monster:st.monster,scares:st.scares,minEnergy:Math.max(0,Math.round(st.minEnergy)),end:clockStr(run.endMin)};
-  const NW=Z.nextWeek;const card=saved.length>=R.cardAt;
+  const NW=Z.nextWeek;const card=saved.length>=R.cardAt;const need=R.cardAt-saved.length;
   const cta=card&&Z.cta&&Z.cta.url?Z.cta:null;
-  const nwBtn=!cta&&NW&&NW.url;
-  const primaryAgain=!cta&&!nwBtn;
-  const best=S.best;
+  const ig=!cta&&IG;
+  const best=S.best;const cheer=(Z.cheer||[])[Math.min((Z.cheer||[]).length-1,saved.length)]||'';
+  const pl=[...new Set(stuckL.map(n=>n.part))];const parts=pl.slice(0,2).join('、')+(pl.length>2?'……':'');
+  const nb=run.newBadges;
   openSheet(`<div class="pb end">
    <span class="eyebrow">${zoneName}・${Z.title}・${clockStr(run.endMin)} 收工</span>
    <h2 class="big">救回 ${saved.length} / ${NPCS.length} 位</h2>
-   <p class="lead" style="margin:0">今天的稱號：<b>${title}</b>${best&&best.saved>saved.length?`<small class="cost">最佳紀錄 ${best.saved} 位</small>`:''}</p>
+   <div class="ttl"><small>今天的稱號</small><b>${title}</b>${best&&best.saved>saved.length?`<small>最佳紀錄：救回 ${best.saved} 位</small>`:''}</div>
+   ${cheer?`<p class="say">${cheer}</p>`:''}
    ${saved.length?`<div class="sandwich">${sandwichSvg(runHas)}</div>`:''}
+   ${nb.length?`<div class="newb"><b class="nbh">${fill(Z.badgeCheer||'拿到新徽章！',{n:nb.length})}</b><div class="cards3">${nb.map(id=>badgeCard(id,true)).join('')}</div><small>徽章 ${G.badges.filter(id=>BADGES[id]).length} / ${Object.keys(BADGES).length}・都收在貼紙簿裡</small></div>`:''}
+   ${card?`<div class="pass">${cta?`<small>通關密語</small><b>${Z.passcode}</b><small>把通關密語傳給我們，領這一區的序列圖卡。</small><a class="primary" href="${cta.url}" target="_blank" rel="noopener">${cta.label}</a>`:`<small>序列圖卡解鎖了</small><b style="font-size:20px">${Z.card.title}</b>`}<a class="cardlink" href="/cards/${Z.id}" target="_blank" rel="noopener">看序列圖卡 →</a></div>`
+     :`<div class="lock"><b>差 ${need} 位就能拿到序列圖卡</b><small>${fill(Z.cardLocked||'',{n:R.cardAt})}</small><ul>${tipsFor().map(t=>`<li>${t}</li>`).join('')}</ul></div>`}
    ${stuckL.length?`<div class="stuckL"><b>沒救回來的</b>${stuckL.map(n=>`<div class="sk">${monsterSvg('mi')}<span><b>${n.nm}${resOf(n).state==='stuck'?'':'<small class="nr">（收工前沒輪到）</small>'}</b><small>卡在：${n.part}</small></span></div>`).join('')}</div>`:''}
    <div class="style"><small>你今天的教學風格</small><h3>${sty.name}</h3>
     <ul>${(sty.obs||[]).map(o=>`<li>${fill(o,V)}</li>`).join('')}</ul>
     <p class="cost2">${fill(sty.cost,V)}</p>
     <div class="tip"><i>小習慣</i><p>${fill(sty.habit,V)}</p></div></div>
-   ${NW?`<div class="nw"><small>${stuckL.length?NW.lead:NW.leadAll}</small><h3>${NW.title}<span>${NW.part}・${NW.when}</span></h3><p>${NW.text}</p>
-     ${nwBtn?`<a class="primary" href="${NW.url}" target="_blank" rel="noopener">${NW.ctaLabel}</a>`:`<p class="follow">${NW.ctaLabel}</p>`}</div>`:''}
-   ${run.newBadges.length?`<div class="grid">${run.newBadges.map(id=>`<div class="sticker badge"><small>新徽章</small><b style="font-size:17px">${(BADGES[id]||[id])[0]}</b><small>${(BADGES[id]||['',''])[1]}</small></div>`).join('')}</div>`:''}
-   ${card?`<div class="pass">${cta?`<small>通關密語</small><b>${Z.passcode}</b><small>把通關密語傳給我們，領這一區的序列圖卡。</small><a class="primary" href="${cta.url}" target="_blank" rel="noopener">${cta.label}</a>`:`<small>解鎖了</small><b style="font-size:20px">${Z.card.title}</b>`}<a class="cardlink" href="/cards/${Z.id}" target="_blank" rel="noopener">看序列圖卡 →</a></div>`
-     :`<p class="note" style="text-align:center">${fill(Z.cardLocked||'',{n:R.cardAt})}</p>`}
-   ${run.cheese&&run.cheese.caught&&SEC.teaser?`<p class="say">${SEC.teaser}</p>`:''}
-   <div class="row"><button class="${primaryAgain?'primary':'ghost'}" id="again">再玩一天</button><button class="ghost" id="share">複製結果分享</button></div>
+   ${NW?`<div class="nw"><small>${stuckL.length?fill(NW.lead,{parts}):NW.leadAll}</small><h3>${NW.title}<span>${NW.part}</span></h3><p>${NW.text}</p>
+     ${ig?`<a class="primary igbtn" id="igbtn" href="${igLink()}" target="_blank" rel="noopener">追蹤 @${IG.handle}，跟著練</a><div class="qr" id="qr" hidden><div id="qrc"></div><small>手機掃這裡，追蹤 @${IG.handle}</small></div>`:''}</div>`:''}
+   ${!NW&&ig?`<a class="primary igbtn" id="igbtn" href="${igLink()}" target="_blank" rel="noopener">追蹤 @${IG.handle}，跟著練</a>`:''}
+   <div class="sec2">
+    <button class="ghost sm" id="story">${IG?`存成限動圖，分享並標記 @${IG.handle}`:'存成限動圖分享'}</button>
+    <button class="ghost sm" id="share">複製結果文字</button>
+   </div>
    <div class="copied" id="copied" aria-live="polite"></div>
-   <button class="link" id="book">看貼紙簿和怪物圖鑑</button>
+   ${run.cheese&&run.cheese.caught&&SEC.teaser?`<p class="say">${SEC.teaser}</p>`:''}
+   <div class="row"><button class="${cta||ig?'ghost':'primary'}" id="again">再玩一天</button><button class="ghost" id="book">看貼紙簿</button></div>
    <p class="disc">好玩為主，這不是治療；身體有傷痛，請先詢問醫師。</p></div>`,{kind:'end'});
-  $('again').onclick=()=>{newRun();sheetOpen=false;$sheet.hidden=true;renderUI();intro();};
+  $('again').onclick=()=>{const low=saved.length<=1;newRun();if(low&&BADGES.comeback&&PL.badge('comeback'))run.newBadges.push('comeback');sheetOpen=false;$sheet.hidden=true;renderUI();goals();};
   $('book').onclick=()=>album(ending);
+  const shareText=()=>`我在「三明治鎮」當了一天瑜伽老師，救回 ${saved.length}/${NPCS.length} 位居民，稱號是「${title}」，教學風格「${sty.name}」！\n${stuckL.length?`沒救回來的卡在：${parts}。\n`:''}換你來當瑜伽老師 👉 ${GAME_URL}${IG?`\n@${IG.handle}`:''}\n#PDPL排都排了排好序列一起練 #sandywichyoga`;
   $('share').onclick=async()=>{
-    const t=`我在「三明治鎮」當了一天瑜伽老師，救回 ${saved.length}/${NPCS.length} 位居民。我的教學風格是「${sty.name}」！\n${stuckL.length?`沒救回來的卡在：${[...new Set(stuckL.map(n=>n.part))].join('、')}。\n`:''}換你來當瑜伽老師 👉 ${GAME_URL}\n#PDPL排都排了排好序列一起練 #sandywichyoga`;
-    const out=$('copied');
+    const t=shareText(),out=$('copied');
     try{await navigator.clipboard.writeText(t);out.textContent='已複製，可以貼到限動或傳給朋友。';}
     catch(_){out.innerHTML='';const ta=document.createElement('textarea');ta.value=t;ta.rows=4;ta.style.width='100%';out.appendChild(ta);ta.select();}
   };
+  $('story').onclick=async()=>{
+    const out=$('copied');out.textContent='做圖中…';
+    try{
+      const blob=await storyPng({saved:saved.length,title,style:sty.name});
+      const file=new File([blob],'sandywich-town.png',{type:'image/png'});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        try{await navigator.share({files:[file],text:shareText()});out.textContent=IG?`發限動時記得標記 @${IG.handle}！`:'分享好了！';return;}catch(e){if(e&&e.name==='AbortError'){out.textContent='';return;}}
+      }
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sandywich-town.png';document.body.appendChild(a);a.click();a.remove();
+      out.textContent=IG?`圖片存好了。發限動時記得標記 @${IG.handle}！`:'圖片存好了，可以發限動。';
+    }catch(e){console.warn(e);out.textContent='做圖失敗了，改用「複製結果文字」吧。';}
+  };
+  if(ig)showQR(igLink());
+}
+// 寬螢幕（電腦）多放一個 QR code，手機掃了直接開 IG
+function showQR(url){
+  if(!url||!window.matchMedia||!matchMedia('(min-width:700px)').matches)return;
+  const draw=()=>{const box=$('qr'),el=$('qrc');if(!box||!el||!window.QRCode)return;el.innerHTML='';
+    try{new QRCode(el,{text:url,width:132,height:132,colorDark:'#2c2c2a',colorLight:'#ffffff'});box.hidden=false;}catch(_){box.hidden=true;}};
+  if(window.QRCode){draw();return;}
+  if(showQR.loading)return;showQR.loading=true;
+  const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';s.async=true;
+  s.onload=()=>{showQR.loading=false;draw();};s.onerror=()=>{showQR.loading=false;};document.head.appendChild(s);
+}
+// 限動圖 1080×1920
+async function storyPng(d){
+  const c=document.createElement('canvas');c.width=1080;c.height=1920;const g=c.getContext('2d');
+  try{if(document.fonts&&document.fonts.ready)await document.fonts.ready;}catch(_){}
+  const ZH='"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+  g.fillStyle='#efeae3';g.fillRect(0,0,1080,1920);
+  const strip=(y,h)=>{[[0,.32,'#ffc233'],[.32,.57,'#d7263d'],[.57,.8,'#2c2c2a'],[.8,1,'#7fa63d']].forEach(([a,b,col])=>{g.fillStyle=col;g.fillRect(a*1080,y,(b-a)*1080+1,h);});};
+  strip(0,40);strip(1880,40);
+  const round=(x,y,w,h,r)=>{g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();};
+  g.textAlign='center';g.textBaseline='alphabetic';g.fillStyle='#2c2c2a';
+  g.font=`900 120px ${ZH}`;g.fillText('三明治鎮',540,250);
+  g.font=`600 40px Poppins,${ZH}`;g.fillStyle='#888780';g.fillText(`SANDYWICH YOGA ・ ${zoneName} ${Z.title}`,540,320);
+  round(90,400,900,1060,48);g.fillStyle='#fff';g.fill();g.lineWidth=8;g.strokeStyle='#2c2c2a';g.stroke();
+  // 三明治
+  const svg=(d.saved?sandwichSvg(runHas):monsterSvg('')).replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ');
+  try{const img=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);});
+    const w=d.saved?600:340,h=d.saved?(w*img.height/img.width||300):340;g.drawImage(img,540-w/2,470+Math.max(0,(380-h)/2),w,Math.min(h,380));}catch(_){}
+  if(!d.saved){g.font=`700 44px ${ZH}`;g.fillStyle='#888780';g.fillText('今天聳肩怪贏了一局',540,880);}
+  g.fillStyle='#2c2c2a';g.font=`900 130px ${ZH}`;g.fillText(`救回 ${d.saved} / ${NPCS.length} 位`,540,d.saved?1010:1030);
+  g.font=`500 46px ${ZH}`;g.fillStyle='#888780';g.fillText('今天的稱號',540,1110);
+  g.font=`900 72px ${ZH}`;g.fillStyle='#2c2c2a';g.fillText(d.title,540,1200);
+  g.font=`500 46px ${ZH}`;g.fillStyle='#888780';g.fillText('教學風格',540,1300);
+  g.font=`900 68px ${ZH}`;g.fillStyle='#d7263d';g.fillText(d.style,540,1385);
+  g.fillStyle='#2c2c2a';g.font=`900 76px ${ZH}`;g.fillText('來三明治鎮當瑜伽老師',540,1600);
+  g.font=`600 48px Poppins,${ZH}`;g.fillStyle='#2c2c2a';g.fillText((location.host||'')+'/town',540,1690);
+  if(IG){round(300,1740,480,90,45);g.fillStyle='#ffc233';g.fill();g.fillStyle='#2c2c2a';g.font=`700 48px Poppins,${ZH}`;g.fillText('@'+IG.handle,540,1802);}
+  return await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error('toBlob')),'image/png'));
 }
 
-// ================= 開場 =================
-function intro(){
-  const b=S.best;
-  openSheet(`<div class="pb"><span class="eyebrow">${zoneName}・${Z.title}</span><h2 style="font-size:23px">今天 ${R.dayStart} 上班</h2>
-   <p class="say">${Z.intro}</p>
-   <ul class="rules">
-    <li><b>緊繃值</b>每個人頭上的長條。滿了，聳肩怪就趴上去，那個人今天救不回來。</li>
-    <li><b>體力</b>教課、走路都會用掉。噴水池喝水、長椅休息可以回來，但要花時間。</li>
-    <li><b>教一次</b>先把黃點拉到位，再按住讓指針穩住三個呼吸。</li>
-   </ul>
-   ${b?`<p class="note">最佳紀錄：救回 ${b.saved} 位${b.min!==null&&b.min!==undefined?`・${clockStr(b.min)} 收工`:''}。貼紙 ${S.helped.length}/${NPCS.length}。</p>`:''}
-   <button class="primary" id="go">開始上班</button>${S.runs||S.helped.length?'<button class="link" id="introBook">看貼紙簿和怪物圖鑑</button>':''}</div>`,{kind:'intro'});
-  if($('introBook'))$('introBook').onclick=()=>album(intro);
-  $('go').onclick=()=>{sheetOpen=false;$sheet.hidden=true;run.started=true;renderUI();toast('上班囉！先救誰？');};
+// ================= 今天的任務（開場） =================
+function goals(){
+  const nb=G.badges.filter(id=>BADGES[id]).length,NB=Object.keys(BADGES).length,mGot=G.monsters.includes(MON.id)?1:0;
+  const cardOn=S.done;const playing=run.started&&!run.over;
+  const dots=NPCS.map(n=>`<span class="mini ${S.helped.includes(n.id)?'on':''}">${ingSvg(n.sticker)}</span>`).join('');
+  openSheet(`<div class="pb goals"><span class="eyebrow">${zoneName}・${Z.title}</span><h2 class="h2">今天的任務</h2>
+   ${run.newBadges.includes('comeback')?`<div class="newb"><b class="nbh">新徽章：${BADGES.comeback[0]}</b><small>${BADGES.comeback[1]}。今天一定救得回來！</small></div>`:''}
+   <ol class="glist">
+    <li><span class="gi">${ingSvg('bread')}</span><div><b>救回居民 → 拿貼紙，疊成三明治</b><span class="minis">${dots}</span></div><em>${S.helped.length}/${NPCS.length}</em></li>
+    <li><span class="gi">${poseSvg('dog')}</span><div><b>一天救回 ${R.cardAt} 位 → 解鎖序列圖卡</b><small>${cardOn?'已經解鎖了，可以再挑戰更多人':Z.card.title}</small></div><em class="${cardOn?'ok':''}">${cardOn?'✓':'🔒'}</em></li>
+    <li><span class="gi">${medalSvg(nb>0)}</span><div><b>收集徽章</b><small>第一天上工就有一個</small></div><em>${nb}/${NB}</em></li>
+    <li><span class="gi">${monsterSvg('',false)}</span><div><b>怪物圖鑑</b><small>${mGot?MON.name+'：'+fill(MON.hintBubble||'連點 {n} 下嚇跑牠！',{n:MON.scareTaps}):'在鎮上遇到牠就會收進來'}</small></div><em>${mGot}/1</em></li>
+    <li><span class="gi">${medalSvg(!!S.best)}</span><div><b>稱號</b><small>${S.best?`最佳：${bestTitle()}（救回 ${S.best.saved} 位）`:'收工時依照救回幾位決定'}</small></div><em></em></li>
+   </ol>
+   <div class="howto"><b>怎麼玩</b><ul>
+    <li>頭上的<b>紅色長條</b>是緊繃值，滿了聳肩怪就會趴上去。先救最紅的。</li>
+    <li>教一次：<b>拉到位</b>，再跟著呼吸<b>按住、放開</b>。</li>
+    <li><b>體力</b>低了去噴水池喝水。聳肩怪靠近就<b>連點牠</b>。</li></ul></div>
+   <button class="primary big" id="go">${playing?'回到小鎮':'開始上工'}</button>
+   <button class="ghost" id="toAlbum">看貼紙簿</button></div>`,{kind:'goals'});
+  $('go').onclick=()=>{sheetOpen=false;$sheet.hidden=true;if(!playing){run.started=true;toast('上班囉！先救誰？');}renderUI();};
+  $('toAlbum').onclick=()=>album(goals);
 }
+const intro=goals;
 
 // ================= 貼紙簿・圖鑑 =================
 function album(back){
-  const mGot=G.monsters.includes(MON.id);const T=Z.titles||[];const b=S.best;
-  openSheet(`<div class="pb"><span class="eyebrow">貼紙簿・${zoneName} ${Z.title}</span>
-   <h2 style="font-size:22px">${S.helped.length} / ${NPCS.length} 張・集滿做出一個三明治</h2>
-   ${G.title?`<p class="lead" style="margin:0">稱號：<b>${G.title}</b>${b?`<small class="cost">最佳 ${b.saved} 位${b.min!==null&&b.min!==undefined?`・${clockStr(b.min)}`:''}・玩了 ${S.runs||0} 天</small>`:''}</p>`:''}
-   <div class="sandwich">${sandwichSvg(albumHas)}</div>
-   <div class="grid">${NPCS.map(n=>S.helped.includes(n.id)?`<div class="sticker">${ingSvg(n.sticker,'ing')}<b>${ING[n.sticker]}・${n.L.nm}</b>${poseSvg(n.L.fig,'pose')}<small>${n.L.tip}</small></div>`:`<div class="sticker empty">${ingSvg(n.sticker,'ing').replace('<svg ','<svg style="opacity:.15;filter:grayscale(1)" ')}<b>${ING[n.sticker]}</b><small>救回${n.nm}就能拿到</small></div>`).join('')}</div>
-   <h3 class="sec">怪物圖鑑</h3>
-   <div class="mon ${mGot?'':'locked'}">${monsterSvg('mbig')}<div>${mGot?`<b>${MON.name}</b><p>${MON.about}</p><p><small>牠失手的時候：</small>${MON.weakTime}</p><small>你嚇跑牠 ${S.scares||0} 次</small>`:'<b>？？？</b><p>在鎮上遇到牠，就會收進圖鑑。</p>'}</div></div>
-   <h3 class="sec">徽章</h3>
-   <div class="grid">${Object.keys(BADGES).map(id=>{const got=G.badges.includes(id);return `<div class="sticker badge ${got?'':'lock'}"><b style="font-size:16px;padding:8px 0 2px">${BADGES[id][0]}</b><small>${BADGES[id][1]}</small></div>`;}).join('')}</div>
-   <div><span class="eyebrow" style="background:var(--soft);color:var(--stone);margin-bottom:6px">背包</span><div class="bag"><span class="${hasRope()?'on':''}">瑜伽繩 ${hasRope()?'✓':'還沒拿'}</span><span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0}/${BRICK.badgeAt||3}</span></div></div>
-   <button class="primary" id="close">${back===intro?'回去':back?'回到結果':'回到小鎮'}</button></div>`,{kind:'album'});
-  $('close').onclick=()=>{if(back){back();return;}closeSheet();if(!run.started)intro();};
+  const mGot=G.monsters.includes(MON.id);const b=S.best;const last=S.last;
+  const nb=G.badges.filter(id=>BADGES[id]).length,NB=Object.keys(BADGES).length;
+  const need=hasRope()?MON.scareTapsRope:MON.scareTaps;
+  openSheet(`<div class="pb alb"><span class="eyebrow">貼紙簿・${zoneName} ${Z.title}</span>
+   <section><h3 class="sec">稱號</h3><div class="cards2">
+     <div class="card"><small>目前</small><b>${last&&last.title?last.title:(b?bestTitle():'還沒有')}</b><small>${last?`上次救回 ${last.saved.length} 位`:'玩完一天就會有'}</small></div>
+     <div class="card"><small>最佳</small><b>${b?bestTitle():'還沒有'}</b><small>${b?`救回 ${b.saved} 位・玩了 ${S.runs||0} 天`:'—'}</small></div></div></section>
+   <section><h3 class="sec">貼紙 <span class="cnt">${S.helped.length}/${NPCS.length}</span></h3>
+     <div class="sandwich sm">${sandwichSvg(albumHas)}</div>
+     <div class="cards5">${NPCS.map(n=>{const on=S.helped.includes(n.id);return `<div class="card st ${on?'':'off'}">${ingSvg(n.sticker,'ic')}<b>${ING[n.sticker]}</b><small>${on?n.L.nm:'救回'+shortName(n)}</small></div>`;}).join('')}</div>
+     <p class="cap">救回居民拿貼紙，五張疊成一個三明治。</p></section>
+   <section><h3 class="sec">徽章 <span class="cnt">${nb}/${NB}</span></h3><div class="cards3">${Object.keys(BADGES).map(id=>badgeCard(id,false)).join('')}</div></section>
+   <section><h3 class="sec">怪物圖鑑 <span class="cnt">${mGot?1:0}/1</span></h3>
+     <div class="card mon ${mGot?'':'off'}">${monsterSvg('mbig')}<div>${mGot?`<b>${MON.name}</b><small>${MON.about}</small><small><em>怎麼嚇跑：</em>${MON.how||''}</small><small><em>牠失手的時候：</em>${MON.weakTime}</small><small><em>你嚇跑牠：</em>${S.scares||0} 次</small>`:`<b>？？？</b><small>在鎮上遇到牠，就會收進圖鑑。</small>`}</div></div></section>
+   <section><h3 class="sec">背包</h3><div class="chips"><span class="${hasRope()?'on':''}">瑜伽繩 ${hasRope()?'✓':'還沒拿'}</span><span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0}/${BRICK.badgeAt||3}</span></div><p class="cap">背包裡的東西會跟你到下一區。</p></section>
+   <div class="row">${!back&&run.started&&!run.over?'<button class="ghost" id="toGoals">今天的任務</button>':''}<button class="primary" id="close">${back===goals?'回去':back?'回到結果':'回到小鎮'}</button></div></div>`,{kind:'album'});
+  $('close').onclick=()=>{if(back){back();return;}closeSheet();if(!run.started)goals();};
+  if($('toGoals'))$('toGoals').onclick=()=>goals();
 }
-$('albumBtn').onclick=()=>{if(!sheetOpen||sheetKind==='intro')album();};
+$('albumBtn').onclick=()=>{if(!sheetOpen)album();else if(sheetKind==='goals')album(goals);};
 
 // ================= 畫地圖 =================
 const cv=$('cv'),ctx=cv.getContext('2d');let ts=24,cw=360,pulse=0;
@@ -765,8 +895,18 @@ function drawMonster(dt){
   const cx=(m.fx+.5)*ts,cy=(m.fy+.5)*ts+wob(Math.sin(pulse*5)*1.5);
   if(m.daze<=0){ctx.fillStyle='rgba(109,106,138,.13)';ctx.beginPath();ctx.arc(cx,cy,ts*(R.monsterNear+.5),0,7);ctx.fill();}
   monBlob(cx,cy,ts*.38,m.daze>0,m.daze>0?.6:1);
-  if(m.daze>0){ctx.fillStyle='#2c2c2a';ctx.font=`900 ${ts*.32}px Poppins,sans-serif`;ctx.fillText('z',cx+ts*.42,cy-ts*.45);}
-  else if(m.taps.length){ctx.fillStyle='#d7263d';ctx.font=`900 ${ts*.36}px Poppins,sans-serif`;ctx.fillText('!'.repeat(Math.min(3,m.taps.length)),cx,cy-ts*.62);}
+  if(m.daze>0){ctx.fillStyle='#2c2c2a';ctx.font=`900 ${ts*.32}px Poppins,sans-serif`;ctx.fillText('z',cx+ts*.42,cy-ts*.45);return;}
+  const need=hasRope()?MON.scareTapsRope:MON.scareTaps,now=performance.now();
+  const taps=m.taps.filter(t=>now-t<1600).length;
+  if(taps){ // 連點的進度圈
+    ctx.lineWidth=Math.max(3,ts*.12);ctx.strokeStyle='rgba(44,44,42,.2)';ctx.beginPath();ctx.arc(cx,cy,ts*.62,0,7);ctx.stroke();
+    ctx.strokeStyle='#d7263d';ctx.beginPath();ctx.arc(cx,cy,ts*.62,-Math.PI/2,-Math.PI/2+Math.PI*2*taps/need);ctx.stroke();
+    ctx.fillStyle='#d7263d';ctx.font=`900 ${ts*.36}px Poppins,sans-serif`;ctx.fillText(`${taps}/${need}`,cx,cy+ts*.85);}
+  else if(run.monHint&&run.st.scares===0){ // 教玩家怎麼嚇跑牠
+    const t=fill(MON.hintBubble||'連點 {n} 下嚇跑牠！',{n:need});ctx.font=`900 ${Math.max(10,ts*.36)}px "Noto Sans TC",sans-serif`;
+    const w=ctx.measureText(t).width+ts*.4,h=ts*.56,bx=Math.max(2,Math.min(cw-w-2,cx-w/2)),by=cy-ts*1.25+wob(Math.sin(pulse*4)*2);
+    ctx.fillStyle='#d7263d';rr(bx,by,w,h,h/2);ctx.fill();ctx.beginPath();ctx.moveTo(cx-ts*.12,by+h-1);ctx.lineTo(cx+ts*.12,by+h-1);ctx.lineTo(cx,by+h+ts*.16);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#fff';ctx.fillText(t,bx+w/2,by+h/2+1);}
 }
 function drawNpc(n){
   const cx=(n.x+.5)*ts,cy=(n.y+.5)*ts,r=ts*.42;
@@ -820,6 +960,8 @@ function frame(now){
       const m=run.mon;
       if(!sheetOpen&&m.daze<=0&&m.cool<=0&&Math.hypot(player.x-m.fx,player.y-m.fy)<.6)monTouch();
       if(!sheetOpen&&!G.monsters.includes(MON.id)&&Math.abs(player.x-m.x)+Math.abs(player.y-m.y)<=3)meetMonster();
+      if(!run.monHint&&m.daze<=0&&(Math.abs(player.x-m.x)+Math.abs(player.y-m.y)<=3||NPCS.some(n=>resOf(n).state==='open'&&Math.abs(n.x-m.x)+Math.abs(n.y-m.y)<=R.monsterNear))){
+        run.monHint=true;meetMonster();toast(fill(MON.hint||'聳肩怪來了！連點牠 {n} 下可以嚇跑牠。',{n:hasRope()?MON.scareTapsRope:MON.scareTaps}),'warn');}
     }
     if(sheetOpen&&sheetLive&&run.timeUp)endDay();
     else if(!sheetOpen&&(run.timeUp||run.allDoneAt!==null))endDay();

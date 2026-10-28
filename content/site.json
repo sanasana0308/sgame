@@ -1,0 +1,7 @@
+{
+ "_說明": "整個網站共用的設定。ig.handle 填 Sandy 的 IG 帳號（不用 @）。url 不填就自動用 https://www.instagram.com/<handle>/。handle 空白時，遊戲結尾不顯示 IG 按鈕。",
+ "ig": {
+  "handle": "",
+  "url": ""
+ }
+}

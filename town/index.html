@@ -237,6 +237,90 @@ h3.sec{margin:6px 0 0;font-size:16px;font-weight:900}
 .pass small{font-size:13px;color:var(--stone)}
 .pass a.primary{text-decoration:none;margin-top:6px;align-self:stretch}
 .home{font-size:13px;color:var(--stone);text-decoration:none;font-weight:700}
+
+/* v3：任務頁、貼紙簿、結尾、穩住提示。字級只用這幾種：頁標題 22、區塊標題 15、卡片標題 14、說明 12。 */
+.goal{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;background:var(--yellow-soft);border-radius:10px;padding:4px 10px}
+.goal b{color:var(--tomato);font-size:15px}
+.pips{display:flex;gap:3px}
+.pips i{width:10px;height:10px;border-radius:50%;border:2px solid var(--ink);background:var(--white)}
+.pips i.on{background:var(--lettuce)}
+.bigcue{position:absolute;left:50%;top:10px;transform:translateX(-50%);font-size:18px;font-weight:900;padding:4px 14px;border-radius:99px;white-space:nowrap;pointer-events:none;border:2px solid var(--ink)}
+.bigcue.in{background:var(--yellow)}
+.bigcue.out{background:var(--white)}
+.figbox.hold .tag{top:auto;bottom:10px}
+.figbox.hold .breath{top:52px}
+.holdpad{position:relative}
+.holdpad .pt{position:absolute;top:-30px;left:50%;transform:translateX(-50%);font-size:13px;font-weight:900;background:var(--tomato);color:var(--white);padding:2px 10px;border-radius:99px;white-space:nowrap;animation:bob 1s ease-in-out infinite}
+@keyframes bob{50%{transform:translate(-50%,4px)}}
+.how{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.primary.big{font-size:19px;padding:16px}
+.h2{font-size:22px;line-height:1.25}
+.goals .glist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.glist li{display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:14px;padding:8px 12px}
+.glist .gi{flex:none;width:40px;height:40px;display:grid;place-items:center}
+.glist .gi svg{width:40px;height:40px}
+.glist div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.glist b{font-size:14px;font-weight:700;line-height:1.35}
+.glist small{font-size:12px;color:var(--stone);line-height:1.4}
+.glist em{flex:none;font-style:normal;font-family:var(--f-en);font-weight:700;font-size:14px;min-width:2.4em;text-align:right}
+.glist em.ok{color:var(--lettuce)}
+.minis{display:flex;gap:3px}
+.mini{width:20px;height:20px;opacity:.25;filter:grayscale(1)}
+.mini.on{opacity:1;filter:none}
+.mini svg{width:20px;height:20px}
+.howto{border:2px dashed var(--line);border-radius:14px;padding:8px 12px}
+.howto>b{font-size:15px;font-weight:900}
+.howto ul{margin:4px 0 0;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:2px}
+.alb section{display:flex;flex-direction:column;gap:8px}
+.alb .sec,.goals .sec{margin:0;font-size:15px;font-weight:900;display:flex;align-items:baseline;gap:8px}
+.cnt{font-family:var(--f-en);font-size:13px;font-weight:700;color:var(--stone)}
+.cap{margin:0;font-size:12px;color:var(--stone)}
+.card{background:var(--soft);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:2px;min-width:0;position:relative}
+.card b{font-size:14px;font-weight:700;line-height:1.35}
+.card small{font-size:12px;color:var(--stone);line-height:1.4}
+.card em{font-style:normal;font-weight:700;color:var(--ink)}
+.card.off{opacity:.72}
+.copied:empty{display:none}
+.holdpad.exh{background:var(--white)}
+.holdpad.exh.on{background:#ffe9a8}
+.cards2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cards3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cards5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.card.st{align-items:center;text-align:center;padding:8px 4px;background:var(--yellow-soft);border:2px solid var(--ink)}
+.card.st.off{background:var(--soft);border:2px dashed var(--line);opacity:1}
+.card.st.off .ic{opacity:.18;filter:grayscale(1)}
+.card.st .ic{width:36px;height:36px}
+.card.st b,.card.st small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.card.bd{align-items:center;text-align:center;padding:10px 6px}
+.card.bd .medal{width:34px;height:34px}
+.card.bd.off .medal{opacity:.7}
+.card.bd .new{position:absolute;top:6px;right:6px;font-size:11px;font-weight:900;background:var(--tomato);color:var(--white);border-radius:99px;padding:0 6px}
+.card.mon{flex-direction:row;gap:12px;align-items:flex-start}
+.card.mon .mbig{width:56px;height:56px;flex:none}
+.card.mon>div{display:flex;flex-direction:column;gap:3px}
+.card.mon.off .mbig{filter:grayscale(1) brightness(.4);opacity:.4}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips span{font-size:12px;font-weight:700;background:var(--white);border:2px solid var(--line);border-radius:99px;padding:2px 10px}
+.chips span.on{border-color:var(--ink)}
+.sandwich.sm svg{width:min(180px,55%)}
+.ttl{display:flex;flex-direction:column;gap:2px}
+.ttl small{font-size:12px;color:var(--stone)}
+.ttl b{font-size:22px;font-weight:900;color:var(--tomato)}
+.newb{background:var(--lettuce-soft);border-radius:16px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.newb .nbh{font-size:15px;font-weight:900}
+.newb>small{font-size:12px;color:#4e6d1f}
+.newb .card{background:var(--white)}
+.lock{background:var(--yellow-soft);border:2px solid var(--ink);border-radius:16px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.lock>b{font-size:17px;font-weight:900}
+.lock>small{font-size:12px;color:var(--stone)}
+.lock ul{margin:2px 0 0;padding-left:20px;font-size:14px}
+.nw .igbtn{margin-top:4px}
+a.primary{display:block;text-align:center;text-decoration:none}
+.qr{display:flex;align-items:center;gap:12px;background:var(--white);color:var(--ink);border-radius:12px;padding:8px;margin-top:4px}
+.qr #qrc img,.qr #qrc canvas{display:block;width:132px;height:132px}
+.qr small{font-size:13px;font-weight:700}
+.sec2{display:flex;flex-direction:column;gap:6px}
+.ghost.sm{font-size:14px;padding:8px 12px;border-radius:12px}
 </style>
 </head>
 <body>
@@ -251,6 +335,7 @@ h3.sec{margin:6px 0 0;font-size:16px;font-weight:900}
     <div class="clock" aria-label="時間"><b id="clk">08:00</b><span class="day"><i id="dayBar"></i></span><span class="plus" id="plus"></span></div>
     <div class="meter" aria-label="體力"><span class="h">體力</span><span class="bar"><i id="enBar"></i></span><b id="enNum">100</b></div>
     <div class="bagrow" id="bagRow" aria-label="背包"></div>
+    <div class="goal" id="goal" aria-live="polite"></div>
   </div>
   <div class="main">
   <div class="stage" id="stageMap">
