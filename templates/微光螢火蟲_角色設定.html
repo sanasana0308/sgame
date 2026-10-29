@@ -5,8 +5,8 @@
 <script>
 const NV='#353a5a',LN='#2b2f4a',FACE='#fbe7cf',TEAL='#4f8f8c',BR='#9a6a43';
 const defs=`<defs>
- <radialGradient id="halo"><stop offset="0" stop-color="#fff8cf" stop-opacity="1"/><stop offset=".35" stop-color="#ffe58a" stop-opacity=".55"/><stop offset="1" stop-color="#ffe58a" stop-opacity="0"/></radialGradient>
- <radialGradient id="tail" cx=".45" cy=".4"><stop offset="0" stop-color="#fffef4"/><stop offset=".55" stop-color="#fff0a6"/><stop offset="1" stop-color="#f7cf55"/></radialGradient>
+ <radialGradient id="halo"><stop offset="0" stop-color="#fffbe2" stop-opacity="1"/><stop offset=".3" stop-color="#ffeb94" stop-opacity=".85"/><stop offset=".65" stop-color="#ffe27a" stop-opacity=".35"/><stop offset="1" stop-color="#ffe27a" stop-opacity="0"/></radialGradient>
+ <radialGradient id="tail" cx=".45" cy=".4"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#fff6c2"/><stop offset="1" stop-color="#ffe170"/></radialGradient>
  <radialGradient id="bulb" cx=".4" cy=".35"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#fff2a8"/><stop offset="1" stop-color="#ffd657"/></radialGradient>
  <radialGradient id="head" cx=".4" cy=".3"><stop offset="0" stop-color="#4a5076"/><stop offset="1" stop-color="#2d3150"/></radialGradient>
  <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef4ff" stop-opacity=".9"/><stop offset="1" stop-color="#cfe0f7" stop-opacity=".55"/></linearGradient>
@@ -35,7 +35,7 @@ function earsSvg(kind){
   const inner=kind==='glow'?'url(#tail)':'#f3c9b8';
   const one=(sx)=>`<g transform="scale(${sx} 1)"><path d="M-30 -36 C-62 -70 -84 -118 -70 -130 C-54 -138 -22 -96 -10 -48 Z" fill="url(#head)" stroke="${LN}" stroke-width="2.5" stroke-linejoin="round" filter="url(#fuzz)"/>
     <path d="M-30 -46 C-52 -74 -66 -108 -62 -116 C-52 -118 -30 -88 -20 -54 Z" fill="${inner}"/></g>`;
-  return (kind==='glow'?halo(-58,-92,60,.85)+halo(58,-92,60,.85):'')+one(1)+one(-1);
+  return (kind==='glow'?halo(-58,-92,78,1)+halo(58,-92,78,1):'')+one(1)+one(-1);
 }
 let EAR=new URLSearchParams(location.search).get('ear')||'glow';
 // head only (r=50 at 0,0)
@@ -44,7 +44,7 @@ function head(o){
   let g=earsSvg(o.ears||EAR);
   // antennae with bulbs
   g+=`<path d="M-8 -48 Q-12 -80 -22 -92" fill="none" stroke="${LN}" stroke-width="3.2" stroke-linecap="round"/><path d="M8 -48 Q12 -80 24 -90" fill="none" stroke="${LN}" stroke-width="3.2" stroke-linecap="round"/>`;
-  g+=halo(-23,-95,28,.9)+halo(25,-93,28,.9)+`<circle cx="-23" cy="-95" r="9" fill="url(#bulb)"/><circle cx="25" cy="-93" r="9" fill="url(#bulb)"/>`;
+  g+=halo(-23,-95,36,1)+halo(25,-93,36,1)+`<circle cx="-23" cy="-95" r="9" fill="url(#bulb)"/><circle cx="25" cy="-93" r="9" fill="url(#bulb)"/>`;
   g+=`<circle cx="0" cy="0" r="52" fill="url(#head)" filter="url(#fuzz)"/>`;
   g+=`<path d="M-42 18 C-46 -16 -24 -26 0 -26 C24 -26 46 -16 42 18 C40 44 -40 44 -42 18 Z" fill="${FACE}"/>`;
   g+=eyes(e)+mouth(m);
@@ -57,10 +57,11 @@ function ff(o){
   const s=o.s||1,p=o.pose||'fly';let g='';
   // tail glow first
   const tx=p==='sit'?2:20,ty=p==='sit'?92:88;
-  g+=halo(tx,ty,95,o.glow??1);
+  g+=halo(tx,ty,125,o.glow??1)+halo(tx,ty,60,1);
   // wings
-  if(p!=='lie'){g+=`<ellipse cx="-58" cy="20" rx="48" ry="26" transform="rotate(-30 -58 20)" fill="url(#wing)" stroke="#9fb4d6" stroke-width="1.6"/><ellipse cx="56" cy="14" rx="44" ry="24" transform="rotate(28 56 14)" fill="url(#wing)" stroke="#9fb4d6" stroke-width="1.6"/>`;
-    g+=`<path d="M-90 2 q30 10 60 14 M86 -2 q-28 10 -56 16" fill="none" stroke="#b7c7e2" stroke-width="1"/>`;}
+  if(p!=='lie'){g+=`<g opacity=".9"><ellipse cx="-82" cy="30" rx="52" ry="23" transform="rotate(-28 -82 30)" fill="url(#wing)" stroke="#b9cbe8" stroke-width="1.6"/><ellipse cx="-74" cy="70" rx="38" ry="16" transform="rotate(-2 -74 70)" fill="url(#wing)" stroke="#b9cbe8" stroke-width="1.4"/>
+      <ellipse cx="82" cy="30" rx="52" ry="23" transform="rotate(28 82 30)" fill="url(#wing)" stroke="#b9cbe8" stroke-width="1.6"/><ellipse cx="74" cy="70" rx="38" ry="16" transform="rotate(2 74 70)" fill="url(#wing)" stroke="#b9cbe8" stroke-width="1.4"/></g>`;
+    g+=`<path d="M-30 54 Q-80 40 -118 14 M30 54 Q80 40 118 14 M-30 64 Q-70 70 -100 70 M30 64 Q70 70 100 70" fill="none" stroke="#d3def0" stroke-width="1.2"/>`;}
   // body + tail
   if(p==='sit'){g+=`<ellipse cx="2" cy="92" rx="34" ry="28" fill="url(#tail)"/><ellipse cx="0" cy="62" rx="26" ry="20" fill="${NV}"/><path d="M-20 100 l-22 10 M22 100 l22 10" stroke="${NV}" stroke-width="12" stroke-linecap="round"/>`;}
   else{g+=`<ellipse cx="${tx}" cy="${ty}" rx="32" ry="28" fill="url(#tail)"/><ellipse cx="-4" cy="64" rx="26" ry="22" fill="${NV}"/>`;
