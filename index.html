@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>我熱愛當瑜伽老師🙃｜三明治鎮</title>
-<meta name="description" content="大家都被夾成三明治了，換你來幫大家鬆一鬆。">
-<meta property="og:title" content="我熱愛當瑜伽老師🙃｜三明治鎮">
-<meta property="og:description" content="玩完一區，等於上了一堂迷你瑜伽課。">
+<title>三明治鎮 Sandywich Town</title>
+<meta name="description" content="大家都被夾成三明治了🥪 Everyone's a little sandwiched.">
+<meta property="og:title" content="三明治鎮 Sandywich Town">
+<meta property="og:description" content="上有老、下有小、中間還有工作。來鎮上玩一局。">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Poppins:wght@500;600;700&display=swap">
@@ -20,7 +20,7 @@ body{color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengH
 .kicker{font-family:Poppins,sans-serif;font-size:12px;letter-spacing:.16em;color:var(--stone);text-transform:uppercase;margin:0}
 h1{font-size:30px;font-weight:900;line-height:1.2;margin:0;text-wrap:balance}
 .lead{margin:0;font-size:16px}
-a.game{display:flex;gap:14px;align-items:center;text-decoration:none;color:inherit;background:#fff;border:3px solid var(--ink);border-radius:20px;padding:14px;box-shadow:0 5px 0 var(--ink);transition:transform .08s}
+.game{display:flex;gap:14px;align-items:center;text-decoration:none;color:inherit;background:#fff;border:3px solid var(--ink);border-radius:20px;padding:14px;box-shadow:0 5px 0 var(--ink);transition:transform .08s}
 a.game:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
 a.game.main{background:var(--yellow-soft)}
 .ic{flex:none;width:64px;height:64px;border-radius:16px;display:grid;place-items:center;background:var(--soft)}
@@ -39,27 +39,67 @@ a.game.main{background:var(--yellow-soft)}
 @media (max-width:360px){.small{grid-template-columns:1fr}}
 .igbtn{display:inline-block;margin-top:10px;background:var(--yellow);color:var(--ink);font-weight:900;text-decoration:none;border:2px solid var(--ink);border-radius:99px;padding:8px 16px}
 .hsub{margin:-6px 0 0;font-size:18px;font-weight:700;color:var(--tomato)}
+.en{display:block;font-family:Poppins,"Noto Sans TC",sans-serif;font-weight:500;font-size:.78em;color:var(--stone);line-height:1.35;letter-spacing:.01em}
+h1 .en{font-size:17px;font-weight:600;color:var(--ink);margin-top:2px}
+.hsub .en{color:var(--tomato);opacity:.85;font-size:14px}
+.lead .en{font-size:14px}
+.series{display:flex;flex-direction:column;gap:12px}
+a.game.soon,div.game.soon{background:var(--soft);border-style:dashed;box-shadow:none;cursor:default}
+.game.soon .ic{filter:grayscale(.6);opacity:.7}
+.game.soon b{color:#5f5e5a}
+.emo{font-size:34px;line-height:1}
+.g>.zones{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.zone{font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--tomato);color:#fff;line-height:1.4}
+.zone small{font-family:Poppins,sans-serif;font-weight:500;opacity:.9;margin-left:4px}
+.zone.soon{background:#fff;color:var(--stone);border:1px dashed var(--stone)}
+.g>.soonpill{display:table;font-size:12px;font-weight:700;padding:1px 8px;border-radius:99px;border:1px dashed var(--stone);color:var(--stone);margin-top:6px}
 </style>
 </head>
 <body>
 <div class="ribbon" aria-hidden="true"></div>
 <main class="wrap">
-  <p class="kicker">Sandywich Yoga · 三明治鎮</p>
-  <h1>我熱愛當瑜伽老師🙃</h1>
-  <p class="hsub">大家都被夾成三明治了，<br>換你來幫大家鬆一鬆</p>
-  <p class="lead">歡迎來到三明治鎮。玩一局大約 5 分鐘，像上了一堂迷你瑜伽課。每個月開放新的一區。</p>
+  <p class="kicker" id="kicker">SANDYWICH · 三明治鎮</p>
+  <h1 id="title">三明治鎮<span class="en">Sandywich Town</span></h1>
+  <p class="hsub" id="sub">大家都被夾成三明治了🥪<span class="en">Everyone's a little sandwiched.</span></p>
+  <p class="lead" id="lead">上有老、下有小、中間還有工作。來鎮上玩一局，看看你怎麼做決定。<span class="en">Parents above, kids below, work in between. Play a round and see how you choose.</span></p>
 
-  <a class="game main" href="/town">
-    <span class="ic"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 52 L10 26 C4 24 4 12 16 10 C24 4 40 4 48 10 C60 12 60 24 54 26 L54 52 Z" fill="#e8b46a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><path d="M14 30 q6 -5 12 0 t12 0 t12 0 L50 36 L14 36Z" fill="#7fa63d" stroke="#2c2c2a" stroke-width="2.5"/><rect x="14" y="38" width="36" height="7" rx="3" fill="#d7263d" stroke="#2c2c2a" stroke-width="2.5"/></svg></span>
-    <span class="g"><b>開始上工 <span class="tag">第一區・極致肩持</span></b><span>救回 3 位居民，解鎖這一區的序列圖卡。</span></span>
-  </a>
+  <div class="series" id="series">
+    <a class="game main" href="/town"><span class="ic"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 52 L10 26 C4 24 4 12 16 10 C24 4 40 4 48 10 C60 12 60 24 54 26 L54 52 Z" fill="#e8b46a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><path d="M14 30 q6 -5 12 0 t12 0 t12 0 L50 36 L14 36Z" fill="#7fa63d" stroke="#2c2c2a" stroke-width="2.5"/><rect x="14" y="38" width="36" height="7" rx="3" fill="#d7263d" stroke="#2c2c2a" stroke-width="2.5"/></svg></span><span class="g"><b>我熱愛當瑜伽老師🙂</b><span class="en">I ♥ Being a Yoga Teacher</span></span></a>
+  </div>
 
   <section class="who">
-    <h2>Sandy 是誰？</h2>
-    <p>RYT200 瑜伽老師，喜歡把身體的感覺說清楚。遊戲裡的動作和口令，都來自 Sandy 的課。</p>
-    <a class="igbtn" href="https://www.instagram.com/sandywich.su/" target="_blank" rel="noopener">追蹤 @sandywich.su，看每週的序列</a>
+    <h2>Sandy 是誰？<span class="en">Who's Sandy?</span></h2>
+    <p>RYT200 瑜伽老師、媽媽、正在三明治時代的人。遊戲裡的動作和口令，都來自 Sandy 的課。<span class="en">Yoga teacher, mom, living the sandwich years. Every pose in the game comes from Sandy's classes.</span></p>
+    <a class="igbtn" href="https://www.instagram.com/sandywich.su/" target="_blank" rel="noopener">追蹤 @sandywich.su · Follow</a>
   </section>
-  <p class="foot">遊戲好玩為主，這不是治療；身體有傷痛，請先詢問醫師。</p>
+  <p class="foot">遊戲好玩為主，這不是治療；身體有傷痛，請先詢問醫師。<br>Just for fun, not medical advice. If something hurts, please see a doctor.</p>
 </main>
+<script>
+(function(){
+  var SW='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 52 L10 26 C4 24 4 12 16 10 C24 4 40 4 48 10 C60 12 60 24 54 26 L54 52 Z" fill="#e8b46a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><path d="M14 30 q6 -5 12 0 t12 0 t12 0 L50 36 L14 36Z" fill="#7fa63d" stroke="#2c2c2a" stroke-width="2.5"/><rect x="14" y="38" width="36" height="7" rx="3" fill="#d7263d" stroke="#2c2c2a" stroke-width="2.5"/></svg>';
+  var esc=function(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+  var bi=function(o){return o?esc(o.zh)+'<span class="en">'+esc(o.en)+'</span>':''};
+  fetch('/content/site.json',{cache:'no-cache'}).then(function(r){return r.json()}).then(function(d){
+    var h=d.home||{};
+    if(h.kicker)document.getElementById('kicker').textContent=h.kicker;
+    if(h.title)document.getElementById('title').innerHTML=bi(h.title);
+    if(h.sub)document.getElementById('sub').innerHTML=bi(h.sub);
+    if(h.lead)document.getElementById('lead').innerHTML=bi(h.lead);
+    if(!d.series||!d.series.length)return;
+    var html=d.series.map(function(s,i){
+      var open=s.status==='open'&&s.href;
+      var zones=(s.zones||[]).map(function(z){
+        return '<span class="zone'+(z.status==='open'?'':' soon')+'">'+esc(z.zh)+'<small>'+esc(z.en)+'</small></span>'}).join('');
+      var inner='<span class="ic">'+(s.icon==='sandwich'?SW:'<span class="emo">'+esc(s.icon||s.emoji)+'</span>')+'</span><span class="g"><b>'+esc(s.zh)+esc(s.emoji)+'</b><span class="en">'+esc(s.en)+'</span>'
+        +(s.desc?'<span>'+bi(s.desc)+'</span>':'')
+        +(zones?'<span class="zones">'+zones+'</span>':'')
+        +(open?'':'<span class="soonpill">即將開放 · Coming soon</span>')+'</span>';
+      return open?'<a class="game'+(i===0?' main':'')+'" href="'+esc(s.href)+'">'+inner+'</a>'
+                 :'<div class="game soon" aria-disabled="true">'+inner+'</div>';
+    }).join('');
+    document.getElementById('series').innerHTML=html;
+  }).catch(function(){});
+})();
+</script>
 </body>
 </html>
