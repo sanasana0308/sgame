@@ -30,13 +30,21 @@ function mouth(t){return {smile:`<path d="M-8 22 q8 10 16 0 Z" fill="#d9605e" st
   o:`<ellipse cx="0" cy="24" rx="4.5" ry="5.5" fill="#d9605e" stroke="${LN}" stroke-width="2.2"/>`,
   flat:`<path d="M-5 24 q5 -3 10 0" fill="none" stroke="${LN}" stroke-width="2.6" stroke-linecap="round"/>`,
   grin:`<path d="M-11 20 q11 14 22 0 Z" fill="#d9605e" stroke="${LN}" stroke-width="2.4" stroke-linejoin="round"/><path d="M-8 21 h16" stroke="#fff" stroke-width="3"/>`}[t];}
+function earsSvg(kind){
+  if(kind==='none')return '';
+  const inner=kind==='glow'?'url(#tail)':'#f3c9b8';
+  const one=(sx)=>`<g transform="scale(${sx} 1)"><path d="M-30 -36 C-62 -70 -84 -118 -70 -130 C-54 -138 -22 -96 -10 -48 Z" fill="url(#head)" stroke="${LN}" stroke-width="2.5" stroke-linejoin="round" filter="url(#fuzz)"/>
+    <path d="M-30 -46 C-52 -74 -66 -108 -62 -116 C-52 -118 -30 -88 -20 -54 Z" fill="${inner}"/></g>`;
+  return (kind==='glow'?halo(-58,-92,60,.85)+halo(58,-92,60,.85):'')+one(1)+one(-1);
+}
+let EAR=new URLSearchParams(location.search).get('ear')||'glow';
 // head only (r=50 at 0,0)
 function head(o){
   const e=o.eyes||'open',m=o.mouth||'smile';
-  let g='';
+  let g=earsSvg(o.ears||EAR);
   // antennae with bulbs
-  g+=`<path d="M-14 -46 Q-22 -86 -44 -96" fill="none" stroke="${LN}" stroke-width="3.2" stroke-linecap="round"/><path d="M14 -46 Q24 -84 50 -90" fill="none" stroke="${LN}" stroke-width="3.2" stroke-linecap="round"/>`;
-  g+=halo(-46,-98,30,.9)+halo(52,-92,30,.9)+`<circle cx="-46" cy="-98" r="10" fill="url(#bulb)"/><circle cx="52" cy="-92" r="10" fill="url(#bulb)"/>`;
+  g+=`<path d="M-8 -48 Q-12 -80 -22 -92" fill="none" stroke="${LN}" stroke-width="3.2" stroke-linecap="round"/><path d="M8 -48 Q12 -80 24 -90" fill="none" stroke="${LN}" stroke-width="3.2" stroke-linecap="round"/>`;
+  g+=halo(-23,-95,28,.9)+halo(25,-93,28,.9)+`<circle cx="-23" cy="-95" r="9" fill="url(#bulb)"/><circle cx="25" cy="-93" r="9" fill="url(#bulb)"/>`;
   g+=`<circle cx="0" cy="0" r="52" fill="url(#head)" filter="url(#fuzz)"/>`;
   g+=`<path d="M-42 18 C-46 -16 -24 -26 0 -26 C24 -26 46 -16 42 18 C40 44 -40 44 -42 18 Z" fill="${FACE}"/>`;
   g+=eyes(e)+mouth(m);
@@ -67,7 +75,7 @@ function ff(o){
   // scarf
   if(o.scarf!==false)g+=`<path d="M-34 40 C-14 54 14 54 34 40 L32 50 C12 62 -12 62 -32 50 Z" fill="${TEAL}"/><path d="M18 50 l10 26 l10 -6 l-8 -22 Z" fill="#437c79"/>`;
   // head
-  if(p==='back'){g+=`<path d="M-14 -46 Q-22 -86 -44 -96 M14 -46 Q24 -84 50 -90" fill="none" stroke="${LN}" stroke-width="3.2"/>`+halo(-46,-98,26)+halo(52,-92,26)+`<circle cx="-46" cy="-98" r="9" fill="url(#bulb)"/><circle cx="52" cy="-92" r="9" fill="url(#bulb)"/><circle cx="0" cy="0" r="52" fill="url(#head)" filter="url(#fuzz)"/>`+(o.scarf!==false?`<path d="M-34 40 C-14 54 14 54 34 40 L32 50 C12 62 -12 62 -32 50 Z" fill="${TEAL}"/>`:'');}
+  if(p==='back'){g+=earsSvg(o.ears||EAR)+`<path d="M-8 -48 Q-12 -80 -22 -92 M8 -48 Q12 -80 24 -90" fill="none" stroke="${LN}" stroke-width="3.2"/>`+halo(-23,-95,24)+halo(25,-93,24)+`<circle cx="-23" cy="-95" r="8" fill="url(#bulb)"/><circle cx="25" cy="-93" r="8" fill="url(#bulb)"/><circle cx="0" cy="0" r="52" fill="url(#head)" filter="url(#fuzz)"/>`+(o.scarf!==false?`<path d="M-34 40 C-14 54 14 54 34 40 L32 50 C12 62 -12 62 -32 50 Z" fill="${TEAL}"/>`:'');}
   else g+=head(o);
   if(o.extra)g+=o.extra;
   return `<g transform="translate(${o.x} ${o.y}) rotate(${o.rot||0}) scale(${s})">${g}</g>`;
