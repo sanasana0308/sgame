@@ -24,14 +24,14 @@
   "series": [
     {
       "id": "yoga",
-      "emoji": "🙂",
-      "zh": "我熱愛當瑜伽老師",
-      "en": "I ♥ Being a Yoga Teacher",
+      "emoji": "",
+      "zh": "身體救援隊・出動！",
+      "en": "Body Rescue Squad, Go!",
       "status": "open",
       "href": "/town",
       "desc": {
-        "zh": "幫鎮民鬆一鬆，玩一局約 5 分鐘。",
-        "en": "Help the townsfolk loosen up. About 5 minutes."
+        "zh": "身體怪物出沒中，5 分鐘救回鎮民，也救自己。",
+        "en": "Body monsters on the loose. 5 minutes to rescue the townsfolk, and yourself."
       },
       "zones": [
         {
