@@ -1,0 +1,114 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Huninn&display=swap">
+<style>body{margin:0;background:#f6f1ea}svg{display:block}</style></head><body>
+<svg id="s" width="1536" height="1024" viewBox="0 0 1536 1024" font-family="Huninn,'Noto Sans TC',sans-serif"></svg>
+<script>
+const NV='#353a5a',LN='#2b2f4a',FACE='#fbe7cf',TEAL='#4f8f8c',BR='#9a6a43';
+const defs=`<defs>
+ <radialGradient id="halo"><stop offset="0" stop-color="#fff8cf" stop-opacity="1"/><stop offset=".35" stop-color="#ffe58a" stop-opacity=".55"/><stop offset="1" stop-color="#ffe58a" stop-opacity="0"/></radialGradient>
+ <radialGradient id="tail" cx=".45" cy=".4"><stop offset="0" stop-color="#fffef4"/><stop offset=".55" stop-color="#fff0a6"/><stop offset="1" stop-color="#f7cf55"/></radialGradient>
+ <radialGradient id="bulb" cx=".4" cy=".35"><stop offset="0" stop-color="#fff"/><stop offset=".6" stop-color="#fff2a8"/><stop offset="1" stop-color="#ffd657"/></radialGradient>
+ <radialGradient id="head" cx=".4" cy=".3"><stop offset="0" stop-color="#4a5076"/><stop offset="1" stop-color="#2d3150"/></radialGradient>
+ <linearGradient id="wing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef4ff" stop-opacity=".9"/><stop offset="1" stop-color="#cfe0f7" stop-opacity=".55"/></linearGradient>
+ <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b4a7a"/><stop offset=".7" stop-color="#7f8fb8"/><stop offset="1" stop-color="#d9c9b0"/></linearGradient>
+ <filter id="fuzz" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="1" seed="4"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+ <filter id="soft"><feGaussianBlur stdDeviation="2"/></filter>
+</defs>`;
+const halo=(x,y,r,a=1)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="url(#halo)" opacity="${a}"/>`;
+function eyes(t){
+  const L=-17,R=17,Y=8;
+  const open=(x)=>`<ellipse cx="${x}" cy="${Y}" rx="6" ry="7.5" fill="${LN}"/><circle cx="${x+2}" cy="${Y-3}" r="2.4" fill="#fff"/>`;
+  const happy=(x)=>`<path d="M${x-7} ${Y+2} q7 -9 14 0" fill="none" stroke="${LN}" stroke-width="3" stroke-linecap="round"/>`;
+  const shut=(x)=>`<path d="M${x-7} ${Y} q7 7 14 0" fill="none" stroke="${LN}" stroke-width="3" stroke-linecap="round"/>`;
+  const slit=(x)=>`<path d="M${x-8} ${Y} h16" stroke="${LN}" stroke-width="3.2" stroke-linecap="round"/>`;
+  const sad=(x,s)=>`<ellipse cx="${x}" cy="${Y+1}" rx="5" ry="6" fill="${LN}"/><circle cx="${x+1.5}" cy="${Y-1.5}" r="2" fill="#fff"/><path d="M${x-7} ${Y-10+(s?3:0)} L${x+7} ${Y-10+(s?0:3)}" stroke="${LN}" stroke-width="2.4" stroke-linecap="round"/>`;
+  return {open:open(L)+open(R),happy:happy(L)+happy(R),shut:shut(L)+shut(R),slit:slit(L)+slit(R),wink:open(L)+`<path d="M${R-7} ${Y} q7 -7 14 0 M${R-6} ${Y+3} l12 0" fill="none" stroke="${LN}" stroke-width="3" stroke-linecap="round"/>`,
+    sad:sad(L,1)+sad(R,0),wow:`<circle cx="${L}" cy="${Y}" r="6" fill="${LN}"/><circle cx="${L+2}" cy="${Y-2}" r="2.2" fill="#fff"/><circle cx="${R}" cy="${Y}" r="6" fill="${LN}"/><circle cx="${R+2}" cy="${Y-2}" r="2.2" fill="#fff"/>`}[t];
+}
+function mouth(t){return {smile:`<path d="M-8 22 q8 10 16 0 Z" fill="#d9605e" stroke="${LN}" stroke-width="2.4" stroke-linejoin="round"/>`,
+  soft:`<path d="M-6 22 q6 6 12 0" fill="none" stroke="${LN}" stroke-width="2.6" stroke-linecap="round"/>`,
+  o:`<ellipse cx="0" cy="24" rx="4.5" ry="5.5" fill="#d9605e" stroke="${LN}" stroke-width="2.2"/>`,
+  flat:`<path d="M-5 24 q5 -3 10 0" fill="none" stroke="${LN}" stroke-width="2.6" stroke-linecap="round"/>`,
+  grin:`<path d="M-11 20 q11 14 22 0 Z" fill="#d9605e" stroke="${LN}" stroke-width="2.4" stroke-linejoin="round"/><path d="M-8 21 h16" stroke="#fff" stroke-width="3"/>`}[t];}
+// head only (r=50 at 0,0)
+function head(o){
+  const e=o.eyes||'open',m=o.mouth||'smile';
+  let g='';
+  // antennae with bulbs
+  g+=`<path d="M-14 -46 Q-22 -86 -44 -96" fill="none" stroke="${LN}" stroke-width="3.2" stroke-linecap="round"/><path d="M14 -46 Q24 -84 50 -90" fill="none" stroke="${LN}" stroke-width="3.2" stroke-linecap="round"/>`;
+  g+=halo(-46,-98,30,.9)+halo(52,-92,30,.9)+`<circle cx="-46" cy="-98" r="10" fill="url(#bulb)"/><circle cx="52" cy="-92" r="10" fill="url(#bulb)"/>`;
+  g+=`<circle cx="0" cy="0" r="52" fill="url(#head)" filter="url(#fuzz)"/>`;
+  g+=`<path d="M-42 18 C-46 -16 -24 -26 0 -26 C24 -26 46 -16 42 18 C40 44 -40 44 -42 18 Z" fill="${FACE}"/>`;
+  g+=eyes(e)+mouth(m);
+  g+=`<ellipse cx="-30" cy="22" rx="8" ry="5" fill="#f4a3a0" opacity=".8"/><ellipse cx="30" cy="22" rx="8" ry="5" fill="#f4a3a0" opacity=".8"/>`;
+  if(o.hat)g+=`<path d="M-62 -14 C-60 -24 60 -24 62 -14 C66 -6 -66 -6 -62 -14 Z" fill="#8a5c38"/><path d="M-44 -18 C-46 -70 46 -70 44 -18 Z" fill="#b07a4c" stroke="#7a4f2e" stroke-width="2"/><path d="M-44 -22 h88" stroke="#7a4f2e" stroke-width="5"/><path d="M26 -46 q8 -10 16 -4 q-8 2 -16 4 M26 -46 q-2 -12 8 -14" fill="#6f9a52" stroke="#4f7a3a" stroke-width="1.5"/>`;
+  return g;
+}
+// full firefly: o.x,o.y,o.s,o.rot, o.pose: 'fly'|'sit'|'stand'|'back'
+function ff(o){
+  const s=o.s||1,p=o.pose||'fly';let g='';
+  // tail glow first
+  const tx=p==='sit'?2:20,ty=p==='sit'?92:88;
+  g+=halo(tx,ty,95,o.glow??1);
+  // wings
+  if(p!=='lie'){g+=`<ellipse cx="-58" cy="20" rx="48" ry="26" transform="rotate(-30 -58 20)" fill="url(#wing)" stroke="#9fb4d6" stroke-width="1.6"/><ellipse cx="56" cy="14" rx="44" ry="24" transform="rotate(28 56 14)" fill="url(#wing)" stroke="#9fb4d6" stroke-width="1.6"/>`;
+    g+=`<path d="M-90 2 q30 10 60 14 M86 -2 q-28 10 -56 16" fill="none" stroke="#b7c7e2" stroke-width="1"/>`;}
+  // body + tail
+  if(p==='sit'){g+=`<ellipse cx="2" cy="92" rx="34" ry="28" fill="url(#tail)"/><ellipse cx="0" cy="62" rx="26" ry="20" fill="${NV}"/><path d="M-20 100 l-22 10 M22 100 l22 10" stroke="${NV}" stroke-width="12" stroke-linecap="round"/>`;}
+  else{g+=`<ellipse cx="${tx}" cy="${ty}" rx="32" ry="28" fill="url(#tail)"/><ellipse cx="-4" cy="64" rx="26" ry="22" fill="${NV}"/>`;
+    g+=`<path d="M-10 80 l-6 22 M6 82 l2 22" stroke="${NV}" stroke-width="11" stroke-linecap="round"/>`;}
+  // backpack
+  if(o.pack)g+=`<rect x="-62" y="44" width="34" height="38" rx="9" fill="${BR}" stroke="#6e4a2c" stroke-width="2"/><rect x="-62" y="44" width="34" height="13" rx="6" fill="#b5835a"/><path d="M-45 64 l2.5 5 5.5 .6 -4 3.6 1.2 5.4 -5.2 -2.8 -5.2 2.8 1.2 -5.4 -4 -3.6 5.5 -.6z" fill="#f2c45a"/>`;
+  // arms
+  const arm=o.arm||'down';
+  if(arm==='wave')g+=`<path d="M22 58 l28 -30" stroke="${NV}" stroke-width="11" stroke-linecap="round"/><path d="M-22 60 l-14 18" stroke="${NV}" stroke-width="11" stroke-linecap="round"/>`;
+  else if(arm==='hug')g+=`<path d="M-20 62 q10 18 28 22 M22 60 q2 18 -10 26" fill="none" stroke="${NV}" stroke-width="11" stroke-linecap="round"/>`;
+  else g+=`<path d="M-22 60 l-14 18 M22 60 l14 18" stroke="${NV}" stroke-width="11" stroke-linecap="round"/>`;
+  // scarf
+  if(o.scarf!==false)g+=`<path d="M-34 40 C-14 54 14 54 34 40 L32 50 C12 62 -12 62 -32 50 Z" fill="${TEAL}"/><path d="M18 50 l10 26 l10 -6 l-8 -22 Z" fill="#437c79"/>`;
+  // head
+  if(p==='back'){g+=`<path d="M-14 -46 Q-22 -86 -44 -96 M14 -46 Q24 -84 50 -90" fill="none" stroke="${LN}" stroke-width="3.2"/>`+halo(-46,-98,26)+halo(52,-92,26)+`<circle cx="-46" cy="-98" r="9" fill="url(#bulb)"/><circle cx="52" cy="-92" r="9" fill="url(#bulb)"/><circle cx="0" cy="0" r="52" fill="url(#head)" filter="url(#fuzz)"/>`+(o.scarf!==false?`<path d="M-34 40 C-14 54 14 54 34 40 L32 50 C12 62 -12 62 -32 50 Z" fill="${TEAL}"/>`:'');}
+  else g+=head(o);
+  if(o.extra)g+=o.extra;
+  return `<g transform="translate(${o.x} ${o.y}) rotate(${o.rot||0}) scale(${s})">${g}</g>`;
+}
+const star=(x,y,r,c='#f6c84b')=>`<path transform="translate(${x} ${y}) scale(${r/10})" d="M0 -10 L2.9 -3.1 10 -3.1 4.3 1.3 6.4 8.4 0 4.2 -6.4 8.4 -4.3 1.3 -10 -3.1 -2.9 -3.1Z" fill="${c}" stroke="#d9a32a" stroke-width=".8"/>`;
+const leaf=(x,y,w,rot=0)=>`<g transform="translate(${x} ${y}) rotate(${rot})"><path d="M${-w} 0 C${-w*.4} ${-w*.42} ${w*.5} ${-w*.42} ${w} 0 C${w*.5} ${w*.3} ${-w*.4} ${w*.3} ${-w} 0Z" fill="#6f9a52" stroke="#4f7a3a" stroke-width="2"/><path d="M${-w*.9} 0 Q0 ${-w*.06} ${w*.9} 0" fill="none" stroke="#9cc07a" stroke-width="2"/></g>`;
+const lantern=(x,y)=>halo(x,y+20,60)+`<g transform="translate(${x} ${y})"><path d="M-6 -14 q6 -10 12 0" fill="none" stroke="#6e4a2c" stroke-width="2.5"/><rect x="-14" y="-6" width="28" height="6" rx="2" fill="#7a4f2e"/><rect x="-12" y="0" width="24" height="34" rx="8" fill="url(#tail)" stroke="#7a4f2e" stroke-width="2.5"/><rect x="-14" y="34" width="28" height="6" rx="2" fill="#7a4f2e"/></g>`;
+const T=(x,y,t,sz=20,w=500,c='#3a3a38',anchor='middle')=>`<text x="${x}" y="${y}" font-size="${sz}" font-weight="${w}" fill="${c}" text-anchor="${anchor}">${t}</text>`;
+let o=defs;
+o+=`<rect width="1536" height="1024" fill="#f6f1ea"/>`;
+// title
+o+=`<path d="M40 54 C120 40 300 44 344 56 C350 80 340 110 330 118 C230 124 90 122 46 116 C36 96 36 70 40 54Z" fill="#f8d98a" opacity=".85"/>`+T(190,104,'微光螢火蟲',52,900,'#2c2c2a');
+o+=T(48,160,'小小的光，',22,500,'#3a3a38','start')+T(48,190,'也能照亮一段路。',22,500,'#3a3a38','start');
+// main
+o+=ff({x:250,y:430,s:1.55,rot:-6,pack:true,arm:'wave',eyes:'open',mouth:'smile'})+star(80,500,10)+star(380,520,9)+star(420,300,7)+`<ellipse cx="230" cy="640" rx="110" ry="14" fill="#000" opacity=".06"/>`;
+// types
+const types=[
+ [560,'探索型','好奇・愛冒險',{eyes:'open',mouth:'smile',arm:'wave',extra:`<path d="M50 28 l22 -26" stroke="${BR}" stroke-width="3"/>`+halo(74,0,30)+star(74,0,14)}],
+ [790,'療癒型','溫柔・陪伴',{eyes:'happy',mouth:'soft',arm:'hug',pose:'sit'}],
+ [1020,'冒險型','勇敢・行動',{eyes:'open',mouth:'smile',hat:true,pack:true,extra:lantern(-46,70)}],
+ [1270,'開心型','樂觀・帶動氣氛',{eyes:'wink',mouth:'grin',arm:'wave'}]];
+for(const [x,a,b,op] of types){o+=(op.pose==='sit'?leaf(x,y=340,120,-4):'')+ff(Object.assign({x,y:250,s:.95},op))+T(x,430,a,20,700)+T(x,458,b,16,500,'#6a6a66');}
+o+=`<path d="M1400 360 c40 -20 90 0 92 40 c2 34 -40 52 -80 40" fill="none" stroke="#888" stroke-width="1.5" stroke-dasharray="4 4"/>`+T(1460,385,'也可以',16)+T(1460,407,'搭配不同',16)+T(1460,429,'的小道具！',16);
+// palette
+[['#f6c84b',90],['#f6e3c2',150],['#4f8f8c',210],['#353a5a',270],['#9a6a43',330]].forEach(([c,y])=>o+=`<circle cx="1490" cy="${y}" r="14" fill="${c}"/>`);
+// expressions strip
+o+=`<rect x="372" y="500" width="1130" height="160" rx="22" fill="#efe6d8"/>`+`<path d="M392 528 h86 l-6 26 h-80z" fill="#f8d98a"/>`+T(436,548,'表情參考',18,700);
+const ex=[['open','smile','開心'],['happy','soft','安心'],['wink','o','驚喜'],['sad','flat','有點累'],['slit','smile','咪咪眼']];
+ex.forEach(([e,m,l],i)=>{const x=570+i*205;o+=`<g transform="translate(${x} 600) scale(.85)">${head({eyes:e,mouth:m})}</g>`+T(x+70,650,l,15,500,'#6a6a66');});
+o+=`<path d="M823 590 q4 -8 10 -2 q6 -6 10 2 q-4 8 -10 12 q-6 -4 -10 -12z" fill="#f08a8a"/>`+`<g fill="#9aa2b8"><circle cx="1238" cy="584" r="8"/><circle cx="1250" cy="578" r="10"/><circle cx="1262" cy="586" r="8"/></g>`+star(1440,560,8)+star(1462,584,5);
+// actions
+o+=`<path d="M44 684 h88 l-6 26 h-82z" fill="#f8d98a"/>`+T(88,704,'動作場景',18,700);
+const ay=790;
+o+=ff({x:200,y:ay,s:.72,rot:-14,eyes:'happy',mouth:'smile',pack:true})+star(110,770,8)+star(290,830,7)+`<path d="M70 860 q30 30 60 0 q30 -30 50 10" fill="none" stroke="#b9a" stroke-width="1.5" stroke-dasharray="5 5"/>`+T(200,932,'飛行',18);
+o+=ff({x:430,y:ay,s:.72,eyes:'happy',mouth:'grin',arm:'hug',extra:halo(0,76,40)+star(0,76,16)})+star(360,740,7)+T(430,932,'收集光點',18);
+o+=`<ellipse cx="650" cy="840" rx="90" ry="22" fill="#8a8f9a"/><path d="M570 852 q20 -8 40 0" stroke="#6f9a52" stroke-width="5" fill="none"/>`+ff({x:650,y:770,s:.62,pose:'back'})+star(590,720,8)+star(720,740,10)+star(760,700,6)+T(650,932,'仰望星空',18);
+o+=ff({x:870,y:ay,s:.72,eyes:'open',mouth:'soft',pack:true,extra:`<g transform="translate(46 72) rotate(-8)"><rect x="-30" y="-24" width="60" height="44" rx="3" fill="#dde9f2" stroke="#7d93a8" stroke-width="2"/><path d="M-10 -24 v44 M10 -24 v44" stroke="#9fb3c6" stroke-width="1.5"/><path d="M-24 6 q14 -18 28 -4 q10 8 18 -6" fill="none" stroke="#d7263d" stroke-width="2" stroke-dasharray="4 3"/></g>`})+T(870,932,'探索地圖',18);
+o+=leaf(1090,860,110,-6)+`<g transform="translate(1080 834) scale(.7)">${halo(60,10,80)}<ellipse cx="60" cy="12" rx="34" ry="24" fill="url(#tail)"/>${head({eyes:'shut',mouth:'soft'})}</g>`+`<g transform="translate(1095 790) rotate(-14)"><path d="M-100 0 C-40 -50 60 -50 100 0 C40 -16 -40 -16 -100 0Z" fill="#7aa75a" stroke="#4f7a3a" stroke-width="2"/></g>`+T(1090,932,'休息一下',18);
+o+=`<clipPath id="cp"><path d="M1240 720 C1300 700 1460 700 1500 730 C1520 780 1510 850 1490 870 C1400 880 1280 880 1240 860 C1225 820 1225 760 1240 720Z"/></clipPath><g clip-path="url(#cp)"><rect x="1220" y="690" width="300" height="200" fill="url(#sky)"/>`+halo(1450,750,60)+`<circle cx="1450" cy="750" r="20" fill="#fff4c4"/>`+star(1300,730,4,'#fff3b0')+star(1360,760,3,'#fff3b0')+`<path d="M1220 840 l30 -16 20 8 30 -20 26 14 30 -10 40 18 40 -12 40 16 v80 h-300z" fill="#4a5578"/><g fill="#ffe08a"><rect x="1330" y="830" width="5" height="5"/><rect x="1380" y="836" width="5" height="5"/><rect x="1420" y="828" width="5" height="5"/></g><path d="M1220 860 C1300 840 1400 850 1520 870 V900 H1220Z" fill="#5f7a52"/>`+ff({x:1310,y:828,s:.5,pose:'back'})+`</g>`+T(1370,932,'一起去看更遠的風景',18);
+// footer
+o+=star(42,984,9,'#fff')+`<path d="M34 962 l8 -2" />`+T(60,992,'微光螢火蟲 ——　陪你在每個需要光的時刻。',22,500,'#3a3a38','start')+`<path d="M470 988 q40 10 120 0" fill="none" stroke="#888" stroke-dasharray="6 6"/>`+star(600,986,9,'#fff');
+o+=`<path d="M1130 1005 q40 -40 80 -16 M1260 980 q40 -20 80 0" fill="none" stroke="#888" stroke-dasharray="5 5"/>`+`<g transform="translate(1225 980) scale(.22)">${ff({x:0,y:0,s:1,eyes:'happy',mouth:'smile'})}</g>`+T(1420,995,'有光的地方見 👋',22,500,'#3a3a38');
+document.getElementById('s').innerHTML=o;
+</script></body></html>

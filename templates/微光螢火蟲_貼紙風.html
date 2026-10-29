@@ -1,0 +1,77 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap">
+<style>
+body{margin:0;background:#efeae3;font-family:"Noto Sans TC",sans-serif;color:#2c2c2a}
+.page{width:1500px;padding:36px}
+h1{margin:0 0 4px;font-size:32px;font-weight:900}
+.sub{color:#888780;margin:0 0 22px;font-size:17px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.c{border-radius:22px;overflow:hidden;border:3px solid #2c2c2a;background:#fff}
+.c svg{display:block;width:100%;height:auto}
+.c p{margin:0;padding:10px 14px 14px;font-size:15px;line-height:1.5}
+.c p b{font-size:18px}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+ <filter id="wob" x="-20%" y="-20%" width="140%" height="140%"><feMorphology in="SourceAlpha" operator="dilate" radius="7" result="d"/><feFlood flood-color="#fff"/><feComposite in2="d" operator="in" result="w"/><feOffset in="d" dy="5" result="o"/><feFlood flood-color="#000" flood-opacity=".22"/><feComposite in2="o" operator="in" result="sh"/><feMerge><feMergeNode in="sh"/><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <radialGradient id="halo"><stop offset="0" stop-color="#fff6c4" stop-opacity=".95"/><stop offset=".5" stop-color="#ffe27a" stop-opacity=".45"/><stop offset="1" stop-color="#ffe27a" stop-opacity="0"/></radialGradient>
+ <radialGradient id="bulb" cx=".42" cy=".38"><stop offset="0" stop-color="#fffef2"/><stop offset=".55" stop-color="#fff0a8"/><stop offset="1" stop-color="#ffd24d"/></radialGradient>
+ <filter id="wash" x="-30%" y="-30%" width="160%" height="160%"><feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="3" seed="8"/><feDisplacementMap in="SourceGraphic" scale="14"/><feGaussianBlur stdDeviation="1.2"/></filter>
+</defs></svg>
+<div class="page">
+<h1>微光螢火蟲：貼紙風・咪咪眼＋大耳朵</h1>
+<p class="sub">卡通貼紙風：乾淨黑線、平塗顏色、外圍白邊，可以直接做貼圖。上排比耳朵，下排是 A 耳朵的兩個場景。</p>
+<div class="grid" id="g"></div></div>
+<script>
+const B='#2c2c2a',PAPER='#fff6e0',DARK='#232a4d',GLOW='#ffd34d';
+function tube(pts,paper,w=18){paper='#ffc233';const d='M'+pts.map(p=>p.join(' ')).join(' L');return `<path d="${d}" fill="none" stroke="${B}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${paper}" stroke-width="${w-11}" stroke-linecap="round" stroke-linejoin="round"/>`;}
+function glow(x,y,r,a=.75){return `<circle cx="${x}" cy="${y}" r="${r*2.6}" fill="url(#halo)" opacity="${a}"/>`;}
+const EARS={
+ A:p=>`<path d="M-40 -48 L-62 -132 L-12 -70 Z" fill="#ffc233" stroke="${B}" stroke-width="6" stroke-linejoin="round"/><path d="M-36 -66 L-52 -112 L-24 -74 Z" fill="#ffb3b0"/>
+      <path d="M40 -48 L62 -132 L12 -70 Z" fill="#ffc233" stroke="${B}" stroke-width="6" stroke-linejoin="round"/><path d="M36 -66 L52 -112 L24 -74 Z" fill="#ffb3b0"/>`,
+ B:p=>`<ellipse cx="-50" cy="-74" rx="30" ry="34" transform="rotate(-20 -50 -74)" fill="#ffc233" stroke="${B}" stroke-width="6"/><ellipse cx="-50" cy="-74" rx="16" ry="19" transform="rotate(-20 -50 -74)" fill="#ffb3b0"/>
+      <ellipse cx="50" cy="-74" rx="30" ry="34" transform="rotate(20 50 -74)" fill="#ffc233" stroke="${B}" stroke-width="6"/><ellipse cx="50" cy="-74" rx="16" ry="19" transform="rotate(20 50 -74)" fill="#ffb3b0"/>`,
+ C:p=>`<path d="M-34 -60 C-60 -150 -20 -170 -14 -66 Z" fill="#ffc233" stroke="${B}" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M34 -60 C60 -150 20 -170 14 -66 Z" fill="#ffc233" stroke="${B}" stroke-width="7" stroke-linejoin="round"/>`,
+ D:p=>`<path d="M-38 -40 C-110 -60 -120 -10 -46 4 Z" fill="#ffc233" stroke="${B}" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M38 -40 C110 -60 120 -10 46 4 Z" fill="#ffc233" stroke="${B}" stroke-width="6" stroke-linejoin="round"/>`
+};
+function bug(o){
+  const p=o.paper,s=o.s||1,ear=o.ear||'A';let g='';
+  g+=`<path d="M30 -10 C80 -40 96 10 44 14 Z" fill="#dce9ff" stroke="${B}" stroke-width="6" stroke-linejoin="round"/>`;
+  for(const L of (o.legs||[]))g+=tube(L,p);
+  for(const A of (o.arms||[]))g+=tube(A,p);
+  g+=EARS[ear](p);
+  g+=`<path d="M-44 -40 C-46 -78 46 -78 44 -40 L46 60 C46 100 -46 100 -46 60 Z" fill="#ffc233" stroke="${B}" stroke-width="6" stroke-linejoin="round"/>`;
+  g+=`<path d="M-45 46 C-20 58 20 58 45 46 L46 60 C46 100 -46 100 -46 60 Z" fill="url(#bulb)" stroke="${B}" stroke-width="6" stroke-linejoin="round"/>`;
+  // 小觸角（在兩耳中間，短短的）
+  g+=`<path d="M-6 -70 Q-8 -88 -16 -94 M6 -70 Q8 -88 16 -94" fill="none" stroke="${B}" stroke-width="5" stroke-linecap="round"/><circle cx="-17" cy="-96" r="6" fill="${GLOW}" stroke="${B}" stroke-width="3.5"/><circle cx="17" cy="-96" r="6" fill="${GLOW}" stroke="${B}" stroke-width="3.5"/>`;
+  // 細長咪咪眼
+  const e=o.eyes||'slit';
+  if(e==='slit')g+=`<path d="M-33 -28 h20 M13 -28 h20" stroke="${B}" stroke-width="5.5" stroke-linecap="round"/>`;
+  if(e==='smile')g+=`<path d="M-33 -26 q10 -7 20 0 M13 -26 q10 -7 20 0" fill="none" stroke="${B}" stroke-width="5" stroke-linecap="round"/>`;
+  if(e==='sleepy')g+=`<path d="M-33 -28 q10 6 20 0 M13 -28 q10 6 20 0" fill="none" stroke="${B}" stroke-width="5" stroke-linecap="round"/>`;
+  const m=o.mouth||'grin';
+  if(m==='grin')g+=`<rect x="-24" y="-12" width="48" height="20" rx="10" fill="#fff" stroke="${B}" stroke-width="6"/><path d="M-20 -2 h40" stroke="${B}" stroke-width="2.5"/>`;
+  if(m==='flat')g+=`<path d="M-12 0 h24" stroke="${B}" stroke-width="6" stroke-linecap="round"/>`;
+  if(m==='smile')g+=`<path d="M-14 -6 q14 14 28 0" fill="none" stroke="${B}" stroke-width="6" stroke-linecap="round"/>`;
+  g+=`<ellipse cx="-32" cy="-12" rx="9" ry="5.5" fill="#ff8f9a" opacity=".75"/><ellipse cx="32" cy="-12" rx="9" ry="5.5" fill="#ff8f9a" opacity=".75"/>`;
+  return `<g transform="translate(${o.x} ${o.y}) scale(${(o.flip?-1:1)*s} ${s})">${glow(0,74,40,o.glowA??.8)}<g filter="url(#wob)">${g}</g></g>`;
+}
+const legsWalk=[[[-24,80],[-30,130],[-58,150],[-62,166],[-22,166]],[[24,80],[38,128],[62,150],[70,166],[30,166]]];
+const legsStand=[[[-22,84],[-24,150],[-50,164],[-10,164]],[[22,84],[24,150],[50,164],[10,164]]];
+const legsSit=[[[-30,86],[-72,96],[-74,118]],[[30,86],[72,96],[74,118]]];
+const wave=[[[-40,4],[-90,-20],[-98,-70]],[[40,10],[80,40],[100,30]]];
+function frame(bg,inner,h=360){return `<svg viewBox="0 0 440 ${h}"><rect width="440" height="${h}" fill="${bg}"/>${inner}</svg>`;}
+const moon=(x,y,r=34)=>`<g filter="url(#wob)"><circle cx="${x}" cy="${y}" r="${r}" fill="${GLOW}" opacity=".85" filter="url(#wash)"/><circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${B}" stroke-width="5"/><circle cx="${x+10}" cy="${y-10}" r="5" fill="none" stroke="${B}" stroke-width="3"/><circle cx="${x-12}" cy="${y+12}" r="4" fill="none" stroke="${B}" stroke-width="3"/></g>`;
+const fog=(y,c='#fff')=>`<g filter="url(#wash)" opacity=".75"><ellipse cx="80" cy="${y}" rx="110" ry="26" fill="${c}"/><ellipse cx="260" cy="${y+16}" rx="140" ry="30" fill="${c}"/><ellipse cx="420" cy="${y-4}" rx="90" ry="24" fill="${c}"/></g>`;
+const card=(svg,t)=>`<div class="c">${svg}<p>${t}</p></div>`;
+const out=[];
+const Y=185;
+out.push(card(frame(PAPER,bug({x:220,y:Y,s:.9,paper:PAPER,ear:'A',legs:legsWalk,arms:wave})),'<b>A｜尖尖大耳</b>　像你畫的那隻，很有精神。'));
+out.push(card(frame(PAPER,bug({x:220,y:Y,s:.9,paper:PAPER,ear:'B',legs:legsWalk,arms:wave})),'<b>B｜圓圓大耳</b>　像小熊、像老鼠，比較軟。'));
+out.push(card(frame(PAPER,bug({x:220,y:Y+10,s:.85,paper:PAPER,ear:'C',legs:legsWalk,arms:wave})),'<b>C｜長長兔耳</b>　很高，遠遠就認得出來。'));
+out.push(card(frame(PAPER,bug({x:220,y:Y,s:.9,paper:PAPER,ear:'D',legs:legsWalk,arms:wave})),'<b>D｜大扇耳</b>　往兩邊張開，像在認真聽你說。'));
+out.push(card(frame('#c9cfdd',fog(280)+bug({x:220,y:Y+5,s:.85,paper:'#c9ccd6',ear:'A',legs:legsSit,arms:[[[-40,20],[-30,64]],[[40,20],[30,64]]],eyes:'slit',mouth:'flat',glowA:.45})+fog(330,'#eef0f5')),'<b>霧天</b>　咪咪眼、嘴巴一條線，先坐一下。'));
+out.push(card(frame(DARK,moon(380,58,28)+bug({x:110,y:205,s:.6,paper:DARK,ear:'A',legs:legsStand,arms:[[[-40,10],[-70,40]],[[40,10],[90,20]]],eyes:'smile',mouth:'smile',glowA:.9})+bug({x:228,y:190,s:.72,paper:DARK,ear:'A',legs:legsStand,arms:[[[-40,10],[-80,22]],[[40,10],[80,22]]],eyes:'slit',mouth:'grin',glowA:1})+bug({x:345,y:212,s:.56,paper:DARK,flip:true,ear:'A',legs:legsStand,arms:[[[-40,10],[-80,20]],[[40,10],[70,40]]],eyes:'smile',mouth:'smile',glowA:.9})),'<b>有光的地方見</b>　晚上大家聚在一起，尾巴一起亮。'));
+document.getElementById('g').innerHTML=out.join('');
+</script></body></html>
