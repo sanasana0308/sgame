@@ -5,7 +5,7 @@
     "url": "https://www.instagram.com/sandywich.su/",
     "qr": "/assets/qr-ig.png"
   },
-  "_說明_series": "首頁的系列按鈕。新的人生主題＝加一個 series（「我熱愛…」＋emoji），每月新的一區＝在該系列的 zones 加一筆。status: open 可以玩、soon 即將開放。每一行都要有 zh 和 en。 emoji 接在標題後面；icon 是左邊的圖（sandwich＝三明治圖，其他填一個 emoji）。",
+  "_說明_series": "首頁的系列按鈕。新的人生主題＝加一個 series（「我熱愛…」＋emoji），每月新的一區＝在該系列的 zones 加一筆。status: open 可以玩、soon 即將開放（灰色不能按）、hidden 不顯示（還沒公開的先放這裡）。每一行都要有 zh 和 en。 emoji 接在標題後面；icon 是左邊的圖（sandwich＝三明治圖，其他填一個 emoji）。",
   "home": {
     "kicker": "SANDYWICH · 三明治鎮",
     "title": {
@@ -17,8 +17,8 @@
       "en": "Everyone's a little sandwiched."
     },
     "lead": {
-      "zh": "上有老、下有小、中間還有工作。來鎮上玩一局，看看你怎麼做決定。",
-      "en": "Parents above, kids below, work in between. Play a round and see how you choose."
+      "zh": "每個人都被某件事夾著過日子。來鎮上玩一局，鬆一鬆，看看你怎麼做決定。",
+      "en": "Everyone's squeezed by something. Come play a round, loosen up, and see how you choose."
     }
   },
   "series": [
@@ -48,7 +48,7 @@
       "emoji": "🙃",
       "zh": "我熱愛當媽",
       "en": "I ♥ Being a Mom",
-      "status": "soon",
+      "status": "hidden",
       "icon": "🍳"
     },
     {
@@ -56,7 +56,7 @@
       "emoji": "🫧",
       "zh": "我熱愛感受",
       "en": "I ♥ Feeling Things",
-      "status": "soon",
+      "status": "hidden",
       "icon": "🌊"
     },
     {
@@ -64,7 +64,7 @@
       "emoji": "",
       "zh": "三明治鎮信箱",
       "en": "Sandywich Mailbox",
-      "status": "soon",
+      "status": "hidden",
       "desc": {
         "zh": "投稿你的煩惱，可能變成下一位居民。",
         "en": "Send us your worries. You might become our next resident."

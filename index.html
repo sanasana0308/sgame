@@ -6,7 +6,7 @@
 <title>三明治鎮 Sandywich Town</title>
 <meta name="description" content="大家都被夾成三明治了🥪 Everyone's a little sandwiched.">
 <meta property="og:title" content="三明治鎮 Sandywich Town">
-<meta property="og:description" content="上有老、下有小、中間還有工作。來鎮上玩一局。">
+<meta property="og:description" content="每個人都被某件事夾著過日子。來鎮上玩一局，鬆一鬆。">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Poppins:wght@500;600;700&display=swap">
@@ -61,7 +61,7 @@ a.game.soon,div.game.soon{background:var(--soft);border-style:dashed;box-shadow:
   <p class="kicker" id="kicker">SANDYWICH · 三明治鎮</p>
   <h1 id="title">三明治鎮<span class="en">Sandywich Town</span></h1>
   <p class="hsub" id="sub">大家都被夾成三明治了🥪<span class="en">Everyone's a little sandwiched.</span></p>
-  <p class="lead" id="lead">上有老、下有小、中間還有工作。來鎮上玩一局，看看你怎麼做決定。<span class="en">Parents above, kids below, work in between. Play a round and see how you choose.</span></p>
+  <p class="lead" id="lead">每個人都被某件事夾著過日子。來鎮上玩一局，鬆一鬆，看看你怎麼做決定。<span class="en">Everyone's squeezed by something. Come play a round, loosen up, and see how you choose.</span></p>
 
   <div class="series" id="series">
     <a class="game main" href="/town"><span class="ic"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 52 L10 26 C4 24 4 12 16 10 C24 4 40 4 48 10 C60 12 60 24 54 26 L54 52 Z" fill="#e8b46a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><path d="M14 30 q6 -5 12 0 t12 0 t12 0 L50 36 L14 36Z" fill="#7fa63d" stroke="#2c2c2a" stroke-width="2.5"/><rect x="14" y="38" width="36" height="7" rx="3" fill="#d7263d" stroke="#2c2c2a" stroke-width="2.5"/></svg></span><span class="g"><b>我熱愛當瑜伽老師🙂</b><span class="en">I ♥ Being a Yoga Teacher</span></span></a>
@@ -69,7 +69,7 @@ a.game.soon,div.game.soon{background:var(--soft);border-style:dashed;box-shadow:
 
   <section class="who">
     <h2>Sandy 是誰？<span class="en">Who's Sandy?</span></h2>
-    <p>RYT200 瑜伽老師、媽媽、正在三明治時代的人。遊戲裡的動作和口令，都來自 Sandy 的課。<span class="en">Yoga teacher, mom, living the sandwich years. Every pose in the game comes from Sandy's classes.</span></p>
+    <p>RYT200 瑜伽老師，也正在被夾成三明治。遊戲裡的動作和口令，都來自 Sandy 的課。<span class="en">RYT200 yoga teacher, and a little sandwiched too. Every pose in the game comes from Sandy's classes.</span></p>
     <a class="igbtn" href="https://www.instagram.com/sandywich.su/" target="_blank" rel="noopener">追蹤 @sandywich.su · Follow</a>
   </section>
   <p class="foot">遊戲好玩為主，這不是治療；身體有傷痛，請先詢問醫師。<br>Just for fun, not medical advice. If something hurts, please see a doctor.</p>
@@ -86,7 +86,7 @@ a.game.soon,div.game.soon{background:var(--soft);border-style:dashed;box-shadow:
     if(h.sub)document.getElementById('sub').innerHTML=bi(h.sub);
     if(h.lead)document.getElementById('lead').innerHTML=bi(h.lead);
     if(!d.series||!d.series.length)return;
-    var html=d.series.map(function(s,i){
+    var html=d.series.filter(function(s){return s.status!=='hidden'}).map(function(s,i){
       var open=s.status==='open'&&s.href;
       var zones=(s.zones||[]).map(function(z){
         return '<span class="zone'+(z.status==='open'?'':' soon')+'">'+esc(z.zh)+'<small>'+esc(z.en)+'</small></span>'}).join('');
