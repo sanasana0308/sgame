@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>課堂小遊戲</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="三分鐘的小遊戲：我熱愛當媽、心情除錯所。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+:root{--bg:#eef2f6;--card:#fff;--ink:#1e2940;--muted:#5e6b82;--line:#d3dce6;--accent:#ff6f4e;--blue:#3b6fd6;color-scheme:light}
+html,body{background:var(--bg);margin:0}
+body{color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.65}
+.wrap{max-width:560px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-direction:column;gap:14px}
+h1{font-size:30px;font-weight:900;margin:0;line-height:1.25}
+.lead{margin:0;color:var(--muted)}
+a.game{display:flex;gap:14px;align-items:center;text-decoration:none;color:inherit;background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;transition:transform .08s,border-color .15s}
+a.game:hover{border-color:var(--ink)}
+a.game:active{transform:translateY(2px)}
+.ic{flex:none;width:64px;height:64px;border-radius:16px;display:grid;place-items:center;font-size:34px}
+.g b{display:block;font-size:19px;font-weight:900}
+.g>span{display:block;font-size:14px;color:var(--muted);line-height:1.5}
+.g .tag{display:inline-block;font-size:12px;font-weight:700;color:#fff;border-radius:99px;padding:1px 8px;margin-left:6px;vertical-align:2px}
+.foot{font-size:12px;color:var(--muted);text-align:center;margin:8px 0 0}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>課堂小遊戲</h1>
+  <p class="lead">三分鐘玩一局。玩完會告訴你，你做決定的習慣是什麼樣子。</p>
+  <a class="game" href="/mom">
+    <span class="ic" style="background:#ffe6dd">🙃</span>
+    <span class="g"><b>我熱愛當媽<span class="tag" style="background:var(--accent)">晚上 3 分鐘</span></b><span>煮飯、寫作業、洗澡，小孩一直來。撐到睡前，不要爆炸。</span></span>
+  </a>
+  <a class="game" href="/mood">
+    <span class="ic" style="background:#e3ecfb">🛠️</span>
+    <span class="g"><b>心情除錯所<span class="tag" style="background:var(--blue)">下課 10 分鐘</span></b><span>同學頭上冒出錯誤訊息。找出背後的情緒，幫他除錯。</span></span>
+  </a>
+  <p class="foot">小遊戲好玩為主。如果心情一直沒有變好，找信任的人或輔導老師聊聊。</p>
+</main>
+</body>
+</html>

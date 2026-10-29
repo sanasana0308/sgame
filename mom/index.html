@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>我熱愛當媽🙃｜Sandywich</title>
+<title>我熱愛當媽🙃</title>
+<meta name="robots" content="noindex">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -225,7 +226,7 @@ details.more summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--m
 
 
 <div class="wrap">
-  <a class="homeLink" href="/" id="homeLink">‹ 回 Sandywich 首頁</a>
+  <a class="homeLink" href="/class" id="homeLink">‹ 回小遊戲首頁</a>
   <section id="introScreen" class="book">
     <div class="book-head"><h1>我熱愛當媽🙃</h1><span id="today"></span></div>
     <div class="lab">今日聯絡簿</div>
@@ -252,7 +253,7 @@ details.more summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--m
       <div class="unlockbox" id="unlockBox" hidden>
         <p id="unlockMsg">先玩快速版收集徽章，就能解鎖完整的一天。</p>
         <div class="prog"><i id="introProg" style="width:0%"></i></div>
-        <a class="linklike" id="lineLink" href="#" target="_blank" rel="noopener" hidden>加 Sandywich LINE 好友拿解鎖碼 ›</a>
+        <a class="linklike" id="lineLink" href="#" target="_blank" rel="noopener" hidden>加 LINE 好友拿解鎖碼 ›</a>
         <div class="unlock-row" id="codeRow" hidden><input id="codeIn" placeholder="輸入解鎖碼" aria-label="解鎖碼" autocomplete="off"><button class="ghost" id="codeBtn">解鎖</button></div>
         <p class="copied" id="codeMsg" aria-live="polite"></p>
       </div>
@@ -1190,7 +1191,7 @@ const MG_RES={
 };
 
 // ================= ending reflection =================
-const CTA={label:'跟著 Sandywich 一起練',url:''};
+const CTA={label:'',url:''};
 const BADGES=[
  {id:'noYell',n:'一次都沒吼',h:'撐到晚上，吼人 0 次'},
  {id:'ex30',n:'運動達標',h:'一天運動 30 分鐘'},
@@ -1293,7 +1294,7 @@ function reflection(){
     all:['workfam','comfort','miss','ex','rest'],charge:['rest','ex','care','dad','yell'],zen:['miss','cling','yell','ex']};
   const obs=[];for(const k of [...ORDER[best],'yell','ex','rest','miss'])if(!(Q()&&k==='ex')&&O[k]&&!obs.includes(O[k])&&obs.length<3)obs.push(O[k]);
   // collapse from energy or patience -> point to self-care
-  const tip=(count.faint||count.boom)?'媽媽也需要被照顧。這週挑一天，小孩睡了以後，給自己 15 分鐘，跟著 Sandywich 的瑜伽影片動一動。':T0.tip;
+  const tip=(count.faint||count.boom)?'媽媽也需要被照顧。這週挑一天，小孩睡了以後，給自己 15 分鐘，伸展一下、動一動。':T0.tip;
   return {id:best,name:T0.n,tag:T0.tag,obs,cost:T0.cost,tip,crashes,scores:Object.fromEntries(Object.entries(types).map(([k,v])=>[k,+v.s.toFixed(2)]))};
 }
 
@@ -1349,7 +1350,7 @@ function crisisPool(type){
     add(true,{l:'吃一片黑巧克力',min:2,d:{p:12,e:5},r:'苦苦甜甜的。你決定原諒全世界五分鐘。'});
     add(pm&&!night&&m<T(20,0),{care:1,dad:1,l:'把小孩交給爸爸，去上一堂瑜珈課',min:60,d:{p:40,e:20,v:25,f:-4},ex:60,r:'大休息的時候，你終於聽見自己的呼吸。回到家，小孩已經吃完飯了。'});
     add(O&&m>=T(12,0)&&m<=T(13,0),{care:1,l:'午休去附近的瑜珈教室上課',min:45,d:{p:40,e:12,v:20,h:-10},ex:45,r:'下犬式的時候，你把主管的臉從腦袋裡吐出去了。'});
-    add(night,{care:1,l:'跟著 Sandywich 的瑜珈影片做 15 分鐘',min:15,d:{p:25,e:5,v:10},ex:15,r:'影片裡說「把今天放下」，你真的放下了一點點。'});
+    add(night,{care:1,l:'跟著瑜珈影片做 15 分鐘',min:15,d:{p:25,e:5,v:10},ex:15,r:'影片裡說「把今天放下」，你真的放下了一點點。'});
     add(night,{care:1,l:'洗一個很長的熱水澡',min:15,d:{p:30,e:5},r:'浴室裡只有水聲，沒有人在喊媽媽。'});
     add(am,{care:1,l:'抱著小孩，聞一下頭頂',min:2,d:{p:18,f:4},r:'奶香味。你的理智線自己接回去了。'});
   }
@@ -1496,7 +1497,7 @@ function showEnd(title,line,dead){
   saveStore(st);
   const justUnlocked=nowUnlocked&&!wasUnlocked;
   shareText=`我在「我熱愛當媽🙃」${QM?'快速版':'完整的一天'}撐到 ${hhmm(gameMin)}，拿到「${title}」，總分 ${score}。\n今天的我是「${R.name}」。\n${QM?'':`工作 ${Math.round(S.w)}｜`}家庭 ${Math.round(S.f)}｜精力 ${Math.round(S.e)}｜耐心 ${Math.round(S.p)}\n完成 ${count.done} 件事、吼了 ${count.scold} 次、爆炸 ${count.boom} 次。換你試試看？`;
-  const cta=CTA.url?`<a class="primary cta" href="${CTA.url}" target="_blank" rel="noopener">${CTA.label}</a>`:`<p class="cta-text">${CTA.label}（影片準備中）</p>`;
+  const cta=CTA.url?`<a class="primary cta" href="${CTA.url}" target="_blank" rel="noopener">${CTA.label}</a>`:'';
   const qn=quickCount(st),need=Math.max(0,UNLOCK.badges-qn);
   const progress=QM?`<div class="unlockbox">${nowUnlocked?`<p><b>🔓 完整的一天已解鎖</b>${justUnlocked?'——剛剛解開的！':''}</p>`:`<p><b>再收集 ${need} 個，解鎖完整的一天</b>（${qn}/${UNLOCK.badges}）</p>`}<div class="prog"><i style="width:${Math.min(100,qn/UNLOCK.badges*100)}%"></i></div></div>`:'';
   const grid=QM?`<div><div class="lab">快速版徽章　${qn}/${QBADGES.length}</div>${progress}${badgeGrid(QBADGES,st,fresh)}</div>`

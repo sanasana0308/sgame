@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>心情除錯所｜Sandywich</title>
+<title>心情除錯所</title>
+<meta name="robots" content="noindex">
 <meta name="description" content="下課 10 分鐘，當一次資訊社的心情工程師：讀懂同學的情緒，幫他們除錯。">
 <meta property="og:title" content="心情除錯所｜下課 10 分鐘的心情工程師">
 <meta property="og:description" content="五位同學的系統出錯了。溫度在升、電量在掉，你先救誰？">
@@ -234,7 +235,7 @@ code,.mono{font-family:var(--f-code)}
 </head>
 <body>
 <div class="wrap">
-  <a class="homeLink" href="/">‹ 回首頁</a>
+  <a class="homeLink" href="/class">‹ 回小遊戲首頁</a>
   <div class="top">
     <div class="brand"><b>心情除錯所</b><span>mood-debugger v2 · 資訊社</span></div>
     <div class="clock" id="clock" aria-live="off">10:00:00</div>
@@ -1035,7 +1036,7 @@ function showReport(){
     <div class="row"><button class="ghost" id="share">複製結果分享</button><button class="ghost" id="dictB">情緒字典 ${Object.keys(PS.dict).length}/6</button></div>
     <p class="copied" id="copied" aria-live="polite"></p>
     <button class="primary go" id="again">再玩一次</button>
-    <a class="homeLink" href="/" style="align-self:center">‹ 回首頁</a></div>`,'end');
+    <a class="homeLink" href="/class" style="align-self:center">‹ 回小遊戲首頁</a></div>`,'end');
   $('moods').querySelectorAll('button').forEach(b=>b.onclick=()=>{
     $('moods').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
     const m=MOODS.find(x=>x[0]===b.dataset.m);$('moodOut').textContent=`> "${m[0]}"  // ${m[1]}`;
