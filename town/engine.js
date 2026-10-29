@@ -740,11 +740,13 @@ function ending(){
     try{
       const blob=await storyPng({saved:saved.length,title,style:sty.name});
       const file=new File([blob],'sandywich-town.png',{type:'image/png'});
-      if(navigator.canShare&&navigator.canShare({files:[file]})){
-        try{await navigator.share({files:[file],text:shareText()});out.textContent=IG?`發限動時記得標記 @${IG.handle}！`:'分享好了！';return;}catch(e){if(e&&e.name==='AbortError'){out.textContent='';return;}}
+      const phone=(()=>{try{return matchMedia('(pointer:coarse)').matches}catch(_){return false}})();
+      const tip=IG?`<b>發限動小步驟</b><ol style="margin:4px 0 0;padding-left:20px;text-align:left"><li>${phone?'在分享選單選 <b>Instagram</b> → <b>限時動態</b>':'把圖片傳到手機，打開 IG 發 <b>限時動態</b>'}</li><li>加一個「提及」貼紙，打 <b>@${IG.handle}</b></li><li>發出去！我會去看你的戰績😂</li></ol>`:'';
+      if(phone&&navigator.canShare&&navigator.canShare({files:[file]})){
+        try{await navigator.share({files:[file]});out.innerHTML=tip||'分享好了！';return;}catch(e){if(e&&e.name==='AbortError'){out.innerHTML=tip;return;}}
       }
       const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sandywich-town.png';document.body.appendChild(a);a.click();a.remove();
-      out.textContent=IG?`圖片存好了。發限動時記得標記 @${IG.handle}！`:'圖片存好了，可以發限動。';
+      out.innerHTML=(phone?'圖片存好了，在相簿裡。':'圖片已經下載到電腦了。')+(tip?'<br>'+tip:'');
     }catch(e){console.warn(e);out.textContent='做圖失敗了，改用「複製結果文字」吧。';}
   };
   if(ig)showQR(igLink());
@@ -782,9 +784,16 @@ async function storyPng(d){
   g.font=`900 72px ${ZH}`;g.fillStyle='#2c2c2a';g.fillText(d.title,540,1200);
   g.font=`500 46px ${ZH}`;g.fillStyle='#888780';g.fillText('教學風格',540,1300);
   g.font=`900 68px ${ZH}`;g.fillStyle='#d7263d';g.fillText(d.style,540,1385);
-  g.fillStyle='#2c2c2a';g.font=`900 76px ${ZH}`;g.fillText('來三明治鎮當瑜伽老師',540,1600);
-  g.font=`600 48px Poppins,${ZH}`;g.fillStyle='#2c2c2a';g.fillText((location.host||'')+'/town',540,1690);
-  if(IG){round(300,1740,480,90,45);g.fillStyle='#ffc233';g.fill();g.fillStyle='#2c2c2a';g.font=`700 48px Poppins,${ZH}`;g.fillText('@'+IG.handle,540,1802);}
+  // 底部：左邊 QR（掃了打開 IG），右邊邀請文字
+  let qrOk=false;
+  if(IG){try{const qi=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=(SITE.ig&&SITE.ig.qr)||'/assets/qr-ig.png';});
+    round(100,1500,320,320,28);g.fillStyle='#fff';g.fill();g.lineWidth=6;g.strokeStyle='#2c2c2a';g.stroke();g.drawImage(qi,115,1515,290,290);qrOk=true;}catch(_){}}
+  const cx=qrOk?710:540;g.textAlign='center';
+  g.fillStyle='#2c2c2a';g.font=`900 ${qrOk?64:76}px ${ZH}`;
+  if(qrOk){g.fillText('來三明治鎮',cx,1570);g.fillText('當瑜伽老師',cx,1650);}else g.fillText('來三明治鎮當瑜伽老師',cx,1600);
+  g.font=`600 ${qrOk?34:48}px Poppins,${ZH}`;g.fillText((location.host||'')+'/town',cx,qrOk?1715:1690);
+  if(IG){const pw=qrOk?460:480;round(cx-pw/2,1745,pw,84,42);g.fillStyle='#ffc233';g.fill();g.fillStyle='#2c2c2a';g.font=`700 44px Poppins,${ZH}`;g.fillText('@'+IG.handle,cx,1803);
+    if(qrOk){g.font=`700 30px ${ZH}`;g.fillStyle='#888780';g.fillText('掃我追蹤 IG',260,1862);}}
   return await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error('toBlob')),'image/png'));
 }
 
@@ -1001,6 +1010,6 @@ resize();renderUI();requestAnimationFrame(frame);
 $('toast').textContent=Z.intro;
 if(location.hash==='#book')album();else intro();
 // 給自動測試用（不影響遊戲）
-window.__town={Z,NPCS,R,get S(){return S},G,get run(){return run},get player(){return player},get sheetKind(){return sheetKind},get sheetOpen(){return sheetOpen},
+window.__town={Z,NPCS,R,storyPng,get S(){return S},G,get run(){return run},get player(){return player},get sheetKind(){return sheetKind},get sheetOpen(){return sheetOpen},
   goTo,distTo,openRes,clockStr,DAYLEN,BLD,ts:()=>ts};
 })();

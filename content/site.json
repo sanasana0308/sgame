@@ -1,7 +1,8 @@
 {
-  "_說明": "整個網站共用的設定。ig.handle 填 Sandy 的 IG 帳號（不用 @）。url 不填就自動用 https://www.instagram.com/<handle>/。handle 空白時，遊戲結尾不顯示 IG 按鈕。",
+  "_說明": "整個網站共用的設定。ig.handle 填 Sandy 的 IG 帳號（不用 @）。url 不填就自動用 https://www.instagram.com/<handle>/。handle 空白時，遊戲結尾不顯示 IG 按鈕。 qr 是 IG 帳號的 QR code 圖（換帳號時要重做）。",
   "ig": {
     "handle": "sandywich.su",
-    "url": "https://www.instagram.com/sandywich.su/"
+    "url": "https://www.instagram.com/sandywich.su/",
+    "qr": "/assets/qr-ig.png"
   }
 }
