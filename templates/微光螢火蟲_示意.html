@@ -1,0 +1,123 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Poppins:wght@500;600&display=swap">
+<style>
+:root{--y:#ffc233;--t:#d7263d;--l:#7fa63d;--i:#2c2c2a;--s:#888780;--c:#efeae3;--n1:#1d2340;--n2:#2c3560;--glow:#ffe08a}
+body{margin:0;background:var(--c);font-family:"Noto Sans TC",sans-serif;color:var(--i)}
+.page{width:1640px;padding:40px;display:grid;grid-template-columns:440px 380px 380px 1fr;gap:28px;align-items:start}
+h1{grid-column:1/-1;margin:0;font-size:34px;font-weight:900}
+h1 small{display:block;font-size:18px;color:var(--s);font-weight:500;margin-top:4px}
+.lab{font-weight:900;font-size:20px;margin:0 0 10px;color:var(--t)}
+.card{background:#fff;border-radius:28px;padding:18px;border:4px solid var(--i);box-shadow:0 8px 0 var(--i)}
+.sheet{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheet div{background:var(--n1);border-radius:18px;text-align:center;color:#f5f1e8;padding:8px 4px 10px;font-size:13px}
+.ph{border:4px solid var(--i);border-radius:36px;overflow:hidden;box-shadow:0 8px 0 var(--i);background:linear-gradient(180deg,var(--n1),var(--n2) 70%,#3b3f5c);color:#f5f1e8}
+.in{padding:18px 18px 22px}
+.btn{background:var(--y);color:var(--i);border:3px solid var(--i);border-radius:20px;padding:10px 14px;font-weight:900;font-size:20px;box-shadow:0 4px 0 var(--i)}
+.en{display:block;font-family:Poppins,sans-serif;font-size:13px;opacity:.75;margin-top:2px;font-weight:500}
+.sub{font-size:14px;line-height:1.6;margin:10px 0 0;color:#e8e2d4}
+.path{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.step{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.08);border-radius:14px;padding:6px 10px;font-size:14px}
+.step b{display:block;font-size:15px}.step small{opacity:.75}
+.dot{flex:none;width:28px;height:28px;border-radius:50%;background:#444a6e;border:2px solid #6b7199;display:grid;place-items:center;font-weight:900;font-size:13px}
+.dot.on{background:var(--glow);color:var(--i);border-color:#fff;box-shadow:0 0 14px 4px rgba(255,224,138,.55)}
+.mail{margin-top:10px;border:2px dashed var(--glow);border-radius:14px;padding:8px 10px;font-size:13px;line-height:1.5}
+.bye{text-align:center;font-size:18px;font-weight:900;margin:12px 0 2px;color:var(--glow)}
+table{border-collapse:collapse;width:100%;font-size:14px;background:#fff;border-radius:20px;overflow:hidden}
+td,th{padding:8px 10px;border-bottom:1px solid #e6e1d8;text-align:left;vertical-align:top;line-height:1.5}
+th{background:var(--i);color:#fff}
+.note{font-size:13px;color:var(--s);margin-top:10px;line-height:1.6}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+ <radialGradient id="halo"><stop offset="0" stop-color="#fff6c8" stop-opacity=".95"/><stop offset=".45" stop-color="#ffe08a" stop-opacity=".55"/><stop offset="1" stop-color="#ffe08a" stop-opacity="0"/></radialGradient>
+ <symbol id="ff" viewBox="0 0 200 200">
+  <circle cx="132" cy="138" r="58" fill="url(#halo)"/>
+  <!-- wings -->
+  <ellipse cx="78" cy="78" rx="34" ry="20" transform="rotate(-35 78 78)" fill="#e8f1ff" fill-opacity=".85" stroke="#2c2c2a" stroke-width="4"/>
+  <ellipse cx="112" cy="70" rx="32" ry="18" transform="rotate(-70 112 70)" fill="#e8f1ff" fill-opacity=".85" stroke="#2c2c2a" stroke-width="4"/>
+  <!-- glowing tail -->
+  <ellipse cx="128" cy="132" rx="30" ry="26" fill="#ffe08a" stroke="#2c2c2a" stroke-width="4"/>
+  <ellipse cx="120" cy="124" rx="10" ry="7" fill="#fffbe6"/>
+  <!-- body stripe -->
+  <ellipse cx="100" cy="112" rx="26" ry="24" fill="#4a4f78" stroke="#2c2c2a" stroke-width="4"/>
+  <!-- head -->
+  <circle cx="70" cy="122" r="36" fill="#ffc233" stroke="#2c2c2a" stroke-width="4"/>
+  <!-- antennae -->
+  <path d="M60 88 Q50 60 36 56" fill="none" stroke="#2c2c2a" stroke-width="4" stroke-linecap="round"/><circle cx="34" cy="55" r="7" fill="#ffe08a" stroke="#2c2c2a" stroke-width="3"/>
+  <path d="M80 87 Q86 60 100 50" fill="none" stroke="#2c2c2a" stroke-width="4" stroke-linecap="round"/><circle cx="102" cy="48" r="7" fill="#ffe08a" stroke="#2c2c2a" stroke-width="3"/>
+  <!-- face -->
+  <ellipse cx="57" cy="120" rx="6.5" ry="8" fill="#2c2c2a"/><circle cx="59" cy="117" r="2.5" fill="#fff"/>
+  <ellipse cx="82" cy="120" rx="6.5" ry="8" fill="#2c2c2a"/><circle cx="84" cy="117" r="2.5" fill="#fff"/>
+  <path d="M63 134 q7 7 14 0" fill="none" stroke="#2c2c2a" stroke-width="3.5" stroke-linecap="round"/>
+  <ellipse cx="46" cy="132" rx="7" ry="4.5" fill="#f5a3a3"/><ellipse cx="93" cy="132" rx="7" ry="4.5" fill="#f5a3a3"/>
+  <!-- little legs -->
+ </symbol>
+ <symbol id="ffsleep" viewBox="0 0 200 200"><use href="#ff"/><rect x="48" y="108" width="44" height="18" fill="#ffc233"/><path d="M50 120 q7 5 14 0 M75 120 q7 5 14 0" fill="none" stroke="#2c2c2a" stroke-width="3.5" stroke-linecap="round"/></symbol>
+ <symbol id="moon" viewBox="0 0 90 90"><circle cx="45" cy="45" r="40" fill="#ffc233" stroke="#2c2c2a" stroke-width="3"/><circle cx="62" cy="30" r="6" fill="#e9a800"/><circle cx="64" cy="60" r="8" fill="#e9a800"/><circle cx="30" cy="66" r="4" fill="#e9a800"/><circle cx="32" cy="42" r="3" fill="#2c2c2a"/><circle cx="48" cy="42" r="3" fill="#2c2c2a"/><path d="M34 52 q6 6 12 0" stroke="#2c2c2a" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="25" cy="50" rx="4.5" ry="2.8" fill="#f5a3a3"/><ellipse cx="55" cy="50" rx="4.5" ry="2.8" fill="#f5a3a3"/></symbol>
+</defs></svg>
+<div class="page">
+<h1>微光螢火蟲・尋光去！<small>玩家就是那隻螢火蟲：本來就有一點微光，去找更多光，最後和大家聚在一起。</small></h1>
+
+<div><p class="lab">① 角色：微光螢火蟲（原創）</p>
+<div class="card">
+ <svg viewBox="0 0 200 200" style="width:100%;height:auto"><use href="#ff"/></svg>
+ <div class="sheet">
+  <div><svg viewBox="0 0 200 200" width="110" height="110"><g opacity=".55"><use href="#ff"/></g></svg><br>微光（剛出門）</div>
+  <div><svg viewBox="0 0 200 200" width="110" height="110"><use href="#ff"/><circle cx="128" cy="132" r="70" fill="url(#halo)"/></svg><br>找到光，尾巴更亮</div>
+  <div><svg viewBox="0 0 200 200" width="110" height="110"><use href="#ffsleep"/></svg><br>霧天：先坐一下</div>
+  <div style="position:relative"><svg viewBox="0 0 90 90" width="96" height="96"><use href="#moon"/></svg><br>起司月亮：幫你看方向</div>
+ </div>
+ <p class="note">黃色頭＝品牌黃；尾巴是暖黃色的光；臉紅紅、大眼睛。尾巴亮度只是心情，不是分數。</p>
+</div></div>
+
+<div><p class="lab">② 入口</p>
+<div class="ph">
+ <svg viewBox="0 0 380 200" style="display:block;width:100%">
+  <use href="#moon" x="282" y="14" width="80" height="80"/>
+  <g fill="#ffe08a"><circle cx="40" cy="40" r="2"/><circle cx="120" cy="20" r="1.6"/><circle cx="200" cy="50" r="2"/><circle cx="250" cy="24" r="1.4"/></g>
+  <path d="M0 200 V160 H50 V140 H95 V165 H140 V148 L160 132 L180 148 V170 H230 V145 H285 V162 H330 V140 H380 V200Z" fill="#141831"/>
+  <g fill="#ffe08a"><rect x="66" y="150" width="9" height="9"/><rect x="248" y="154" width="9" height="9"/><rect x="345" y="150" width="9" height="9"/></g>
+  <use href="#ff" x="110" y="58" width="120" height="120"/>
+ </svg>
+ <div class="in">
+  <div class="btn">微光螢火蟲・尋光去！<span class="en">Little Fireflies, Off to Find the Light!</span></div>
+  <p class="sub">天黑了，你的尾巴亮著一點點微光。不亮，但夠照亮腳邊。<br>心裡起霧也沒關係，總是會有光。</p>
+  <p class="sub" style="opacity:.8">白天救回的鎮民，窗戶亮著，像在等你飛過去。</p>
+ </div>
+</div></div>
+
+<div><p class="lab">③ 沿路的四道光＋結尾</p>
+<div class="ph"><div class="in">
+ <div class="path">
+  <div class="step"><span class="dot on">1</span><div><b>看看天色</b><small>今天的光線如何？選天氣・不評分</small></div></div>
+  <div class="step"><span class="dot on">2</span><div><b>替霧取個名字</b><small>寫下的話變成尾巴上的光・只有你看得到</small></div></div>
+  <div class="step"><span class="dot">3</span><div><b>路上的燈</b><small>那些曾經照亮我的・每盞燈一個故事</small></div></div>
+  <div class="step"><span class="dot">4</span><div><b>寄給有一天</b><small>把話放進小光球，輕輕放走</small></div></div>
+ </div>
+ <div class="mail">📮 <b>月光信箱</b>：想讓 Sandy 看到的煩惱，交給螢火蟲帶去給起司月亮。</div>
+ <svg viewBox="0 0 340 120" style="display:block;width:100%;margin-top:10px">
+  <ellipse cx="170" cy="104" rx="160" ry="14" fill="#141831"/>
+  <use href="#ff" x="20" y="30" width="70" height="70" opacity=".8"/>
+  <use href="#ff" x="80" y="4" width="62" height="62" opacity=".7"/>
+  <use href="#ff" x="135" y="34" width="82" height="82"/>
+  <use href="#ff" x="210" y="10" width="60" height="60" opacity=".7"/>
+  <use href="#ff" x="262" y="38" width="66" height="66" opacity=".8"/>
+ </svg>
+ <p class="sub" style="text-align:center;margin-top:4px">池塘邊，別的螢火蟲也在。<br>大家的微光聚在一起。</p>
+ <div class="bye">有光的地方見👋</div>
+ <div style="text-align:center;font-size:12px;opacity:.7">See you where the light is.</div>
+</div></div></div>
+
+<div>
+ <table>
+  <tr><th></th><th>白天</th><th>晚上</th></tr>
+  <tr><td>按鈕</td><td>身體救援隊・出動！</td><td><b>微光螢火蟲・尋光去！</b></td></tr>
+  <tr><td>你是誰</td><td>救援隊員</td><td><b>微光螢火蟲</b></td></tr>
+  <tr><td>外化</td><td>身體怪物出沒中</td><td><b>心裡起霧中</b>（天氣，不是敵人）</td></tr>
+  <tr><td>夥伴</td><td>番茄先生、生菜小姐</td><td><b>起司月亮</b>（看方向，不催你）</td></tr>
+  <tr><td>過程</td><td>救居民，疊三明治</td><td><b>沿路找到四道光</b>，尾巴慢慢變亮</td></tr>
+  <tr><td>結果</td><td>救別人，也救自己</td><td><b>照亮自己，也和大家聚在一起</b></td></tr>
+  <tr><td>道別</td><td>收工</td><td><b>有光的地方見👋</b></td></tr>
+ </table>
+ <p class="note">三句話都用上了：<br>・微光＝你本來就有一點光<br>・總是會有光＝起司月亮和路燈一直都在<br>・相聚在愛裡、有光的地方見＝結尾大家的微光聚在一起<br><br>不評分、不診斷，可以只找一道光就回家。<br>月光信箱：不收醫療問題；寫到想傷害自己不刊出，顯示 1925 安心專線。</p>
+</div>
+</div></body></html>
