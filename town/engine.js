@@ -21,6 +21,12 @@ try{
 }catch(e){$('toast').textContent='小鎮的地圖還沒載入，請重新整理一次。';console.error(e);return;}
 // 網站設定（IG 帳號）。讀不到也沒關係，結尾就不顯示 IG 按鈕。
 let SITE={};try{SITE=await getJSON('/content/site.json');}catch(_){}
+const LEVELS=(SITE.levels&&SITE.levels.length?SITE.levels:[
+  {at:0,name:'菜鳥老師',perk:'帶著瑜伽繩上工'},
+  {at:3,name:'口令很清楚老師',perk:'嚇跑聳肩怪少點 1 下'},
+  {at:6,name:'排隊名師',perk:'限動戰績圖換成金色外框'},
+  {at:9,name:'傳說中的瑜伽老師',perk:'解鎖隱藏居民（製作中）'},
+  {at:null,name:'三明治鎮長',perk:'第二區開放後，投票決定下一區的居民和怪物'}]);
 const IG=(()=>{const h=String((SITE.ig||{}).handle||'').trim().replace(/^@/,'');return h?{handle:h,url:(SITE.ig.url||'').trim()||`https://www.instagram.com/${encodeURIComponent(h)}/`}:null;})();
 
 // ================= 規則（數值） =================
@@ -42,6 +48,10 @@ const BRICK=Z.items.find(i=>i.id==='brick')||{at:[],badgeAt:99};
 const BRICKS=BRICK.at;
 const REST=Z.rest||{};
 const BADGES=Z.badges||{};
+const badgeN=()=>G.badges.length;
+function levelOf(n){n=n===undefined?badgeN():n;let i=0;LEVELS.forEach((l,k)=>{if(l.at!==null&&n>=l.at)i=k;});return i;}
+function levelInfo(){const n=badgeN(),i=levelOf(n),cur=LEVELS[i],nx=LEVELS[i+1];return {n,i,cur,next:nx&&nx.at!==null?nx:null,to:nx&&nx.at!==null?nx.at-n:null,prevAt:cur.at||0};}
+const scareNeed=()=>Math.max(2,(hasRope()?MON.scareTapsRope:MON.scareTaps)-(levelOf()>=1?1:0));
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const fill=(s,o)=>String(s||'').replace(/\{(\w+)\}/g,(_,k)=>o[k]!==undefined?o[k]:'');
@@ -84,6 +94,7 @@ function newRun(){
     coupon:Z.coupon&&Z.coupon.at&&Z.coupon.at.length?{at:pick(Z.coupon.at),have:false,used:false}:null,
     cheese:null,
     mon:{x:MON.start[0],y:MON.start[1],fx:MON.start[0],fy:MON.start[1],path:[],target:null,acc:0,daze:0,cool:0,linger:0,taps:[]},
+    freed:0,eaten:0,askedAt:null,overtime:false,
     st:{picks:0,hiPick:0,nearPick:0,talk:0,direct:0,rests:0,zero:0,fails:0,perfects:0,passes:0,walk:0,wasted:0,pend:0,monster:0,scares:0,minEnergy:R.energy.start,wrong:0,noRope:0,badAp:0,order:[]},
     origin:[Z.map.start[0],Z.map.start[1]],newBadges:[]};
   if(SEC&&SEC.window){
@@ -114,7 +125,7 @@ const ORD=['','一','二','三','四','五','六','七','八','九','十','十�
 const zoneName=`第${ORD[Z.order]||Z.order}區`;
 $('zoneTag').textContent=`${zoneName} · ${Z.title}`;
 $('listTitle').firstChild.textContent=Z.listTitle+' ';
-$('help').textContent=`點地圖走路，點居民就會走過去。紅色長條是緊繃值，滿了就會被聳肩怪抓走。連點聳肩怪可以嚇跑牠。噴水池喝水、長椅休息可以回體力。鎮上藏著${BRICKS.length?`瑜伽磚、`:''}一張肩膀按摩券，還有一位愛躲的居民。電腦可以用方向鍵走路、E 互動。`;
+$('help').textContent=`點地圖走路，點居民就會走過去。紅色長條是緊繃值，滿了就會被聳肩怪抓走。連點聳肩怪可以嚇跑牠；被抓走的人，點他可以救回來。噴水池喝水、長椅休息可以回體力。鎮上藏著${BRICKS.length?`瑜伽磚、`:''}一張肩膀按摩券，還有一位愛躲的居民。電腦可以用方向鍵走路、E 互動。`;
 
 // ================= 時間 =================
 function floatPlus(t){const el=$('plus');if(!el)return;el.textContent=t;el.classList.remove('on');void el.offsetWidth;el.classList.add('on');}
@@ -159,7 +170,7 @@ function fireEvent(e){
 function stuck(n){
   const r=resOf(n);if(r.state!=='open')return;r.state='stuck';r.t=100;
   PL.monster(MON.id);
-  toast(fill(MON.stuck||'{name}卡住了。',{name:n.nm}),'warn');
+  toast(fill(MON.stuck||'{name}卡住了。',{name:n.nm})+' 點他可以救回來。','warn');
   checkResolved();
 }
 function checkResolved(){if(run.allDoneAt===null&&NPCS.every(n=>resOf(n).state==='saved'||resOf(n).state==='stuck')){run.allDoneAt=run.min;}}
@@ -187,7 +198,7 @@ function monTouch(){
 function tapMonster(){
   const m=run.mon;if(m.daze>0){toast('聳肩怪在角落發呆，先不用管牠。');return;}
   const now=performance.now();m.taps=m.taps.filter(t=>now-t<1600);m.taps.push(now);
-  const need=hasRope()?MON.scareTapsRope:MON.scareTaps;meetMonster();
+  const need=scareNeed();meetMonster();
   if(m.taps.length>=need){m.taps=[];m.daze=MON.dazeMin;run.st.scares++;S.scares=(S.scares||0)+1;save();monFar();toast(MON.scared||'嚇跑了！');}
   else toast(`${hasRope()?'甩瑜伽繩！':'拍！'}再 ${need-m.taps.length} 下`);
 }
@@ -237,8 +248,51 @@ function sandwichSvg(has){
   parts+=`<rect x="20" y="${y}" width="160" height="20" rx="8" fill="#e8b46a" stroke="${ink}" stroke-width="3"/>`;y+=24;
   return `<svg viewBox="0 0 200 ${y+4}" role="img" aria-label="三明治">${parts}</svg>`;
 }
+// v4：每一層畫真的食材，旁邊插小旗子寫救了誰。沒救到＝虛線，吃掉＝虛線＋「被吃掉了」。疊滿會眨眼。
+// stateOf(n) 回傳 'on' | 'eaten' | 'off'；names=false 時沒救到的旗子寫「？」
+function sandwichFlags(stateOf,names){
+  const ink='#2c2c2a',dash='#b9b5ad',by=k=>NPCS.find(n=>n.sticker===k);
+  const st=k=>{const n=by(k);return n?stateOf(n):'off';};
+  const D=on=>on?`stroke="${ink}" stroke-width="3.5"`:`fill="none" stroke="${dash}" stroke-width="3" stroke-dasharray="7 6"`;
+  let y=8,body='',flags=[];
+  const flag=(k,cy)=>{const n=by(k);if(!n)return;const s_=st(k);flags.push({cy,s:s_,t:s_==='on'?n.nm:s_==='eaten'?'被吃掉了':(names?n.nm:'？')});};
+  const bread=st('bread')==='on';
+  // 上面的吐司
+  body+=`<path d="M40 ${y+46} C40 ${y-6} 290 ${y-6} 290 ${y+46} Z" ${D(bread)} ${bread?'fill="#e8b46a"':''}/>`;
+  if(bread)body+=`<g fill="#fbe6c2"><ellipse cx="110" cy="${y+22}" rx="8" ry="4"/><ellipse cx="170" cy="${y+13}" rx="8" ry="4"/><ellipse cx="225" cy="${y+25}" rx="8" ry="4"/></g>`;
+  const full=NPCS.every(n=>stateOf(n)==='on');
+  if(full)body+=`<circle cx="140" cy="${y+30}" r="5" fill="${ink}"/><path d="M182 ${y+30} q8 -8 16 0" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M150 ${y+38} q15 10 30 0" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+  flag('bread',y+24);y+=58;
+  // 生菜
+  const le=st('lettuce')==='on';
+  body+=`<path d="M30 ${y+8} q14 -12 28 0 t28 0 t28 0 t28 0 t28 0 t28 0 t28 0 t28 0 t28 0 t28 0 L300 ${y+16} L30 ${y+16} Z" ${D(le)} ${le?'fill="#7fa63d"':''}/>`;
+  flag('lettuce',y+8);y+=30;
+  // 番茄片
+  const to=st('tomato')==='on';
+  body+=[80,135,190,245].map(cx=>`<circle cx="${cx}" cy="${y+14}" r="19" ${D(to)} ${to?'fill="#d7263d"':''}/>`+(to?`<circle cx="${cx-6}" cy="${y+10}" r="3" fill="#ffe7a8"/><circle cx="${cx+6}" cy="${y+18}" r="3" fill="#ffe7a8"/>`:'')).join('');
+  flag('tomato',y+14);y+=44;
+  // 起司（會滴下來）
+  const ch=st('cheese')==='on';
+  body+=`<path d="M36 ${y} L296 ${y} L296 ${y+12} L250 ${y+12} L242 ${y+28} L234 ${y+12} L120 ${y+12} L112 ${y+24} L104 ${y+12} L36 ${y+12} Z" ${D(ch)} ${ch?'fill="#ffc233" stroke-linejoin="round"':''}/>`;
+  flag('cheese',y+10);y+=38;
+  // 煎蛋
+  const eg=st('egg')==='on';
+  body+=`<ellipse cx="165" cy="${y+12}" rx="130" ry="13" ${D(eg)} ${eg?'fill="#fff"':''}/>`+(eg?`<ellipse cx="165" cy="${y+9}" rx="30" ry="8" fill="#ffc233" stroke="${ink}" stroke-width="2.5"/>`:'');
+  flag('egg',y+12);y+=32;
+  // 下面的吐司（跟上面同一張貼紙）
+  body+=`<rect x="38" y="${y}" width="254" height="30" rx="12" ${D(bread)} ${bread?'fill="#e8b46a"':''}/>`;y+=38;
+  const fl=flags.map(f=>{const on=f.s==='on',fx=330,fy=f.cy-14;
+    return `<line x1="${on?300:305}" y1="${f.cy}" x2="${fx}" y2="${f.cy}" stroke="${on?'#888780':'#cfcac1'}" stroke-width="2" ${on?'':'stroke-dasharray="4 3"'}/>`+
+     `<rect x="${fx}" y="${fy}" width="86" height="28" rx="7" fill="${on?'#ffc233':'#fff'}" stroke="${on?ink:dash}" stroke-width="2" ${on?'':'stroke-dasharray="5 4"'}/>`+
+     `<text x="${fx+43}" y="${fy+19}" text-anchor="middle" font-family="Noto Sans TC,PingFang TC,Microsoft JhengHei,sans-serif" font-size="${f.t.length>4?13:15}" font-weight="700" fill="${on?ink:'#a8a39a'}">${f.t}</text>`;}).join('');
+  return `<svg viewBox="0 0 420 ${y}" role="img" aria-label="三明治">${body}${fl}</svg>`;
+}
+const runState=n=>{const r=resOf(n);return r.state==='saved'?(r.eaten?'eaten':'on'):'off';};
+const albumState=n=>S.helped.includes(n.id)?'on':'off';
 const albumHas=k=>NPCS.some(n=>n.sticker===k&&S.helped.includes(n.id));
-const runHas=k=>NPCS.some(n=>n.sticker===k&&resOf(n).state==='saved');
+const layerOn=n=>resOf(n).state==='saved'&&!resOf(n).eaten;
+const runHas=k=>NPCS.some(n=>n.sticker===k&&layerOn(n));
+const layersNow=()=>NPCS.filter(layerOn).length;
 
 // ================= 畫面 =================
 function toast(t,kind){const el=$('toast');el.textContent=t;el.className='toast'+(kind?' '+kind:'');el.style.opacity=1;clearTimeout(toast.t);toast.t=setTimeout(()=>el.style.opacity=0,4600);}
@@ -257,8 +311,8 @@ function renderHud(){
    ${run.coupon&&run.coupon.have&&!run.coupon.used?`<span class="slot got" title="${Z.coupon.name}">${couponSvg()}按摩券</span>`:''}
    ${run.rainUntil>=0?'<span class="slot rain">下雨中</span>':''}`;
   if(renderHud.bag!==bag){renderHud.bag=bag;$('bagRow').innerHTML=bag;}
-  const sv=NPCS.filter(n=>resOf(n).state==='saved').length,left=R.cardAt-sv;
-  const goal=`<span class="pips">${Array.from({length:R.cardAt},(_,i)=>`<i class="${i<sv?'on':''}"></i>`).join('')}</span>${left>0?`再救 <b>${left}</b> 位，解鎖序列圖卡`:'今天解鎖序列圖卡了！再多救幾位'}`;
+  const sv=layersNow(),left=R.cardAt-sv;
+  const goal=`<span class="pips">${Array.from({length:R.cardAt},(_,i)=>`<i class="${i<sv?'on':''}"></i>`).join('')}</span>${left>0?`三明治再疊 <b>${left}</b> 層，解鎖序列圖卡`:'三明治夠厚了，序列圖卡解鎖！再多救幾位'}`;
   if(renderHud.goal!==goal){renderHud.goal=goal;$('goal').innerHTML=goal;}
 }
 function renderUI(){
@@ -270,7 +324,7 @@ function renderUI(){
     pe.querySelectorAll('.who').forEach(b=>b.onclick=()=>{const n=NPCS.find(p=>p.id===b.dataset.id);if(resOf(n).state==='away'){toast(`${n.nm}${n.fromStr}才會出現。`);return;}goTo({kind:'npc',n});});
   }
   for(const b of pe.children){const n=NPCS.find(p=>p.id===b.dataset.id);const r=resOf(n);const tt=Math.min(100,Math.round(r.t));
-    const sub=r.state==='saved'?`救回了・${n.L.nm}`:r.state==='stuck'?`卡住了・${n.part}`:r.state==='away'?`${n.fromStr} 才會出現`:`緊繃 ${tt}${r.near&&run.mon.daze<=0?'・聳肩怪在旁邊':''}`;
+    const sub=r.state==='saved'?(r.eaten?'救回了・那層三明治被你吃掉了':`救回了・${n.L.nm}`):r.state==='stuck'?`被抓走了・點我救回來`:r.state==='away'?`${n.fromStr} 才會出現`:`緊繃 ${tt}${r.near&&run.mon.daze<=0?'・聳肩怪在旁邊':''}`;
     const cls='who '+r.state+(r.state==='open'&&tt>=80?' hot':'');if(b.className!==cls)b.className=cls;
     const sm=b.querySelector('small');if(sm.textContent!==sub)sm.textContent=sub;
     const i=b.querySelector('.tb i');i.style.width=(r.state==='open'?tt:0)+'%';i.style.background=tCol(tt);}
@@ -307,7 +361,7 @@ function interact(tg){
   if(n.id==='lettuce'){wasted();openSay(LETTUCE,fill(F.wait,{n:openRes().length}),[{l:'好',fn:closeSheet}]);return;}
   const r=resOf(n);
   if(r.state==='saved'){wasted();toast(`${n.nm}：「${n.thanks.slice(0,22)}…」看起來很放鬆。`);return;}
-  if(r.state==='stuck'){wasted();openSay(n,`${n.mood.stuck||n.ask}<br><br><b>卡住的地方：${n.part}</b><br><small style="color:var(--stone)">今天救不回來了。這個部位，結尾會告訴你怎麼練。</small>`,[{l:'好',fn:closeSheet}],{stuck:true});return;}
+  if(r.state==='stuck'){openFree(n);return;}
   openNpc(n);
 }
 function pickTile(x,y){
@@ -333,7 +387,7 @@ function closeSheet(){
   renderUI();
   if(run.started&&!run.over){
     if(run.energy<=0){forcedRest();return;}
-    if(run.timeUp||run.allDoneAt!==null){setTimeout(()=>{if(!sheetOpen&&!run.over)endDay();},run.timeUp?200:900);}
+    if(run.timeUp||run.allDoneAt!==null){setTimeout(()=>{if(!sheetOpen&&!run.over)dayDone();},run.timeUp?200:900);}
   }
 }
 function openSay(n,text,btns,opt){
@@ -607,6 +661,58 @@ function forcedRest(){
   openBench(true);
 }
 
+// ================= 救回被抓走的居民（v4） =================
+// 被聳肩怪抓走的人可以救回來：先連點把怪物趕走（要花時間、體力），再照常上課。
+const FREE=Object.assign({taps:10,sec:4,min:20,energy:12,tension:80},R.free||{});
+function openFree(n){
+  const r=resOf(n);
+  const need=FREE.taps+(run.energy<R.energy.low?2:0);
+  openSheet(`${head(n)}<div class="pb"><p class="say">${n.mood.stuck||n.ask}</p>
+   <p class="note warn">聳肩怪趴在${n.nm}身上（卡在：${n.part}）。${FREE.sec} 秒內連點 ${need} 下，把牠趕走。<br>要花 ${FREE.min} 分鐘、體力 −${FREE.energy}${run.energy<R.energy.low?'（你很累，要多點 2 下）':''}。</p>
+   <button class="pat" id="freeBtn">趕走！</button><p class="patmsg" id="freeMsg">準備好就開始點</p>
+   <button class="link" id="freeNo">先不要</button></div>`,{kind:'free'});
+  let k=0,t0=0,done=false,timer=0;
+  const msg=$('freeMsg'),btn=$('freeBtn');
+  const finish=ok=>{done=true;clearInterval(timer);btn.disabled=true;
+    run.energy-=ok?FREE.energy:Math.round(FREE.energy/2);run.st.minEnergy=Math.min(run.st.minEnergy,run.energy);spend(FREE.min);
+    if(ok){r.state='open';r.t=FREE.tension;r.warned=false;r.near=false;run.freed++;run.allDoneAt=null;run.askedAt=null;productive();monFar();
+      msg.textContent='趕走了！';toast(`把聳肩怪從${n.nm}身上趕走了！快幫他上課。`);
+      setTimeout(()=>{if(run.energy<=0){closeSheet();return;}openNpc(n);},700);}
+    else{wasted();msg.textContent=`差一點（${k}/${need}）。體力 −${Math.round(FREE.energy/2)}。`;
+      $panel.querySelector('.pb').insertAdjacentHTML('beforeend','<div class="row"><button class="primary" id="freeAgain">再試一次</button><button class="ghost" id="freeOut">先不要</button></div>');
+      $('freeAgain').onclick=()=>openFree(n);$('freeOut').onclick=closeSheet;}
+    renderHud();};
+  btn.onclick=()=>{if(done)return;if(!t0){t0=performance.now();timer=setInterval(()=>{const left=FREE.sec-(performance.now()-t0)/1000;if(left<=0)finish(false);else msg.textContent=`${k}/${need}・還有 ${left.toFixed(1)} 秒`;},100);}
+    k++;if(!RM){btn.classList.remove('hit');void btn.offsetWidth;btn.classList.add('hit');}
+    if(k>=need)finish(true);else msg.textContent=`${k}/${need}`;};
+  $('freeNo').onclick=()=>{done=true;clearInterval(timer);wasted();closeSheet();};
+}
+// 大家都有結果了：還有人被抓走就問要不要加班
+function dayDone(){
+  if(run.over)return;
+  if(run.timeUp){endDay();return;}
+  const stuckL=NPCS.filter(n=>resOf(n).state==='stuck');
+  if(!stuckL.length||run.askedAt===run.allDoneAt){endDay();return;}
+  run.askedAt=run.allDoneAt;askOvertime(stuckL);
+}
+function eatTarget(){const l=NPCS.filter(layerOn);return l.length?l[l.length-1]:null;}
+function askOvertime(stuckL){
+  const e=Math.max(0,Math.round(run.energy)),food=eatTarget(),layers=layersNow();
+  const left=clockStr(DAYLEN).slice(0,5);
+  const cardRisk=layers===R.cardAt?'（吃了就只剩 '+(layers-1)+' 層，序列圖卡要靠加班救回來）':'';
+  openSheet(`${head(LETTUCE)}<div class="pb"><p class="say">今天的事都處理完了。可是……還有 <b>${stuckL.length} 位</b>被聳肩怪抓走。要加班救嗎？（${left} 收工）</p>
+   <div class="stuckrow">${stuckL.map(n=>`<span>${monsterSvg('mi')}<b>${n.nm}</b><small>卡在${n.part}</small></span>`).join('')}</div>
+   <p class="note">你的體力：${e} / 100・三明治 ${layers} 層</p>
+   <div class="otopts">
+    <button class="otopt main" id="otEat" ${food?'':'disabled'}><b>🥪 吃一片三明治，加班救人</b><small>${food?`體力 +${R.eat||40}・吃掉「${ING[food.sticker]}」那層（${food.nm}的）${cardRisk}`:'還沒有三明治可以吃'}</small></button>
+    <button class="otopt" id="otTough"><b>💪 硬撐，直接加班</b><small>體力不變。救一位要連點 ${FREE.taps} 下、花 ${FREE.min} 分鐘、體力 −${FREE.energy}。累倒會被迫休息。</small></button>
+    <button class="otopt" id="otHome"><b>🌙 收工回家</b><small>什麼都不扣。被抓走的人，下次再來救。</small></button>
+   </div></div>`,{kind:'overtime'});
+  $('otEat').onclick=()=>{if(!food)return;resOf(food).eaten=true;run.eaten++;run.overtime=true;run.energy=Math.min(100,run.energy+(R.eat||40));run.allDoneAt=null;renderUI();closeSheet();toast(`吃掉「${ING[food.sticker]}」。體力 +${R.eat||40}！點被抓走的人去救他。`);};
+  $('otTough').onclick=()=>{run.overtime=true;run.allDoneAt=null;closeSheet();toast('加班！點被抓走的人，先把聳肩怪趕走。');};
+  $('otHome').onclick=()=>{sheetOpen=false;$sheet.hidden=true;endDay();};
+}
+
 // ================= 起司先生 =================
 function openCheese(){
   const c=run.cheese;const first=!S.cheese;c.caught=true;S.cheese=true;productive();
@@ -659,7 +765,8 @@ function finishRun(){
   const b=S.best;
   if(!b||saved.length>b.saved||(saved.length===b.saved&&(b.min===null||endMin<b.min)))S.best={saved:saved.length,min:endMin,date:PL.today(),style:sty.id,title:run.title};
   S.last={saved:saved.map(n=>n.id),stuck:stuckL.map(n=>n.id),style:sty.id,min:endMin,date:PL.today(),title:run.title};
-  if(saved.length>=R.cardAt&&!S.done){S.done=true;S.doneAt=PL.today();}
+  if(layersNow()>=R.cardAt&&!S.done){S.done=true;S.doneAt=PL.today();}
+  const lv0=levelOf();
   G.title=bestTitle()||run.title;
   const give=id=>{if(BADGES[id]&&PL.badge(id))run.newBadges.push(id);};
   give('first-day');
@@ -668,6 +775,7 @@ function finishRun(){
   if(saved.length>=3&&st.zero===0)give('energy-master');
   if(saved.length===NPCS.length&&run.allDoneAt!==null&&run.allDoneAt<=hm(R.fastBefore)-DAY0)give('speedy');
   if(S.perfects>=5)give('perfect5');
+  run.levelUp=levelOf()>lv0;
   save();
 }
 // 沒解鎖圖卡時，依照這一天的狀況給兩個具體提示（文字在 zone 檔 tips）
@@ -690,27 +798,39 @@ function tipsFor(){
 const shortName=n=>/先生|小姐$/.test(n.nm)?n.nm.replace(/先生|小姐$/,''):n.nm.slice(-2);
 function medalSvg(on){return `<svg class="medal" viewBox="0 0 40 40" aria-hidden="true"><path d="M13 3 L20 14 L27 3" fill="none" stroke="${on?'#d7263d':'#c9c3b8'}" stroke-width="5" stroke-linejoin="round"/><circle cx="20" cy="25" r="12" fill="${on?'#ffc233':'#e6e1d8'}" stroke="${on?'#2c2c2a':'#c9c3b8'}" stroke-width="3"/><path d="M20 18 l2 4.5 5 .5 -3.8 3.3 1.2 4.9 -4.4 -2.6 -4.4 2.6 1.2 -4.9 -3.8 -3.3 5 -.5z" fill="${on?'#fff':'#f3efe8'}"/></svg>`;}
 function badgeCard(id,isNew){const got=G.badges.includes(id),b=BADGES[id]||[id,''];return `<div class="card bd ${got?'':'off'}">${medalSvg(got)}<b>${b[0]}</b><small>${b[1]}</small>${isNew?'<span class="new">新！</span>':''}</div>`;}
+function lvBox(L,up){
+  const a=L.prevAt,b=L.next?L.next.at:a,seg=Math.max(1,b-a),got=Math.min(seg,L.n-a);
+  return `<div class="lvl"><div class="lvh"><span>老師等級</span><b>${L.cur.name}</b>${up?'<em class="up">升級了！</em>':''}</div>
+   ${L.next?`<div class="lvbar">${Array.from({length:seg},(_,i)=>`<i class="${i<got?'on':''}"></i>`).join('')}</div><small>再 ${L.to} 個徽章，升「${L.next.name}」：${L.next.perk}</small>`:'<small>已經是現在最高的等級了！</small>'}
+   ${L.i>0?`<small class="perk">現在的好處：${LEVELS.slice(1,L.i+1).map(l=>l.perk).join('、')}</small>`:''}</div>`;
+}
 function igLink(){return IG?IG.url:'';}
 function ending(){
   const st=run.st,saved=savedRun(),stuckL=NPCS.filter(n=>resOf(n).state!=='saved');
   const sty=run.style,title=run.title;
   const V={saved:saved.length,stuck:stuckL.length,hiPick:st.hiPick,nearPick:st.nearPick,picks:st.picks,talk:st.talk,direct:st.direct,rests:st.rests,zero:st.zero,zeroMin:st.zero*R.energy.zeroRestMin,
     fails:st.fails,perfects:st.perfects,walk:st.walk,wasted:st.wasted,monster:st.monster,scares:st.scares,minEnergy:Math.max(0,Math.round(st.minEnergy)),end:clockStr(run.endMin)};
-  const NW=Z.nextWeek;const card=saved.length>=R.cardAt;const need=R.cardAt-saved.length;
+  const NW=Z.nextWeek;const layers=layersNow();const card=layers>=R.cardAt;const need=R.cardAt-layers;const LV=levelInfo();
   const cta=card&&Z.cta&&Z.cta.url?Z.cta:null;
   const ig=!cta&&IG;
-  const best=S.best;const cheer=(Z.cheer||[])[Math.min((Z.cheer||[]).length-1,saved.length)]||'';
+  const best=S.best;const cheer=run.eaten&&!card?`救回 ${saved.length} 位很厲害！可是三明治被你吃掉 ${run.eaten} 層，序列圖卡要下次了。`:((Z.cheer||[])[Math.min((Z.cheer||[]).length-1,saved.length)]||'');
   const pl=[...new Set(stuckL.map(n=>n.part))];const parts=pl.slice(0,2).join('、')+(pl.length>2?'……':'');
   const nb=run.newBadges;
   openSheet(`<div class="pb end">
    <span class="eyebrow">${zoneName}・${Z.title}・${clockStr(run.endMin)} 收工</span>
    <h2 class="big">救回 ${saved.length} / ${NPCS.length} 位</h2>
-   <div class="ttl"><small>今天的稱號</small><b>${title}</b>${best&&best.saved>saved.length?`<small>最佳紀錄：救回 ${best.saved} 位</small>`:''}</div>
+   ${run.freed?`<small class="freed">其中 ${run.freed} 位是從聳肩怪手上搶回來的💪</small>`:''}
+   <div class="row top2"><button class="primary" id="book">看貼紙簿</button><button class="ghost" id="again">再玩一天</button></div>
    ${cheer?`<p class="say">${cheer}</p>`:''}
-   ${saved.length?`<div class="sandwich">${sandwichSvg(runHas)}</div>`:''}
-   ${nb.length?`<div class="newb"><b class="nbh">${fill(Z.badgeCheer||'拿到新徽章！',{n:nb.length})}</b><div class="cards3">${nb.map(id=>badgeCard(id,true)).join('')}</div><small>徽章 ${G.badges.filter(id=>BADGES[id]).length} / ${Object.keys(BADGES).length}・都收在貼紙簿裡</small></div>`:''}
+   <div class="swbox"><h3>🥪 你的三明治：${layers} / ${NPCS.length} 層</h3>
+    <div class="sandwich big">${sandwichFlags(runState,true)}</div>
+    <p class="swprog">${card?'<b>序列圖卡解鎖了！</b>':`再 <b>${need} 層</b> → 序列圖卡`}<br>${layers<NPCS.length?`疊滿 ${NPCS.length} 層 → 三明治會對你眨眼😉`:'疊滿了！三明治在對你眨眼😉'}${run.eaten?`<br><small>加班時吃掉了 ${run.eaten} 層。</small>`:''}</p></div>
+   <div class="newb"><b class="nbh">${nb.length?fill(Z.badgeCheer||'拿到 {n} 個新徽章！',{n:nb.length}):'🏅 老師等級'}</b>
+    ${nb.length?`<div class="cards3">${nb.map(id=>badgeCard(id,true)).join('')}</div>`:''}
+    ${lvBox(LV,run.levelUp)}</div>
+   <div class="ttl sm"><small>今天的稱號</small><b>${title}</b>${best&&best.saved>saved.length?`<small>最佳紀錄：救回 ${best.saved} 位</small>`:''}</div>
    ${card?`<div class="pass">${cta?`<small>通關密語</small><b>${Z.passcode}</b><small>把通關密語傳給我們，領這一區的序列圖卡。</small><a class="primary" href="${cta.url}" target="_blank" rel="noopener">${cta.label}</a>`:`<small>序列圖卡解鎖了</small><b style="font-size:20px">${Z.card.title}</b>`}<a class="cardlink" href="/cards/${Z.id}" target="_blank" rel="noopener">看序列圖卡 →</a></div>`
-     :`<div class="lock"><b>差 ${need} 位就能拿到序列圖卡</b><small>${fill(Z.cardLocked||'',{n:R.cardAt})}</small><ul>${tipsFor().map(t=>`<li>${t}</li>`).join('')}</ul></div>`}
+     :`<div class="lock"><b>三明治差 ${need} 層就能拿到序列圖卡</b><small>${fill(Z.cardLocked||'',{n:R.cardAt})}</small><ul>${tipsFor().map(t=>`<li>${t}</li>`).join('')}</ul></div>`}
    ${stuckL.length?`<div class="stuckL"><b>沒救回來的</b>${stuckL.map(n=>`<div class="sk">${monsterSvg('mi')}<span><b>${n.nm}${resOf(n).state==='stuck'?'':'<small class="nr">（收工前沒輪到）</small>'}</b><small>卡在：${n.part}</small></span></div>`).join('')}</div>`:''}
    <div class="style"><small>你今天的教學風格</small><h3>${sty.name}</h3>
     <ul>${(sty.obs||[]).map(o=>`<li>${fill(o,V)}</li>`).join('')}</ul>
@@ -725,11 +845,12 @@ function ending(){
    </div>
    <div class="copied" id="copied" aria-live="polite"></div>
    ${run.cheese&&run.cheese.caught&&SEC.teaser?`<p class="say">${SEC.teaser}</p>`:''}
-   <div class="row"><button class="${cta||ig?'ghost':'primary'}" id="again">再玩一天</button><button class="ghost" id="book">看貼紙簿</button></div>
+   <div class="row"><button class="ghost" id="again2">再玩一天</button><button class="ghost" id="book2">看貼紙簿</button></div>
    <p class="disc">好玩為主，這不是治療；身體有傷痛，請先詢問醫師。</p></div>`,{kind:'end'});
-  $('again').onclick=()=>{const low=saved.length<=1;newRun();if(low&&BADGES.comeback&&PL.badge('comeback'))run.newBadges.push('comeback');sheetOpen=false;$sheet.hidden=true;renderUI();goals();};
-  $('book').onclick=()=>album(ending);
-  const shareText=()=>`我在「三明治鎮」當了一天瑜伽老師，救回 ${saved.length}/${NPCS.length} 位居民，稱號是「${title}」，教學風格「${sty.name}」！\n${stuckL.length?`沒救回來的卡在：${parts}。\n`:''}換你來當瑜伽老師 👉 ${GAME_URL}${IG?`\n@${IG.handle}`:''}\n#PDPL排都排了排好序列一起練 #sandywichyoga`;
+  const againFn=()=>{const low=saved.length<=1;newRun();if(low&&BADGES.comeback&&PL.badge('comeback'))run.newBadges.push('comeback');sheetOpen=false;$sheet.hidden=true;renderUI();goals();};
+  $('again').onclick=againFn;$('again2').onclick=againFn;
+  $('book').onclick=()=>album(ending);$('book2').onclick=()=>album(ending);
+  const shareText=()=>`我在「三明治鎮」加入身體救援隊，救回 ${saved.length}/${NPCS.length} 位居民，稱號是「${title}」，教學風格「${sty.name}」！\n${stuckL.length?`沒救回來的卡在：${parts}。\n`:''}換你出動 👉 ${GAME_URL}${IG?`\n@${IG.handle}`:''}\n#PDPL排都排了排好序列一起練 #sandywichyoga`;
   $('share').onclick=async()=>{
     const t=shareText(),out=$('copied');
     try{await navigator.clipboard.writeText(t);out.textContent='已複製，可以貼到限動或傳給朋友。';}
@@ -773,11 +894,12 @@ async function storyPng(d){
   g.textAlign='center';g.textBaseline='alphabetic';g.fillStyle='#2c2c2a';
   g.font=`900 120px ${ZH}`;g.fillText('三明治鎮',540,250);
   g.font=`600 40px Poppins,${ZH}`;g.fillStyle='#888780';g.fillText(`SANDYWICH YOGA ・ ${zoneName} ${Z.title}`,540,320);
-  round(90,400,900,1060,48);g.fillStyle='#fff';g.fill();g.lineWidth=8;g.strokeStyle='#2c2c2a';g.stroke();
+  const gold=levelOf()>=2;round(90,400,900,1060,48);g.fillStyle='#fff';g.fill();g.lineWidth=gold?20:8;g.strokeStyle=gold?'#d4a017':'#2c2c2a';g.stroke();
+  if(gold){g.font=`900 36px ${ZH}`;g.fillStyle='#d4a017';g.fillText('★ '+LEVELS[levelOf()].name+' ★',540,452);}
   // 三明治
-  const svg=(d.saved?sandwichSvg(runHas):monsterSvg('')).replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ');
+  const svg=(d.saved?sandwichFlags(runState,true):monsterSvg('')).replace('<svg ','<svg xmlns="http://www.w3.org/2000/svg" ');
   try{const img=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);});
-    const w=d.saved?600:340,h=d.saved?(w*img.height/img.width||300):340;g.drawImage(img,540-w/2,470+Math.max(0,(380-h)/2),w,Math.min(h,380));}catch(_){}
+    const w=d.saved?720:340,h=d.saved?(w*img.height/img.width||300):340;g.drawImage(img,540-w/2,470+Math.max(0,(380-h)/2),w,Math.min(h,380));}catch(_){}
   if(!d.saved){g.font=`700 44px ${ZH}`;g.fillStyle='#888780';g.fillText('今天聳肩怪贏了一局',540,880);}
   g.fillStyle='#2c2c2a';g.font=`900 130px ${ZH}`;g.fillText(`救回 ${d.saved} / ${NPCS.length} 位`,540,d.saved?1010:1030);
   g.font=`500 46px ${ZH}`;g.fillStyle='#888780';g.fillText('今天的稱號',540,1110);
@@ -790,7 +912,7 @@ async function storyPng(d){
     round(100,1500,320,320,28);g.fillStyle='#fff';g.fill();g.lineWidth=6;g.strokeStyle='#2c2c2a';g.stroke();g.drawImage(qi,115,1515,290,290);qrOk=true;}catch(_){}}
   const cx=qrOk?710:540;g.textAlign='center';
   g.fillStyle='#2c2c2a';g.font=`900 ${qrOk?64:76}px ${ZH}`;
-  if(qrOk){g.fillText('來三明治鎮',cx,1570);g.fillText('當瑜伽老師',cx,1650);}else g.fillText('來三明治鎮當瑜伽老師',cx,1600);
+  if(qrOk){g.fillText('加入',cx,1570);g.fillText('身體救援隊',cx,1650);}else g.fillText('加入身體救援隊',cx,1600);
   g.font=`600 ${qrOk?34:48}px Poppins,${ZH}`;g.fillText((location.host||'')+'/town',cx,qrOk?1715:1690);
   if(IG){const pw=qrOk?460:480;round(cx-pw/2,1745,pw,84,42);g.fillStyle='#ffc233';g.fill();g.fillStyle='#2c2c2a';g.font=`700 44px Poppins,${ZH}`;g.fillText('@'+IG.handle,cx,1803);
     if(qrOk){g.font=`700 30px ${ZH}`;g.fillStyle='#888780';g.fillText('掃我追蹤 IG',260,1862);}}
@@ -805,16 +927,16 @@ function goals(){
   openSheet(`<div class="pb goals"><span class="eyebrow">${zoneName}・${Z.title}</span><h2 class="h2">今天的任務</h2>
    ${run.newBadges.includes('comeback')?`<div class="newb"><b class="nbh">新徽章：${BADGES.comeback[0]}</b><small>${BADGES.comeback[1]}。今天一定救得回來！</small></div>`:''}
    <ol class="glist">
-    <li><span class="gi">${ingSvg('bread')}</span><div><b>救回居民 → 拿貼紙，疊成三明治</b><span class="minis">${dots}</span></div><em>${S.helped.length}/${NPCS.length}</em></li>
-    <li><span class="gi">${poseSvg('dog')}</span><div><b>一天救回 ${R.cardAt} 位 → 解鎖序列圖卡</b><small>${cardOn?'已經解鎖了，可以再挑戰更多人':Z.card.title}</small></div><em class="${cardOn?'ok':''}">${cardOn?'✓':'🔒'}</em></li>
-    <li><span class="gi">${medalSvg(nb>0)}</span><div><b>收集徽章</b><small>第一天上工就有一個</small></div><em>${nb}/${NB}</em></li>
+    <li><span class="gi">${ingSvg('bread')}</span><div><b>救回一位 → 三明治疊一層</b><span class="minis">${dots}</span></div><em>${S.helped.length}/${NPCS.length}</em></li>
+    <li><span class="gi">${poseSvg('dog')}</span><div><b>一天疊到 ${R.cardAt} 層 → 解鎖序列圖卡</b><small>${cardOn?'已經解鎖了，可以再挑戰更多人':Z.card.title}</small></div><em class="${cardOn?'ok':''}">${cardOn?'✓':'🔒'}</em></li>
+    <li><span class="gi">${medalSvg(nb>0)}</span><div><b>收集徽章 → 升老師等級</b><small>現在：${levelInfo().cur.name}${levelInfo().next?`・再 ${levelInfo().to} 個升「${levelInfo().next.name}」`:''}</small></div><em>${nb}/${NB}</em></li>
     <li><span class="gi">${monsterSvg('',false)}</span><div><b>怪物圖鑑</b><small>${mGot?MON.name+'：'+fill(MON.hintBubble||'連點 {n} 下嚇跑牠！',{n:MON.scareTaps}):'在鎮上遇到牠就會收進來'}</small></div><em>${mGot}/1</em></li>
-    <li><span class="gi">${medalSvg(!!S.best)}</span><div><b>稱號</b><small>${S.best?`最佳：${bestTitle()}（救回 ${S.best.saved} 位）`:'收工時依照救回幾位決定'}</small></div><em></em></li>
    </ol>
    <div class="howto"><b>怎麼玩</b><ul>
     <li>頭上的<b>紅色長條</b>是緊繃值，滿了聳肩怪就會趴上去。先救最紅的。</li>
     <li>教一次：<b>拉到位</b>，再跟著呼吸<b>按住、放開</b>。</li>
-    <li><b>體力</b>低了去噴水池喝水。聳肩怪靠近就<b>連點牠</b>。</li></ul></div>
+    <li><b>體力</b>低了去噴水池喝水。聳肩怪靠近就<b>連點牠</b>。</li>
+    <li>有人<b>被抓走</b>了？點他，連點趕走聳肩怪，就能再救一次（要花體力）。</li></ul></div>
    <button class="primary big" id="go">${playing?'回到小鎮':'開始上工'}</button>
    <button class="ghost" id="toAlbum">看貼紙簿</button></div>`,{kind:'goals'});
   $('go').onclick=()=>{sheetOpen=false;$sheet.hidden=true;if(!playing){run.started=true;toast('上班囉！先救誰？');}renderUI();};
@@ -826,19 +948,22 @@ const intro=goals;
 function album(back){
   const mGot=G.monsters.includes(MON.id);const b=S.best;const last=S.last;
   const nb=G.badges.filter(id=>BADGES[id]).length,NB=Object.keys(BADGES).length;
-  const need=hasRope()?MON.scareTapsRope:MON.scareTaps;
-  openSheet(`<div class="pb alb"><span class="eyebrow">貼紙簿・${zoneName} ${Z.title}</span>
-   <section><h3 class="sec">稱號</h3><div class="cards2">
-     <div class="card"><small>目前</small><b>${last&&last.title?last.title:(b?bestTitle():'還沒有')}</b><small>${last?`上次救回 ${last.saved.length} 位`:'玩完一天就會有'}</small></div>
-     <div class="card"><small>最佳</small><b>${b?bestTitle():'還沒有'}</b><small>${b?`救回 ${b.saved} 位・玩了 ${S.runs||0} 天`:'—'}</small></div></div></section>
-   <section><h3 class="sec">貼紙 <span class="cnt">${S.helped.length}/${NPCS.length}</span></h3>
-     <div class="sandwich sm">${sandwichSvg(albumHas)}</div>
-     <div class="cards5">${NPCS.map(n=>{const on=S.helped.includes(n.id);return `<div class="card st ${on?'':'off'}">${ingSvg(n.sticker,'ic')}<b>${ING[n.sticker]}</b><small>${on?n.L.nm:'救回'+shortName(n)}</small></div>`;}).join('')}</div>
-     <p class="cap">救回居民拿貼紙，五張疊成一個三明治。</p></section>
-   <section><h3 class="sec">徽章 <span class="cnt">${nb}/${NB}</span></h3><div class="cards3">${Object.keys(BADGES).map(id=>badgeCard(id,false)).join('')}</div></section>
-   <section><h3 class="sec">怪物圖鑑 <span class="cnt">${mGot?1:0}/1</span></h3>
-     <div class="card mon ${mGot?'':'off'}">${monsterSvg('mbig')}<div>${mGot?`<b>${MON.name}</b><small>${MON.about}</small><small><em>怎麼嚇跑：</em>${MON.how||''}</small><small><em>牠失手的時候：</em>${MON.weakTime}</small><small><em>你嚇跑牠：</em>${S.scares||0} 次</small>`:`<b>？？？</b><small>在鎮上遇到牠，就會收進圖鑑。</small>`}</div></div></section>
-   <section><h3 class="sec">背包</h3><div class="chips"><span class="${hasRope()?'on':''}">瑜伽繩 ${hasRope()?'✓':'還沒拿'}</span><span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0}/${BRICK.badgeAt||3}</span></div><p class="cap">背包裡的東西會跟你到下一區。</p></section>
+  const need=scareNeed();
+  const LV=levelInfo();const ORDN=Z.order||1;
+  const menu=[0,1,2].map(k=>{const o=ORDN+k;return k===0?`<div class="zc on"><b>${zoneName}</b><span>${Z.title}</span><small>${S.helped.length} / ${NPCS.length} 層</small></div>`:`<div class="zc off"><b>第${ORD[o]||o}區</b><span>即將開放</span></div>`;}).join('');
+  openSheet(`<div class="pb alb"><span class="eyebrow">貼紙簿</span><h2 class="h2">我的三明治鎮</h2>
+   <section>${lvBox(LV,false)}</section>
+   <section><h3 class="sec">🥪 三明治 <span class="cnt">每一區一個</span></h3>
+     <div class="sandwich big">${sandwichFlags(albumState,false)}</div>
+     <p class="cap">救回一位居民＝疊一層，旗子上寫救了誰。一天疊到 ${R.cardAt} 層，解鎖序列圖卡${S.done?'（已解鎖 ✓）':''}。</p>
+     <div class="zmenu">${menu}</div></section>
+   <section><h3 class="sec">🏅 徽章 <span class="cnt">${nb}/${NB}・用來升等級</span></h3><div class="cards3">${Object.keys(BADGES).map(id=>badgeCard(id,false)).join('')}</div></section>
+   <section><h3 class="sec">👻 怪物圖鑑 <span class="cnt">${mGot?1:0}/1</span></h3>
+     <div class="card mon ${mGot?'':'off'}">${monsterSvg('mbig')}<div>${mGot?`<b>${MON.name}</b><small>${MON.about}</small><small><em>怎麼嚇跑：</em>趁牠靠近時連點牠。你現在只要點 ${need} 下${hasRope()?'（有瑜伽繩）':''}，嚇跑後牠會去角落發呆一陣子。</small><small><em>牠失手的時候：</em>${MON.weakTime}</small><small><em>你嚇跑牠：</em>${S.scares||0} 次</small>`:`<b>？？？</b><small>在鎮上遇到牠，就會收進圖鑑。</small>`}</div></div></section>
+   <section><h3 class="sec">🎒 背包 <span class="cnt">遊戲裡用，會跟你到下一區</span></h3><div class="chips">
+     <span class="${hasRope()?'on':''}">瑜伽繩 ${hasRope()?'✓':'還沒拿'}：手碰不到時用，嚇怪少點幾下</span>
+     <span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0}/${BRICK.badgeAt||3}：墊著做，穩住比較簡單</span></div></section>
+   <section><h3 class="sec">📜 稱號</h3><p class="cap" style="text-align:left">最佳：<b>${b?bestTitle():'還沒有'}</b>${b?`（救回 ${b.saved} 位・玩了 ${S.runs||0} 天）`:''}${last&&last.title&&b&&last.title!==bestTitle()?`<br>上一次：${last.title}`:''}</p></section>
    <div class="row">${!back&&run.started&&!run.over?'<button class="ghost" id="toGoals">今天的任務</button>':''}<button class="primary" id="close">${back===goals?'回去':back?'回到結果':'回到小鎮'}</button></div></div>`,{kind:'album'});
   $('close').onclick=()=>{if(back){back();return;}closeSheet();if(!run.started)goals();};
   if($('toGoals'))$('toGoals').onclick=()=>goals();
@@ -905,7 +1030,7 @@ function drawMonster(dt){
   if(m.daze<=0){ctx.fillStyle='rgba(109,106,138,.13)';ctx.beginPath();ctx.arc(cx,cy,ts*(R.monsterNear+.5),0,7);ctx.fill();}
   monBlob(cx,cy,ts*.38,m.daze>0,m.daze>0?.6:1);
   if(m.daze>0){ctx.fillStyle='#2c2c2a';ctx.font=`900 ${ts*.32}px Poppins,sans-serif`;ctx.fillText('z',cx+ts*.42,cy-ts*.45);return;}
-  const need=hasRope()?MON.scareTapsRope:MON.scareTaps,now=performance.now();
+  const need=scareNeed(),now=performance.now();
   const taps=m.taps.filter(t=>now-t<1600).length;
   if(taps){ // 連點的進度圈
     ctx.lineWidth=Math.max(3,ts*.12);ctx.strokeStyle='rgba(44,44,42,.2)';ctx.beginPath();ctx.arc(cx,cy,ts*.62,0,7);ctx.stroke();
@@ -970,10 +1095,10 @@ function frame(now){
       if(!sheetOpen&&m.daze<=0&&m.cool<=0&&Math.hypot(player.x-m.fx,player.y-m.fy)<.6)monTouch();
       if(!sheetOpen&&!G.monsters.includes(MON.id)&&Math.abs(player.x-m.x)+Math.abs(player.y-m.y)<=3)meetMonster();
       if(!run.monHint&&m.daze<=0&&(Math.abs(player.x-m.x)+Math.abs(player.y-m.y)<=3||NPCS.some(n=>resOf(n).state==='open'&&Math.abs(n.x-m.x)+Math.abs(n.y-m.y)<=R.monsterNear))){
-        run.monHint=true;meetMonster();toast(fill(MON.hint||'聳肩怪來了！連點牠 {n} 下可以嚇跑牠。',{n:hasRope()?MON.scareTapsRope:MON.scareTaps}),'warn');}
+        run.monHint=true;meetMonster();toast(fill(MON.hint||'聳肩怪來了！連點牠 {n} 下可以嚇跑牠。',{n:scareNeed()}),'warn');}
     }
     if(sheetOpen&&sheetLive&&run.timeUp)endDay();
-    else if(!sheetOpen&&(run.timeUp||run.allDoneAt!==null))endDay();
+    else if(!sheetOpen&&(run.timeUp||run.allDoneAt!==null))dayDone();
     uiT-=dt;if(uiT<=0){uiT=.25;renderUI();}
   }
   draw(dt);requestAnimationFrame(frame);

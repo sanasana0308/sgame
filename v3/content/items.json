@@ -1,0 +1,7 @@
+{
+  "_說明": "道具會放在玩家背包，跨區保留。",
+  "items": [
+    {"id": "rope", "name": "瑜伽繩", "about": "手碰不到的時候，用繩子連起來。", "firstZone": "2026-10-shoulder"},
+    {"id": "brick", "name": "瑜伽磚", "about": "墊高地板，手腕、膝蓋都輕鬆一點。", "firstZone": "2026-10-shoulder"}
+  ]
+}
