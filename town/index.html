@@ -237,6 +237,8 @@ h3.sec{margin:6px 0 0;font-size:16px;font-weight:900}
 .pass small{font-size:13px;color:var(--stone)}
 .pass a.primary{text-decoration:none;margin-top:6px;align-self:stretch}
 .home{font-size:13px;color:var(--stone);text-decoration:none;font-weight:700}
+.home.pill{display:inline-flex;align-items:center;gap:4px;align-self:flex-start;background:var(--white);border:2px solid var(--ink);border-radius:99px;padding:3px 12px;color:var(--ink);box-shadow:0 2px 0 var(--ink)}
+a.ghost.homebtn{text-decoration:none;display:flex;align-items:center;justify-content:center;color:var(--ink)}
 
 /* v3：任務頁、貼紙簿、結尾、穩住提示。字級只用這幾種：頁標題 22、區塊標題 15、卡片標題 14、說明 12。 */
 .goal{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;background:var(--yellow-soft);border-radius:10px;padding:4px 10px}
@@ -362,7 +364,7 @@ a.primary{display:block;text-align:center;text-decoration:none}
 <body>
 <div class="ribbon" aria-hidden="true"></div>
 <div class="wrap">
-  <a class="home" href="/" style="font-size:13px">‹ 回 Sandywich 首頁</a>
+  <a class="home pill" href="/">🏠 回首頁</a>
   <div class="top">
     <div class="brand"><b>三明治鎮</b><span id="zoneTag">載入中…</span></div>
     <button class="albumBtn" id="albumBtn" aria-label="打開貼紙簿"><span class="lbl">貼紙簿</span><span class="dots" id="albumDots"></span></button>

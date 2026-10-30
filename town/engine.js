@@ -845,7 +845,7 @@ function ending(){
    </div>
    <div class="copied" id="copied" aria-live="polite"></div>
    ${run.cheese&&run.cheese.caught&&SEC.teaser?`<p class="say">${SEC.teaser}</p>`:''}
-   <div class="row"><button class="ghost" id="again2">再玩一天</button><button class="ghost" id="book2">看貼紙簿</button></div>
+   <div class="row"><button class="ghost" id="again2">再玩一天</button><button class="ghost" id="book2">看貼紙簿</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div>
    <p class="disc">好玩為主，這不是治療；身體有傷痛，請先詢問醫師。</p></div>`,{kind:'end'});
   const againFn=()=>{const low=saved.length<=1;newRun();if(low&&BADGES.comeback&&PL.badge('comeback'))run.newBadges.push('comeback');sheetOpen=false;$sheet.hidden=true;renderUI();goals();};
   $('again').onclick=againFn;$('again2').onclick=againFn;
@@ -938,7 +938,7 @@ function goals(){
     <li><b>體力</b>低了去噴水池喝水。聳肩怪靠近就<b>連點牠</b>。</li>
     <li>有人<b>被抓走</b>了？點他，連點趕走聳肩怪，就能再救一次（要花體力）。</li></ul></div>
    <button class="primary big" id="go">${playing?'回到小鎮':'開始上工'}</button>
-   <button class="ghost" id="toAlbum">看貼紙簿</button></div>`,{kind:'goals'});
+   <div class="row"><button class="ghost" id="toAlbum">看貼紙簿</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div></div>`,{kind:'goals'});
   $('go').onclick=()=>{sheetOpen=false;$sheet.hidden=true;if(!playing){run.started=true;toast('上班囉！先救誰？');}renderUI();};
   $('toAlbum').onclick=()=>album(goals);
 }
@@ -964,7 +964,7 @@ function album(back){
      <span class="${hasRope()?'on':''}">瑜伽繩 ${hasRope()?'✓':'還沒拿'}：手碰不到時用，嚇怪少點幾下</span>
      <span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0}/${BRICK.badgeAt||3}：墊著做，穩住比較簡單</span></div></section>
    <section><h3 class="sec">📜 稱號</h3><p class="cap" style="text-align:left">最佳：<b>${b?bestTitle():'還沒有'}</b>${b?`（救回 ${b.saved} 位・玩了 ${S.runs||0} 天）`:''}${last&&last.title&&b&&last.title!==bestTitle()?`<br>上一次：${last.title}`:''}</p></section>
-   <div class="row">${!back&&run.started&&!run.over?'<button class="ghost" id="toGoals">今天的任務</button>':''}<button class="primary" id="close">${back===goals?'回去':back?'回到結果':'回到小鎮'}</button></div></div>`,{kind:'album'});
+   <div class="row">${!back&&run.started&&!run.over?'<button class="ghost" id="toGoals">今天的任務</button>':''}<button class="primary" id="close">${back===goals?'回去':back?'回到結果':'回到小鎮'}</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div></div>`,{kind:'album'});
   $('close').onclick=()=>{if(back){back();return;}closeSheet();if(!run.started)goals();};
   if($('toGoals'))$('toGoals').onclick=()=>goals();
 }
