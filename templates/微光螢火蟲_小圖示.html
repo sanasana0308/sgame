@@ -1,0 +1,81 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap">
+<style>
+body{margin:0;background:#efeae3;font-family:"Noto Sans TC",sans-serif;color:#2c2c2a}
+.page{width:1400px;padding:36px}
+h1{margin:0 0 6px;font-size:30px;font-weight:900}
+.sub{margin:0 0 20px;color:#6a6a66;font-size:16px;line-height:1.6}
+.rule{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:26px}
+.rule div{background:#fff;border-radius:16px;padding:12px 14px;font-size:14px;line-height:1.5}
+.rule b{display:block;font-size:16px;margin-bottom:2px}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.t{background:#f7f3ee;border-radius:18px;padding:14px 8px 10px;text-align:center;font-size:14px;font-weight:700}
+.t.dk{background:#2b3152;color:#f5f1e8}
+.t svg{width:96px;height:96px;display:block;margin:0 auto 6px}
+.big{display:flex;gap:26px;align-items:center;margin:26px 0 0}
+.big .t svg{width:200px;height:200px}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+ <!-- 同一隻螢火蟲：64x64 格子，黑線 3、顏色 3–4 種 -->
+ <symbol id="ears" viewBox="0 0 64 64">
+  <path d="M19 22 C12 12 10 4 14 3 C18 2 23 12 25 19 Z" fill="#353a5a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M45 22 C52 12 54 4 50 3 C46 2 41 12 39 19 Z" fill="#353a5a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M19 18 C15 12 14 8 15.5 7 C17 7 20 12 21.5 16 Z" fill="#ffe27a"/>
+  <path d="M45 18 C49 12 50 8 48.5 7 C47 7 44 12 42.5 16 Z" fill="#ffe27a"/>
+ </symbol>
+ <symbol id="headbase" viewBox="0 0 64 64">
+  <use href="#ears"/>
+  <circle cx="32" cy="34" r="20" fill="#353a5a" stroke="#2c2c2a" stroke-width="3"/>
+  <path d="M15.5 38 C15 28 22 25 32 25 C42 25 49 28 48.5 38 C48 47 16 47 15.5 38 Z" fill="#fbe7cf"/>
+  <ellipse cx="21" cy="40" rx="3" ry="2" fill="#f4a3a0"/><ellipse cx="43" cy="40" rx="3" ry="2" fill="#f4a3a0"/>
+ </symbol>
+ <symbol id="f-happy" viewBox="0 0 64 64"><use href="#headbase"/><path d="M22 35 h7 M35 35 h7" stroke="#2c2c2a" stroke-width="3" stroke-linecap="round"/><path d="M28 40 q4 4 8 0" fill="none" stroke="#2c2c2a" stroke-width="2.6" stroke-linecap="round"/></symbol>
+ <symbol id="f-calm" viewBox="0 0 64 64"><use href="#headbase"/><path d="M22 35 q3.5 3 7 0 M35 35 q3.5 3 7 0" fill="none" stroke="#2c2c2a" stroke-width="2.6" stroke-linecap="round"/><path d="M29 41 q3 2 6 0" fill="none" stroke="#2c2c2a" stroke-width="2.4" stroke-linecap="round"/></symbol>
+ <symbol id="f-tired" viewBox="0 0 64 64"><use href="#headbase"/><path d="M22 36 h7 M35 36 h7" stroke="#2c2c2a" stroke-width="3" stroke-linecap="round"/><path d="M29 42 q3 -2 6 0" fill="none" stroke="#2c2c2a" stroke-width="2.4" stroke-linecap="round"/><g fill="#9aa2b8"><circle cx="52" cy="14" r="4"/><circle cx="57" cy="12" r="5"/><circle cx="61" cy="15" r="3.5"/></g></symbol>
+ <symbol id="f-full" viewBox="0 0 64 64">
+  <circle cx="40" cy="48" r="14" fill="#fff3b0" opacity=".7"/>
+  <ellipse cx="14" cy="38" rx="10" ry="6" transform="rotate(-30 14 38)" fill="#e3ecfa" stroke="#2c2c2a" stroke-width="2.4"/>
+  <ellipse cx="50" cy="36" rx="10" ry="6" transform="rotate(30 50 36)" fill="#e3ecfa" stroke="#2c2c2a" stroke-width="2.4"/>
+  <circle cx="40" cy="50" r="9" fill="#ffe27a" stroke="#2c2c2a" stroke-width="3"/><circle cx="37.5" cy="47.5" r="2.5" fill="#fff"/>
+  <g transform="translate(5 -4) scale(.82)"><use href="#f-happy"/></g>
+  <path d="M28 46 q-2 4 1 6" stroke="#4f8f8c" stroke-width="5" fill="none" stroke-linecap="round"/>
+ </symbol>
+ <symbol id="i-light" viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="#fff3b0" opacity=".7"/><circle cx="32" cy="32" r="13" fill="#ffe27a" stroke="#2c2c2a" stroke-width="3"/><circle cx="28" cy="28" r="3.5" fill="#fff"/><path d="M32 6 v6 M32 52 v6 M6 32 h6 M52 32 h6 M13 13 l4 4 M47 47 l4 4 M51 13 l-4 4 M17 47 l-4 4" stroke="#2c2c2a" stroke-width="2.6" stroke-linecap="round"/></symbol>
+ <symbol id="i-light-off" viewBox="0 0 64 64"><circle cx="32" cy="32" r="13" fill="#e6e1d8" stroke="#c9c3b8" stroke-width="3" stroke-dasharray="5 4"/></symbol>
+ <symbol id="i-weather" viewBox="0 0 64 64"><circle cx="24" cy="24" r="10" fill="#ffc233" stroke="#2c2c2a" stroke-width="3"/><path d="M18 46 C10 46 10 34 19 34 C20 26 34 24 37 32 C46 30 50 40 44 46 Z" fill="#fff" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/></symbol>
+ <symbol id="i-boat" viewBox="0 0 64 64"><path d="M10 38 L54 38 L46 50 L18 50 Z" fill="#fff" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><path d="M32 12 L32 38 L48 32 Z" fill="#fbe7cf" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><path d="M8 56 q6 -4 12 0 t12 0 t12 0 t12 0" fill="none" stroke="#7fb2c9" stroke-width="3" stroke-linecap="round"/></symbol>
+ <symbol id="i-lamp" viewBox="0 0 64 64"><circle cx="32" cy="22" r="16" fill="#fff3b0" opacity=".7"/><path d="M24 14 h16 l4 14 h-24 Z" fill="#ffe27a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><path d="M32 28 v26 M24 56 h16" stroke="#2c2c2a" stroke-width="3.5" stroke-linecap="round"/></symbol>
+ <symbol id="i-letter" viewBox="0 0 64 64"><rect x="10" y="18" width="44" height="30" rx="4" fill="#fff" stroke="#2c2c2a" stroke-width="3"/><path d="M10 20 L32 36 L54 20" fill="none" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><circle cx="46" cy="44" r="7" fill="#ffe27a" stroke="#2c2c2a" stroke-width="2.6"/></symbol>
+ <symbol id="i-moon" viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="#ffc233" stroke="#2c2c2a" stroke-width="3"/><circle cx="42" cy="24" r="4" fill="#e9a800"/><circle cx="22" cy="42" r="3" fill="#e9a800"/><path d="M24 32 h5 M35 32 h5" stroke="#2c2c2a" stroke-width="3" stroke-linecap="round"/><path d="M29 38 q3 3 6 0" fill="none" stroke="#2c2c2a" stroke-width="2.4" stroke-linecap="round"/></symbol>
+ <symbol id="i-foot" viewBox="0 0 64 64"><path d="M8 50 h48" stroke="#7fa63d" stroke-width="4" stroke-linecap="round"/><g fill="#ffe27a" stroke="#2c2c2a" stroke-width="2.6"><ellipse cx="18" cy="44" rx="6" ry="4"/><ellipse cx="32" cy="38" rx="6" ry="4"/><ellipse cx="46" cy="44" rx="6" ry="4"/></g><circle cx="46" cy="22" r="9" fill="#fff3b0" opacity=".8"/><circle cx="46" cy="22" r="4" fill="#ffe27a" stroke="#2c2c2a" stroke-width="2.4"/></symbol>
+</defs></svg>
+<div class="page">
+<h1>這種小圖示是怎麼畫的？</h1>
+<p class="sub">你截圖的那些（吐司、瑜伽繩、徽章、聳肩怪）是三明治鎮裡我用程式畫的小圖。規則只有五條，照同樣規則畫了螢火蟲＋晚上要用的圖示：</p>
+<div class="rule">
+ <div><b>① 小格子</b>每張圖都畫在 64×64 的小方格裡，所以東西一定簡單。</div>
+ <div><b>② 同一種黑線</b>外框一律深灰 #2c2c2a、粗 3，轉角是圓的。</div>
+ <div><b>③ 顏色少</b>一張圖 2–4 個顏色，用品牌色票：黃、番茄紅、生菜綠、奶油。</div>
+ <div><b>④ 一個亮點</b>只加一個白色小圓點當反光，就有立體感。</div>
+ <div><b>⑤ 鎖住＝灰</b>還沒拿到的，同一張圖換成淺灰、虛線。</div>
+</div>
+<div class="grid">
+ <div class="t"><svg viewBox="0 0 64 64"><use href="#f-happy"/></svg>咪咪眼</div>
+ <div class="t"><svg viewBox="0 0 64 64"><use href="#f-calm"/></svg>安心</div>
+ <div class="t"><svg viewBox="0 0 64 64"><use href="#f-tired"/></svg>起霧了</div>
+ <div class="t dk"><svg viewBox="0 0 64 64"><use href="#f-full"/></svg>整隻（夜晚）</div>
+ <div class="t"><svg viewBox="0 0 64 64"><use href="#i-light"/></svg>找到的光</div>
+ <div class="t"><svg viewBox="0 0 64 64"><use href="#i-light-off"/></svg>還沒找到</div>
+ <div class="t"><svg viewBox="0 0 64 64"><use href="#i-weather"/></svg>看看天色</div>
+ <div class="t"><svg viewBox="0 0 64 64"><use href="#i-boat"/></svg>紙船（寫下的話）</div>
+ <div class="t dk"><svg viewBox="0 0 64 64"><use href="#i-lamp"/></svg>路上的燈</div>
+ <div class="t"><svg viewBox="0 0 64 64"><use href="#i-letter"/></svg>寄給有一天</div>
+ <div class="t dk"><svg viewBox="0 0 64 64"><use href="#i-moon"/></svg>起司月亮</div>
+ <div class="t"><svg viewBox="0 0 64 64"><use href="#i-foot"/></svg>落地・腳步</div>
+</div>
+<div class="big">
+ <div class="t"><svg viewBox="0 0 64 64"><use href="#f-happy"/></svg>放大看</div>
+ <div class="t dk"><svg viewBox="0 0 64 64"><use href="#f-full"/></svg>放大看（夜晚）</div>
+ <p class="sub" style="margin:0;max-width:560px">同一隻螢火蟲：深藍頭、奶油臉、大耳朵（內側發光）、咪咪眼、青綠圍巾、尾巴黃光。<br>小圖跟遊戲裡的吐司、徽章同一套規則，放在地圖、貼紙簿、按鈕上都不會突兀。</p>
+</div>
+</div></body></html>
