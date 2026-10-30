@@ -44,6 +44,20 @@
       "icon": "sandwich"
     },
     {
+      "id": "glow",
+      "icon": "firefly",
+      "emoji": "",
+      "theme": "night",
+      "zh": "微光螢火蟲・發現去！",
+      "en": "Little Firefly, Off to Discover",
+      "status": "hidden",
+      "href": "/glow/",
+      "desc": {
+        "zh": "發現，就是創造。越發現自己，越踏實。",
+        "en": "To discover is to create. The more you find yourself, the steadier you stand."
+      }
+    },
+    {
       "id": "mom",
       "emoji": "🙃",
       "zh": "我熱愛當媽",

@@ -53,6 +53,9 @@ a.game.soon,div.game.soon{background:var(--soft);border-style:dashed;box-shadow:
 .zone small{font-family:Poppins,sans-serif;font-weight:500;opacity:.9;margin-left:4px}
 .zone.soon{background:#fff;color:var(--stone);border:1px dashed var(--stone)}
 .g>.soonpill{display:table;font-size:12px;font-weight:700;padding:1px 8px;border-radius:99px;border:1px dashed var(--stone);color:var(--stone);margin-top:6px}
+.game.night{background:linear-gradient(135deg,#232a4d,#3a4580);color:#f5f1e8}
+.game.night .g b{color:#f5f1e8}.game.night .g>span,.game.night .en{color:#c9c6d8}
+.game.night .ic{background:rgba(255,255,255,.08)}
 </style>
 </head>
 <body>
@@ -77,6 +80,7 @@ a.game.soon,div.game.soon{background:var(--soft);border-style:dashed;box-shadow:
 <script>
 (function(){
   var SW='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 52 L10 26 C4 24 4 12 16 10 C24 4 40 4 48 10 C60 12 60 24 54 26 L54 52 Z" fill="#e8b46a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><path d="M14 30 q6 -5 12 0 t12 0 t12 0 L50 36 L14 36Z" fill="#7fa63d" stroke="#2c2c2a" stroke-width="2.5"/><rect x="14" y="38" width="36" height="7" rx="3" fill="#d7263d" stroke="#2c2c2a" stroke-width="2.5"/></svg>';
+  var FF='<svg viewBox="0 0 80 80" aria-hidden="true"><defs><radialGradient id="hh"><stop offset="0" stop-color="#fffbe2"/><stop offset=".4" stop-color="#ffeb94" stop-opacity=".8"/><stop offset="1" stop-color="#ffe27a" stop-opacity="0"/></radialGradient></defs><circle cx="50" cy="60" r="28" fill="url(#hh)"/><ellipse cx="18" cy="48" rx="12" ry="7" transform="rotate(-30 18 48)" fill="#e3ecfa" stroke="#2c2c2a" stroke-width="2.4"/><ellipse cx="62" cy="46" rx="12" ry="7" transform="rotate(30 62 46)" fill="#e3ecfa" stroke="#2c2c2a" stroke-width="2.4"/><circle cx="50" cy="62" r="11" fill="#ffe27a" stroke="#2c2c2a" stroke-width="3"/><circle cx="47" cy="59" r="3" fill="#fff"/><g transform="translate(5 -4) scale(.82)"><path d="M19 22 C12 12 10 4 14 3 C18 2 23 12 25 19 Z" fill="#353a5a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><path d="M45 22 C52 12 54 4 50 3 C46 2 41 12 39 19 Z" fill="#353a5a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><path d="M19 18 C15 12 14 8 15.5 7 C17 7 20 12 21.5 16 Z" fill="#ffe27a"/><path d="M45 18 C49 12 50 8 48.5 7 C47 7 44 12 42.5 16 Z" fill="#ffe27a"/><circle cx="32" cy="34" r="20" fill="#353a5a" stroke="#2c2c2a" stroke-width="3"/><path d="M15.5 38 C15 28 22 25 32 25 C42 25 49 28 48.5 38 C48 47 16 47 15.5 38 Z" fill="#fbe7cf"/><ellipse cx="21" cy="40" rx="3" ry="2" fill="#f4a3a0"/><ellipse cx="43" cy="40" rx="3" ry="2" fill="#f4a3a0"/><path d="M22 35 h7 M35 35 h7" stroke="#2c2c2a" stroke-width="3" stroke-linecap="round"/><path d="M28 40 q4 4 8 0" fill="none" stroke="#2c2c2a" stroke-width="2.6" stroke-linecap="round"/></g><path d="M20 40 q12 6 24 0" stroke="#4f8f8c" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>';
   var esc=function(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
   var bi=function(o){return o?esc(o.zh)+'<span class="en">'+esc(o.en)+'</span>':''};
   fetch('/content/site.json',{cache:'no-cache'}).then(function(r){return r.json()}).then(function(d){
@@ -90,11 +94,11 @@ a.game.soon,div.game.soon{background:var(--soft);border-style:dashed;box-shadow:
       var open=s.status==='open'&&s.href;
       var zones=(s.zones||[]).map(function(z){
         return '<span class="zone'+(z.status==='open'?'':' soon')+'">'+esc(z.zh)+'<small>'+esc(z.en)+'</small></span>'}).join('');
-      var inner='<span class="ic">'+(s.icon==='sandwich'?SW:'<span class="emo">'+esc(s.icon||s.emoji)+'</span>')+'</span><span class="g"><b>'+esc(s.zh)+esc(s.emoji)+'</b><span class="en">'+esc(s.en)+'</span>'
+      var inner='<span class="ic">'+(s.icon==='sandwich'?SW:s.icon==='firefly'?FF:'<span class="emo">'+esc(s.icon||s.emoji)+'</span>')+'</span><span class="g"><b>'+esc(s.zh)+esc(s.emoji)+'</b><span class="en">'+esc(s.en)+'</span>'
         +(s.desc?'<span>'+bi(s.desc)+'</span>':'')
         +(zones?'<span class="zones">'+zones+'</span>':'')
         +(open?'':'<span class="soonpill">即將開放 · Coming soon</span>')+'</span>';
-      return open?'<a class="game'+(i===0?' main':'')+'" href="'+esc(s.href)+'">'+inner+'</a>'
+      return open?'<a class="game'+(i===0?' main':'')+(s.theme==='night'?' night':'')+'" href="'+esc(s.href)+'">'+inner+'</a>'
                  :'<div class="game soon" aria-disabled="true">'+inner+'</div>';
     }).join('');
     document.getElementById('series').innerHTML=html;

@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>微光螢火蟲・發現去！｜三明治鎮</title>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Poppins:wght@500;600;700&display=swap">
+<style>
+/* 晚上的「微光螢火蟲」：溫暖、不打分數、不診斷。所有輸入只留在這台手機的畫面上，不上傳。 */
+:root{--night:#232a4d;--night2:#2f3866;--ink:#2c2c2a;--paper:#f5f1e8;--muted:#c9c6d8;--glow:#ffe27a;--yellow:#ffc233;--cream:#fbe7cf;--teal:#4f8f8c;--line:rgba(255,255,255,.14);color-scheme:dark}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--night);color:var(--paper)}
+body{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.7;min-height:100vh;
+  background:radial-gradient(120% 70% at 80% 0%,#3a4580 0%,var(--night) 55%,#1b2140 100%)}
+.wrap{max-width:520px;margin:0 auto;padding:14px 16px 40px;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;justify-content:space-between;align-items:center}
+.home{color:var(--paper);text-decoration:none;font-weight:700;font-size:13px;border:2px solid var(--line);border-radius:99px;padding:3px 12px}
+.lights{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+.lights i{width:14px;height:14px;border-radius:50%;border:2px dashed #6b7199;display:inline-block}
+.lights i.on{border:2px solid #fff;background:var(--glow);box-shadow:0 0 10px 3px rgba(255,226,122,.6)}
+.en{display:block;font-family:Poppins,"Noto Sans TC",sans-serif;font-size:.62em;font-weight:500;color:var(--muted);letter-spacing:.01em;margin-top:2px}
+h1{margin:0;font-size:28px;font-weight:900;line-height:1.25}
+h2{margin:0;font-size:22px;font-weight:900;line-height:1.3}
+.kicker{margin:0;font-family:Poppins,sans-serif;font-size:12px;letter-spacing:.16em;color:var(--glow);text-transform:uppercase}
+p{margin:0}
+.lead{font-size:16px;color:#e8e4f2}
+.say{background:rgba(255,255,255,.08);border-radius:16px;padding:12px 14px;font-size:16px}
+.scene{position:relative;height:230px;border-radius:24px;overflow:hidden;background:linear-gradient(180deg,#1d2445,#2f3866)}
+.scene svg{position:absolute;inset:0;width:100%;height:100%}
+.scene svg.ff{overflow:visible;position:absolute;inset:auto;left:50%;top:44%;width:150px;height:150px;transform:translate(-50%,-50%);transition:top .9s ease}
+.scene svg.ff.land{top:60%}
+.halo{transform-origin:40px 50px;animation:pulse 2.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.75}50%{opacity:1}}
+@keyframes bob{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,-56%)}}
+.scene svg.ff.fly{animation:bob 3s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.halo,.scene svg.ff.fly{animation:none}.scene svg.ff{transition:none}}
+button{font:inherit;cursor:pointer}
+.primary{background:var(--yellow);color:var(--ink);border:3px solid var(--ink);border-radius:18px;padding:12px 16px;font-weight:900;font-size:18px;box-shadow:0 4px 0 #11152b;width:100%}
+.primary:active{transform:translateY(3px);box-shadow:0 1px 0 #11152b}
+.ghost{background:transparent;color:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-weight:700;width:100%}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;font-size:14px;padding:4px;align-self:center}
+.row{display:flex;gap:10px}
+.wx{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.wx button{background:rgba(255,255,255,.08);border:2px solid transparent;border-radius:14px;color:var(--paper);padding:8px 2px;font-size:13px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px}
+.wx button svg{width:40px;height:40px}
+.wx button.sel{border-color:var(--glow);background:rgba(255,226,122,.16)}
+.fill{display:flex;flex-direction:column;gap:10px}
+.fill label{font-size:15px;font-weight:700;display:flex;flex-direction:column;gap:4px}
+.fill input,textarea{font:inherit;color:var(--ink);background:var(--paper);border:0;border-radius:12px;padding:10px 12px;font-size:16px}
+textarea{min-height:130px;resize:vertical;width:100%}
+.note{font-size:13px;color:var(--muted)}
+.lamp{display:flex;gap:12px;align-items:flex-start;background:rgba(255,255,255,.06);border-radius:16px;padding:12px;border:2px solid transparent;text-align:left;color:var(--paper);width:100%}
+.lamp svg{flex:none;width:44px;height:44px;opacity:.45;transition:opacity .4s}
+.lamp.on{border-color:rgba(255,226,122,.5)}
+.lamp.on svg{opacity:1}
+.lamp .txt{font-size:15px}
+.lamp .txt b{display:block;font-size:16px}
+.lamp .story{display:none;margin-top:6px;color:#efeaf8}
+.lamp.on .story{display:block}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{background:rgba(255,255,255,.08);border:2px solid var(--line);color:var(--paper);border-radius:99px;padding:6px 12px;font-size:14px;font-weight:700}
+.chips button.sel{background:var(--glow);color:var(--ink);border-color:var(--glow)}
+.card{background:var(--paper);color:var(--ink);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:6px;border:3px solid var(--ink);box-shadow:0 5px 0 #11152b}
+.card small{color:#6a6a66;font-size:13px}
+.card b{font-size:20px}
+.foot{font-size:12px;color:var(--muted);text-align:center;line-height:1.6}
+.foot a{color:var(--glow)}
+.boat{animation:sail 2.4s ease-in forwards}
+@keyframes sail{to{transform:translate(160px,-10px) rotate(4deg);opacity:0}}
+.orb{animation:rise 2.4s ease-in forwards}
+@keyframes rise{to{transform:translateY(-140px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.boat,.orb{animation:none;opacity:0}}
+.cta{display:block;text-align:center;text-decoration:none}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+ <radialGradient id="hal"><stop offset="0" stop-color="#fffbe2"/><stop offset=".35" stop-color="#ffeb94" stop-opacity=".8"/><stop offset="1" stop-color="#ffe27a" stop-opacity="0"/></radialGradient>
+ <symbol id="ears" viewBox="0 0 64 64">
+  <path d="M19 22 C12 12 10 4 14 3 C18 2 23 12 25 19 Z" fill="#353a5a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M45 22 C52 12 54 4 50 3 C46 2 41 12 39 19 Z" fill="#353a5a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M19 18 C15 12 14 8 15.5 7 C17 7 20 12 21.5 16 Z" fill="#ffe27a"/><path d="M45 18 C49 12 50 8 48.5 7 C47 7 44 12 42.5 16 Z" fill="#ffe27a"/>
+ </symbol>
+ <symbol id="head" viewBox="0 0 64 64"><use href="#ears"/>
+  <circle cx="32" cy="34" r="20" fill="#353a5a" stroke="#2c2c2a" stroke-width="3"/>
+  <path d="M15.5 38 C15 28 22 25 32 25 C42 25 49 28 48.5 38 C48 47 16 47 15.5 38 Z" fill="#fbe7cf"/>
+  <ellipse cx="21" cy="40" rx="3" ry="2" fill="#f4a3a0"/><ellipse cx="43" cy="40" rx="3" ry="2" fill="#f4a3a0"/></symbol>
+ <symbol id="sun" viewBox="0 0 64 64"><circle cx="32" cy="32" r="12" fill="#ffc233" stroke="#2c2c2a" stroke-width="3"/><path d="M32 8 v7 M32 49 v7 M8 32 h7 M49 32 h7 M15 15 l5 5 M44 44 l5 5 M49 15 l-5 5 M20 44 l-5 5" stroke="#ffc233" stroke-width="3.5" stroke-linecap="round"/></symbol>
+ <symbol id="cloud" viewBox="0 0 64 64"><path d="M16 46 C6 46 6 32 17 32 C18 22 34 20 38 29 C48 27 54 38 47 46 Z" fill="#d7dbe6" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/></symbol>
+ <symbol id="rain" viewBox="0 0 64 64"><use href="#cloud" y="-6"/><path d="M22 48 l-3 8 M32 48 l-3 8 M42 48 l-3 8" stroke="#7fb2e0" stroke-width="3.5" stroke-linecap="round"/></symbol>
+ <symbol id="fog" viewBox="0 0 64 64"><path d="M10 24 h36 M16 34 h40 M8 44 h34 M20 54 h30" stroke="#d7dbe6" stroke-width="5" stroke-linecap="round"/></symbol>
+ <symbol id="dots" viewBox="0 0 64 64"><circle cx="18" cy="34" r="4.5" fill="#d7dbe6"/><circle cx="32" cy="34" r="4.5" fill="#d7dbe6"/><circle cx="46" cy="34" r="4.5" fill="#d7dbe6"/></symbol>
+ <symbol id="lampI" viewBox="0 0 64 64"><circle cx="32" cy="22" r="18" fill="url(#hal)"/><path d="M24 14 h16 l4 14 h-24 Z" fill="#ffe27a" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><path d="M32 28 v26 M24 56 h16" stroke="#e8e4f2" stroke-width="3.5" stroke-linecap="round"/></symbol>
+</defs></svg>
+
+<main class="wrap">
+  <div class="top"><a class="home" href="/">🏠 回首頁</a><span class="lights" id="lights" aria-label="找到的光"></span></div>
+  <div class="scene" id="scene" aria-hidden="true">
+    <svg viewBox="0 0 400 230" preserveAspectRatio="xMidYMid slice">
+      <g fill="#ffe27a" opacity=".8"><circle cx="40" cy="30" r="1.6"/><circle cx="120" cy="18" r="1.2"/><circle cx="210" cy="40" r="1.8"/><circle cx="260" cy="16" r="1.2"/><circle cx="90" cy="70" r="1.2"/></g>
+      <g id="moon"><circle cx="338" cy="50" r="40" fill="url(#hal)"/><circle cx="338" cy="50" r="24" fill="#ffc233" stroke="#2c2c2a" stroke-width="3"/><circle cx="347" cy="42" r="3.5" fill="#e9a800"/><circle cx="328" cy="60" r="2.6" fill="#e9a800"/><path d="M330 50 h5 M341 50 h5" stroke="#2c2c2a" stroke-width="2.6" stroke-linecap="round"/><path d="M335 56 q3 3 6 0" fill="none" stroke="#2c2c2a" stroke-width="2.2" stroke-linecap="round"/></g>
+      <g id="fogL" opacity="0"><ellipse cx="80" cy="170" rx="140" ry="22" fill="#cfd3e2" opacity=".35"/><ellipse cx="300" cy="185" rx="160" ry="24" fill="#cfd3e2" opacity=".3"/></g>
+      <path d="M0 230 V196 H40 V180 H80 V200 H120 V186 L138 172 L156 186 V204 H200 V184 H250 V198 H290 V178 H330 V200 H400 V230Z" fill="#141831"/>
+      <g id="wins" fill="#ffe27a"></g>
+      <path d="M0 230 C80 214 200 220 400 212 V230Z" fill="#2f4a3a"/>
+    </svg>
+    <svg class="ff fly" id="ff" viewBox="0 0 80 80">
+      <circle class="halo" id="halo" cx="50" cy="60" r="30" fill="url(#hal)" opacity=".7"/>
+      <ellipse cx="18" cy="48" rx="12" ry="7" transform="rotate(-30 18 48)" fill="#e3ecfa" fill-opacity=".9" stroke="#2c2c2a" stroke-width="2.4"/>
+      <ellipse cx="62" cy="46" rx="12" ry="7" transform="rotate(30 62 46)" fill="#e3ecfa" fill-opacity=".9" stroke="#2c2c2a" stroke-width="2.4"/>
+      <circle cx="50" cy="62" r="11" fill="#ffe27a" stroke="#2c2c2a" stroke-width="3"/><circle cx="47" cy="59" r="3" fill="#fff"/>
+      <g transform="translate(5 -4) scale(.82)"><use href="#head"/><g id="face"></g></g>
+      <path d="M20 40 q12 6 24 0" stroke="#4f8f8c" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <section id="view" aria-live="polite"></section>
+
+  <p class="foot">這不是心理測驗，也不是治療，不會判斷你的感受對錯。<br>你寫的字只在這個畫面上，不會上傳、也不會存下來。<br>如果你現在很難受，可以打 <a href="tel:1925">1925 安心專線</a>（24 小時）。</p>
+</main>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const IG={handle:'sandywich.su',url:'https://www.instagram.com/sandywich.su/'};
+const KEY='sandywich.glow'; // 只存「明天的小決定」和日期，給白天的三明治鎮用
+const FACES={
+  slit:'<path d="M22 35 h7 M35 35 h7" stroke="#2c2c2a" stroke-width="3" stroke-linecap="round"/><path d="M28 40 q4 4 8 0" fill="none" stroke="#2c2c2a" stroke-width="2.6" stroke-linecap="round"/>',
+  calm:'<path d="M22 35 q3.5 3 7 0 M35 35 q3.5 3 7 0" fill="none" stroke="#2c2c2a" stroke-width="2.6" stroke-linecap="round"/><path d="M29 41 q3 2 6 0" fill="none" stroke="#2c2c2a" stroke-width="2.4" stroke-linecap="round"/>',
+  tired:'<path d="M22 36 h7 M35 36 h7" stroke="#2c2c2a" stroke-width="3" stroke-linecap="round"/><path d="M29 42 q3 -2 6 0" fill="none" stroke="#2c2c2a" stroke-width="2.4" stroke-linecap="round"/>',
+  open:'<ellipse cx="25" cy="35" rx="2.6" ry="3.2" fill="#2c2c2a"/><ellipse cx="39" cy="35" rx="2.6" ry="3.2" fill="#2c2c2a"/><path d="M28 40 q4 4 8 0" fill="none" stroke="#2c2c2a" stroke-width="2.6" stroke-linecap="round"/>'
+};
+let found=0;const TOTAL=5;
+function setFace(k){$('face').innerHTML=FACES[k]||FACES.slit;}
+function setLights(){$('lights').innerHTML='找到的光 '+Array.from({length:TOTAL},(_,i)=>`<i class="${i<found?'on':''}"></i>`).join('');
+  $('halo').setAttribute('r',30+found*6);$('halo').setAttribute('opacity',(.55+found*.09).toFixed(2));}
+function light(){found=Math.min(TOTAL,found+1);setLights();}
+function fog(on){$('fogL').setAttribute('opacity',on?1:0);}
+function view(html){$('view').innerHTML=html;$('view').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>STEPS[b.dataset.go]());window.scrollTo({top:0,behavior:'smooth'});}
+const later='<button class="link" data-go="bye">今天先到這裡</button>';
+
+const WX=[
+ ['sun','晴','今天有光照進來。記得這種感覺就好，不用每天都晴天。','open'],
+ ['cloud','陰','今天不太明朗，也不代表你做錯了什麼。','calm'],
+ ['rain','雨','下雨的日子，先找個屋簷躲一下。雨會停的。','tired'],
+ ['fog','霧','起霧了，看不清楚也沒關係。螢火蟲先陪你坐一下，不用急著讓霧散開。','tired'],
+ ['dots','說不出來','說不出來，也是一種回答。我們慢慢飛，不急。','calm']];
+const LAMPS=[
+ ['一句話','有人跟我說：「你不用一次想清楚，先走一步就好。」那天之後，我開始允許自己慢慢來。'],
+ ['被聽見的那天','被理解的那一刻，不是因為對方給了答案，而是他願意把我的話聽完。'],
+ ['留下來的溫柔','有些人陪我走了一段，就分開了。可是那段路上學會的溫柔，還留在我身上。']];
+const SMALL=['早一點睡','喝一杯溫水','走路 10 分鐘','做 3 次慢慢的吐氣','跟自己說一句好話','傳訊息給一個想念的人','整理一個小角落'];
+
+const STEPS={
+ start(){fog(false);setFace('slit');$('ff').classList.add('fly');$('ff').classList.remove('land');
+  view(`<p class="kicker">Night · 三明治鎮的晚上</p>
+   <h1>微光螢火蟲・發現去！<span class="en">Little Firefly, Off to Discover</span></h1>
+   <p class="lead">天黑了，你的尾巴亮著一點點微光。不亮，但夠照亮腳邊。</p>
+   <p class="say">今晚沿路有五道光：先<b>發現</b>，再<b>落地</b>。<br>發現，就是創造。越發現自己，越踏實。</p>
+   <button class="primary" data-go="weather">出發 · Let's go</button>
+   <p class="note" style="text-align:center">大約 3–5 分鐘。可以在任何地方停下來。</p>`);},
+ weather(){
+  view(`<p class="kicker">第一道光 · 看看天色</p>
+   <h2>今天，你心裡有什麼？<span class="en">What's the weather inside today?</span></h2>
+   <p class="lead">有時候，我們知道自己不好受，卻不知道該怎麼說。不用急著找出答案，先從一個感覺開始就好。</p>
+   <div class="wx">${WX.map((w,i)=>`<button data-i="${i}"><svg viewBox="0 0 64 64"><use href="#${w[0]}"/></svg>${w[1]}</button>`).join('')}</div>
+   <div id="wxr"></div>${later}`);
+  $('view').querySelectorAll('.wx button').forEach(b=>b.onclick=()=>{
+    $('view').querySelectorAll('.wx button').forEach(x=>x.classList.toggle('sel',x===b));
+    const w=WX[+b.dataset.i];setFace(w[3]);fog(w[0]==='fog'||w[0]==='rain');
+    $('wxr').innerHTML=`<p class="say">${w[2]}</p><div style="height:10px"></div><button class="primary" id="nx1">收下第一道光</button>`;
+    $('nx1').onclick=()=>{light();STEPS.name();};});},
+ name(){setFace('calm');
+  view(`<p class="kicker">第二道光 · 替霧取個名字</p>
+   <h2>替感受找一句話<span class="en">Find words for the feeling</span></h2>
+   <p class="lead">想寫幾句就寫幾句，空著也可以。寫完會摺成一艘紙船，只有你看得到。</p>
+   <div class="fill">
+    <label>我其實很在意的是<input maxlength="80" placeholder="……"></label>
+    <label>我沒有說出口的感覺是<input maxlength="80" placeholder="……"></label>
+    <label>如果不用急著解決，我想先承認<input maxlength="80" placeholder="……"></label>
+    <label>此刻的我，最需要的是<input maxlength="80" placeholder="……"></label>
+   </div>
+   <button class="primary" id="fold">摺成紙船，放進池塘</button>${later}`);
+  $('fold').onclick=()=>{
+    $('view').innerHTML=`<div style="position:relative;height:120px"><svg class="boat" viewBox="0 0 64 64" style="position:absolute;left:30%;top:20px;width:90px;height:90px"><path d="M10 38 L54 38 L46 50 L18 50 Z" fill="#f5f1e8" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/><path d="M32 12 L32 38 L48 32 Z" fill="#fbe7cf" stroke="#2c2c2a" stroke-width="3" stroke-linejoin="round"/></svg></div>
+      <p class="say">紙船慢慢漂走了。那些話，你已經發現了。</p><button class="primary" id="nx2">收下第二道光</button>`;
+    $('nx2').onclick=()=>{light();STEPS.lamps();};};},
+ lamps(){setFace('open');fog(false);let lit=0;
+  view(`<p class="kicker">第三道光 · 路上的燈</p>
+   <h2>那些曾經照亮我的<span class="en">The lights that once lit my way</span></h2>
+   <p class="lead">飛過每一盞路燈，點一下，讀一個小故事。</p>
+   ${LAMPS.map((l,i)=>`<button class="lamp" data-i="${i}"><svg viewBox="0 0 64 64"><use href="#lampI"/></svg><span class="txt"><b>${l[0]}</b><span class="story">${l[1]}</span></span></button>`).join('')}
+   <p class="note">（示範文字，之後換成 Sandy 寫的短篇）</p>
+   <button class="primary" id="nx3" disabled style="opacity:.5">點亮一盞燈就可以往前</button>${later}`);
+  $('view').querySelectorAll('.lamp').forEach(b=>b.onclick=()=>{if(!b.classList.contains('on')){b.classList.add('on');lit++;}
+    const n=$('nx3');n.disabled=false;n.style.opacity=1;n.textContent='收下第三道光';});
+  $('nx3').onclick=()=>{light();STEPS.letter();};},
+ letter(){setFace('calm');
+  view(`<p class="kicker">第四道光 · 寄給有一天</p>
+   <h2>寫給有一天的我們<span class="en">To someday, to us</span></h2>
+   <p class="lead">寫給未來的自己，或曾經陪你走過一段路的人。不用寄出，也不需要回覆。</p>
+   <textarea id="ltr" maxlength="600" placeholder="如果有一天再相遇，希望那時的我……"></textarea>
+   <button class="primary" id="send">放進小光球，輕輕放走</button>${later}`);
+  $('send').onclick=()=>{
+    $('view').innerHTML=`<div style="position:relative;height:150px"><svg class="orb" viewBox="0 0 64 64" style="position:absolute;left:calc(50% - 45px);top:50px;width:90px;height:90px"><circle cx="32" cy="32" r="28" fill="url(#hal)"/><circle cx="32" cy="32" r="12" fill="#ffe27a" stroke="#2c2c2a" stroke-width="3"/></svg></div>
+      <p class="say">光球飛向起司月亮了。<br>信的最後一行是：<b>有光的地方見。</b></p><button class="primary" id="nx4">收下第四道光</button>`;
+    $('nx4').onclick=()=>{light();STEPS.land();};};},
+ land(){setFace('slit');$('ff').classList.remove('fly');$('ff').classList.add('land');
+  view(`<p class="kicker">第五道光 · 落地</p>
+   <h2>帶一個小決定回去<span class="en">Land, and bring one small choice home</span></h2>
+   <p class="lead">發現了自己，也要回到生活裡。選一個明天做得到的小事，或自己寫一個。</p>
+   <div class="chips">${SMALL.map(s=>`<button>${s}</button>`).join('')}</div>
+   <label class="fill" style="display:block"><input id="own" maxlength="40" placeholder="或寫下你自己的…" style="width:100%"></label>
+   <button class="primary" id="keep">就這個，落地！</button>${later}`);
+  let pick='';
+  $('view').querySelectorAll('.chips button').forEach(b=>b.onclick=()=>{pick=b.textContent;$('own').value='';$('view').querySelectorAll('.chips button').forEach(x=>x.classList.toggle('sel',x===b));});
+  $('own').oninput=()=>{pick='';$('view').querySelectorAll('.chips button').forEach(x=>x.classList.remove('sel'));};
+  $('keep').onclick=()=>{const d=($('own').value||pick||'').trim();if(!d){$('own').placeholder='選一個，或寫一個小小的就好';$('own').focus();return;}
+    try{localStorage.setItem(KEY,JSON.stringify({decision:d,date:new Date().toISOString().slice(0,10)}));}catch(_){}
+    light();STEPS.end(d);};},
+ end(d){setFace('calm');fog(false);
+  $('wins').innerHTML='<rect x="56" y="188" width="8" height="8"/><rect x="214" y="192" width="8" height="8"/><rect x="306" y="188" width="8" height="8"/><rect x="132" y="190" width="7" height="7"/>';
+  view(`<p class="kicker">天快亮了</p>
+   <h2>今晚找到 ${found} 道光<span class="en">${found} lights found tonight</span></h2>
+   ${d?`<div class="card"><small>明天的小決定</small><b>${d.replace(/[<>&]/g,'')}</b><small>發現了，就去做做看。這就是你今天的創作。</small></div>`:''}
+   <p class="say">池塘邊，別的螢火蟲也亮著。大家的微光聚在一起。<br>天亮了，帶著光回到三明治鎮。</p>
+   <h2 style="text-align:center;color:var(--glow)">有光的地方見 👋<span class="en">See you where the light is.</span></h2>
+   <a class="primary cta" href="${IG.url}" target="_blank" rel="noopener">追蹤 @${IG.handle}，一起慢慢發光</a>
+   <div class="row"><a class="ghost cta" href="/town">去三明治鎮</a><button class="ghost" data-go="start">再飛一次</button></div>`);},
+ bye(){fog(false);setFace('calm');STEPS.end2();},
+ end2(){
+  view(`<h2>今天就到這裡，也很好。<span class="en">Stopping here is okay too.</span></h2>
+   <p class="say">你今晚找到了 ${found} 道光。發現一點點，也是發現。</p>
+   <h2 style="text-align:center;color:var(--glow)">有光的地方見 👋<span class="en">See you where the light is.</span></h2>
+   <a class="primary cta" href="${IG.url}" target="_blank" rel="noopener">追蹤 @${IG.handle}，一起慢慢發光</a>
+   <div class="row"><a class="ghost cta" href="/">回首頁</a><button class="ghost" data-go="start">再飛一次</button></div>`);}
+};
+setLights();STEPS.start();
+window.__glow={STEPS,get found(){return found}};
+})();
+</script>
+</body>
+</html>
