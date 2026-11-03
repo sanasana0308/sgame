@@ -15,93 +15,112 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Poppins:wght@500;600;700&display=swap">
 <style>
-:root{--yellow:#ffc233;--tomato:#d7263d;--lettuce:#7fa63d;--ink:#2c2c2a;--stone:#888780;--cream:#efeae3;--soft:#f7f3ee;--yellow-soft:#fff1cc;--white:#fff;color-scheme:light}
+/* 排版原則：同一條左邊線對齊、間距只用 8／16／24、一頁只有一顆主要按鈕（黃色），其他按鈕用白底外框、字級只用 3 種。 */
+:root{--yellow:#ffc233;--tomato:#d7263d;--lettuce:#7fa63d;--ink:#2c2c2a;--stone:#888780;--cream:#efeae3;--soft:#f7f3ee;--white:#fff;--body:#4a4a47;color-scheme:light}
 [hidden]{display:none!important}
 *{box-sizing:border-box}
 html,body{background:var(--cream);margin:0}
 body{color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.6}
+p{margin:0;text-wrap:pretty}
 .ribbon{height:20px;background:linear-gradient(90deg,var(--yellow) 0 32%,var(--tomato) 32% 57%,var(--ink) 57% 80%,var(--lettuce) 80% 100%);
   -webkit-mask:radial-gradient(circle 7px at 50% 100%,transparent 6.5px,#000 7.5px) 0 0/20px 100% repeat-x;mask:radial-gradient(circle 7px at 50% 100%,transparent 6.5px,#000 7.5px) 0 0/20px 100% repeat-x}
-.wrap{max-width:520px;margin:0 auto;padding:14px 16px 32px;display:flex;flex-direction:column;gap:16px}
-.en{display:block;font-family:Poppins,"Noto Sans TC",sans-serif;font-weight:500;font-size:.8em;color:var(--stone);line-height:1.4}
-/* 主視覺 */
-.hero{background:var(--white);border:3px solid var(--ink);border-radius:28px;box-shadow:0 6px 0 var(--ink);padding:18px 18px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;position:relative;overflow:hidden}
-.kicker{margin:0;font-family:Poppins,sans-serif;font-size:11px;letter-spacing:.2em;color:var(--stone);text-transform:uppercase}
-h1{margin:0;font-size:40px;font-weight:900;line-height:1.1}
-h1 .en{font-size:15px;font-weight:600;color:var(--ink);margin-top:4px}
-.hsub{margin:4px 0 0;font-size:17px;font-weight:900;color:var(--tomato)}
-.hsub .en{font-size:12px;color:var(--tomato);opacity:.8}
-.mon{position:relative;width:190px;height:170px;margin:6px 0 0}
-.mon svg{width:170px;height:170px;position:absolute;left:10px;top:12px;animation:bob 2.8s ease-in-out infinite}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.wrap{max-width:480px;margin:0 auto;padding:16px 16px 32px;display:flex;flex-direction:column;gap:16px}
+.en{display:block;font-family:Poppins,"Noto Sans TC",sans-serif;font-weight:500;color:var(--stone);line-height:1.45}
+/* 1. 標題區（不加框） */
+.head{display:flex;flex-direction:column;gap:2px;padding:8px 0 0}
+.kicker{font-family:Poppins,sans-serif;font-size:12px;letter-spacing:.22em;color:var(--stone)}
+h1{margin:0;font-size:44px;font-weight:900;line-height:1.1}
+.hsub{font-size:18px;font-weight:900;color:var(--tomato)}
+.hsub .en{font-size:12px;color:var(--tomato);opacity:.75}
+/* 2. 遊戲卡（白框） */
+.card{background:var(--white);border:3px solid var(--ink);border-radius:24px;box-shadow:0 6px 0 var(--ink);padding:16px;display:flex;flex-direction:column;gap:16px}
+.top{display:grid;grid-template-columns:1fr 132px;gap:8px;align-items:center}
+.alert{justify-self:start;font-size:13px;font-weight:900;color:var(--white);background:var(--tomato);border-radius:99px;padding:2px 12px}
+.ctitle{font-size:18px;font-weight:900;line-height:1.35;margin-top:8px}
+.cdesc{font-size:13px;color:var(--body);margin-top:4px;line-height:1.6}
+.cdesc .en{font-size:11px;margin-top:2px}
+.mon{position:relative;width:132px;height:132px}
+.mon svg{position:absolute;left:6px;bottom:0;width:120px;height:120px;animation:bob 2.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 @media (prefers-reduced-motion:reduce){.mon svg{animation:none}}
-.bub{position:absolute;left:50%;top:-6px;transform:translateX(-12%);white-space:nowrap;background:var(--white);border:2.5px solid var(--ink);border-radius:16px;padding:4px 12px;font-size:13px;font-weight:900;z-index:1}
-.bub:after{content:"";position:absolute;left:16px;bottom:-9px;border:8px solid transparent;border-top-color:var(--ink);border-bottom:0}
-.alert{display:inline-block;margin-top:2px;font-size:13px;font-weight:900;color:var(--white);background:var(--tomato);border-radius:99px;padding:2px 12px}
-a.cta{display:block;width:100%;margin-top:12px;text-decoration:none;color:var(--ink);background:var(--yellow);border:3px solid var(--ink);border-radius:20px;padding:12px 14px;box-shadow:0 5px 0 var(--ink);transition:transform .08s}
+.bub{position:absolute;right:0;top:-4px;white-space:nowrap;background:var(--white);border:2px solid var(--ink);border-radius:12px;padding:2px 8px;font-size:11px;font-weight:900;z-index:1}
+.bub:after{content:"";position:absolute;left:20px;bottom:-7px;border:6px solid transparent;border-top-color:var(--ink);border-bottom:0}
+a.cta{display:flex;flex-direction:column;align-items:center;text-decoration:none;color:var(--ink);background:var(--yellow);border:3px solid var(--ink);border-radius:18px;padding:10px 12px;box-shadow:0 5px 0 var(--ink);transition:transform .08s}
 a.cta:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
-a.cta b{display:block;font-size:22px;font-weight:900;line-height:1.25}
-a.cta .en{color:#5f5e5a;font-size:12px}
-.meta{margin:8px 0 0;font-size:12px;color:#5f5e5a}
-.zone{display:inline-block;font-size:11px;font-weight:700;padding:1px 9px;border-radius:99px;background:var(--tomato);color:#fff;margin-top:6px}
-.zone small{font-family:Poppins,sans-serif;font-weight:500;margin-left:4px;opacity:.9}
-/* 小字說明 */
-.intro{margin:0;font-size:14px;color:#4a4a47;text-align:center;line-height:1.7}
-.intro .en{font-size:11.5px}
-.intro b{color:var(--ink)}
-/* 其他遊戲（以後才會出現） */
-.more{display:flex;flex-direction:column;gap:10px}
-.game{display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit;background:var(--white);border:2.5px solid var(--ink);border-radius:18px;padding:10px 12px;box-shadow:0 4px 0 var(--ink)}
+a.cta b{font-size:21px;font-weight:900;line-height:1.3}
+a.cta .en{font-size:12px;color:#5f5e5a}
+.info{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:#5f5e5a;white-space:nowrap}
+.zone{font-size:11px;font-weight:700;padding:2px 10px;border-radius:99px;background:var(--soft);border:1.5px solid var(--ink);color:var(--ink);white-space:nowrap}
+.zone small{display:none}
+/* 3. 小字說明 */
+.intro{display:flex;flex-direction:column;gap:8px;padding:0 4px}
+.intro p{font-size:14px;color:var(--body);line-height:1.7}
+.intro .en{font-size:11px;margin-top:2px}
+/* 其他遊戲（以後） */
+.more{display:flex;flex-direction:column;gap:8px}
+.game{display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit;background:var(--white);border:2.5px solid var(--ink);border-radius:18px;padding:8px 12px;box-shadow:0 4px 0 var(--ink)}
 .game.night{background:linear-gradient(135deg,#232a4d,#3a4580);color:#f5f1e8}
 .game.night .en,.game.night small{color:#c9c6d8}
-.game .ic{flex:none;width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:var(--soft)}
+.game .ic{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--soft)}
 .game.night .ic{background:rgba(255,255,255,.08)}
-.game .ic svg{width:40px;height:40px}
+.game .ic svg{width:36px;height:36px}
 .game b{display:block;font-size:16px;font-weight:900}
 .game small{display:block;font-size:12px;color:#5f5e5a}
-/* Sandy */
-details.who{background:var(--white);border-radius:18px;padding:10px 14px}
-details.who summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:900}
+/* 4. Sandy＋追蹤（同寬、白底外框＝次要按鈕） */
+.foot2{display:flex;flex-direction:column;gap:8px}
+details.who{background:var(--white);border:2px solid var(--ink);border-radius:16px;padding:8px 12px}
+details.who summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:900;min-height:36px}
 details.who summary::-webkit-details-marker{display:none}
-details.who summary .pill{margin-left:auto;font-size:12px;font-weight:700;color:var(--stone)}
-details.who[open] summary .pill .o{display:none}
-details.who:not([open]) summary .pill .c{display:none}
-.who .ava{flex:none;width:34px;height:34px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);display:grid;place-items:center;font-weight:900;font-size:15px}
-.who summary span.t small{display:block;font-size:12px;font-weight:500;color:#5f5e5a}
-.who p{margin:8px 0 0;font-size:13px;color:#4a4a47}
+.who .ava{flex:none;width:32px;height:32px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);display:grid;place-items:center;font-weight:900;font-size:14px}
+.who .t small{display:block;font-size:11px;font-weight:500;color:var(--stone);font-family:Poppins,sans-serif}
+.who .pill{margin-left:auto;font-size:12px;font-weight:700;color:var(--stone)}
+details.who[open] .pill .o,details.who:not([open]) .pill .c{display:none}
+.who p{margin-top:8px;font-size:13px;color:var(--body)}
 .who p .en{font-size:11px}
-.igbtn{display:inline-block;margin-top:10px;background:var(--yellow);color:var(--ink);font-weight:900;font-size:14px;text-decoration:none;border:2px solid var(--ink);border-radius:99px;padding:6px 14px}
-.foot{font-size:11px;color:var(--stone);text-align:center;margin:0}
+a.ig{display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;background:var(--white);color:var(--ink);border:2px solid var(--ink);border-radius:16px;min-height:48px;font-weight:900;font-size:14px}
+a.ig small{font-family:Poppins,sans-serif;font-weight:500;color:var(--stone);font-size:12px}
+.foot{font-size:11px;color:var(--stone);text-align:center;line-height:1.6}
 </style>
 </head><body>
 <div class="ribbon" aria-hidden="true"></div>
 <main class="wrap">
-  <section class="hero">
-    <p class="kicker" id="kicker">SANDYWICH · 三明治鎮</p>
-    <h1 id="title">三明治鎮<span class="en">Sandywich Town</span></h1>
+  <header class="head">
+    <span class="kicker" id="kicker">SANDYWICH TOWN</span>
+    <h1 id="title">三明治鎮</h1>
     <p class="hsub" id="sub">大家都被夾成三明治了 🥪<span class="en">Life has us all a little sandwiched.</span></p>
-    <div class="mon" aria-hidden="true">
-      <span class="bub">嘿嘿，肩膀借我趴一下</span>
-      <svg viewBox="0 0 64 64"><path d="M10 52 C6 34 14 18 32 18 C50 18 58 34 54 52 Z" fill="#6d6a8a" stroke="#2c2c2a" stroke-width="2.4" stroke-linejoin="round"/><path d="M14 30 L6 14 M50 30 L58 14" stroke="#2c2c2a" stroke-width="3" stroke-linecap="round"/><circle cx="6" cy="13" r="3" fill="#6d6a8a" stroke="#2c2c2a" stroke-width="1.6"/><circle cx="58" cy="13" r="3" fill="#6d6a8a" stroke="#2c2c2a" stroke-width="1.6"/><circle cx="24" cy="33" r="5" fill="#ffc233"/><circle cx="40" cy="33" r="5" fill="#ffc233"/><circle cx="25" cy="34" r="2" fill="#2c2c2a"/><circle cx="41" cy="34" r="2" fill="#2c2c2a"/><path d="M24 44 q8 -5 16 0" stroke="#2c2c2a" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>
+  </header>
+
+  <section class="card" aria-label="遊戲">
+    <div class="top">
+      <div>
+        <span class="alert">聳肩怪出沒中！</span>
+        <p class="ctitle">鎮民的肩膀，<br>快被牠抓走了！</p>
+        <p class="cdesc" id="ctaDesc">花 5 分鐘，幫鎮民解決身體小麻煩，也順便照顧一下自己。<span class="en">Take 5 minutes to fix the townsfolk's little body troubles, and look after yourself too.</span></p>
+      </div>
+      <div class="mon" aria-hidden="true"><span class="bub">嘿嘿，肩膀借我趴一下</span>
+        <svg viewBox="0 0 64 64"><path d="M10 52 C6 34 14 18 32 18 C50 18 58 34 54 52 Z" fill="#6d6a8a" stroke="#2c2c2a" stroke-width="2.6" stroke-linejoin="round"/><path d="M14 30 L6 14 M50 30 L58 14" stroke="#2c2c2a" stroke-width="3" stroke-linecap="round"/><circle cx="6" cy="13" r="3" fill="#6d6a8a" stroke="#2c2c2a" stroke-width="1.6"/><circle cx="58" cy="13" r="3" fill="#6d6a8a" stroke="#2c2c2a" stroke-width="1.6"/><circle cx="24" cy="33" r="5" fill="#ffc233"/><circle cx="40" cy="33" r="5" fill="#ffc233"/><circle cx="25" cy="34" r="2" fill="#2c2c2a"/><circle cx="41" cy="34" r="2" fill="#2c2c2a"/><path d="M24 44 q8 -5 16 0" stroke="#2c2c2a" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>
+      </div>
     </div>
-    <span class="alert">聳肩怪出沒中！</span>
     <a class="cta" id="cta" href="/town"><b>身體救援隊・出動！</b><span class="en">Body Rescue: Let's Go!</span></a>
-    <p class="meta" id="ctaDesc">花 5 分鐘，幫鎮民解決身體小麻煩，也順便照顧一下自己。</p>
-    <span id="zones"></span>
+    <div class="info"><span>⏱ 5 分鐘・手機直接玩</span><span id="zones"></span></div>
   </section>
 
-  <p class="intro" id="lead">每個人都有被生活夾住的時候。工作、關係、身體，或是那些說不清楚的小煩惱。<span class="en">Everyone gets squeezed by life sometimes: work, relationships, the body, or little worries that are hard to name.</span></p>
-  <p class="intro" id="lead2">生活的夾心太多？來鎮上玩一局，看看今天發現什麼。沒有標準答案，只有屬於你的下一步。<span class="en">Too much filling in your life? Play a round in town and see what you discover today. No right answers, just your own next step.</span></p>
+  <section class="intro">
+    <p id="lead">每個人都有被生活夾住的時候。工作、關係、身體，或是那些說不清楚的小煩惱。<span class="en">Everyone gets squeezed by life sometimes: work, relationships, the body, or little worries that are hard to name.</span></p>
+    <p id="lead2">生活的夾心太多？來鎮上玩一局，看看今天發現什麼。沒有標準答案，只有屬於你的下一步。<span class="en">Too much filling in your life? Play a round in town and see what you discover today. No right answers, just your own next step.</span></p>
+  </section>
 
   <div class="more" id="more" hidden></div>
 
-  <details class="who">
-    <summary><span class="ava">S</span><span class="t">Sandy 是誰？<small>Who's Sandy?</small></span><span class="pill"><span class="o">看更多 ▾</span><span class="c">收起 ▴</span></span></summary>
-    <p>RYT200 瑜伽老師，也正在被生活夾成三明治。<span class="en">RYT200 yoga teacher, also being squeezed into a sandwich by life.</span></p>
-    <p>喜歡瑜伽，也喜歡重訓；喜歡身體活動，喜歡心靈感動，也喜歡把生活裡的小發現，慢慢創造成微光小宇宙。<span class="en">I love yoga and strength training, moving the body and being moved at heart, and slowly turning small everyday discoveries into a tiny universe of light.</span></p>
-    <p>這裡沒有標準答案，只有一些身體怪物、奇特任務，和等著和你探索的內心感受，發現總是會有光。<span class="en">There are no right answers here, just some body monsters, odd quests, and feelings waiting to be explored with you. Look closely, and there's always light.</span></p>
-  </details>
-  <p style="text-align:center;margin:-4px 0 0"><a class="igbtn" href="https://www.instagram.com/sandywich.su/" target="_blank" rel="noopener">追蹤 @sandywich.su · Follow</a></p>
+  <section class="foot2">
+    <details class="who">
+      <summary><span class="ava">S</span><span class="t">Sandy 是誰？<small>Who's Sandy?</small></span><span class="pill"><span class="o">看更多 ▾</span><span class="c">收起 ▴</span></span></summary>
+      <p>RYT200 瑜伽老師，也正在被生活夾成三明治。<span class="en">RYT200 yoga teacher, also being squeezed into a sandwich by life.</span></p>
+      <p>喜歡瑜伽，也喜歡重訓；喜歡身體活動，喜歡心靈感動，也喜歡把生活裡的小發現，慢慢創造成微光小宇宙。<span class="en">I love yoga and strength training, moving the body and being moved at heart, and slowly turning small everyday discoveries into a tiny universe of light.</span></p>
+      <p>這裡沒有標準答案，只有一些身體怪物、奇特任務，和等著和你探索的內心感受，發現總是會有光。<span class="en">There are no right answers here, just some body monsters, odd quests, and feelings waiting to be explored with you. Look closely, and there's always light.</span></p>
+    </details>
+    <a class="ig" href="https://www.instagram.com/sandywich.su/" target="_blank" rel="noopener">追蹤 @sandywich.su <small>Follow on IG</small></a>
+  </section>
   <p class="foot">遊戲好玩為主，這不是治療；身體有傷痛，請先詢問醫師。<br>Just for fun, not medical advice. If something hurts, please see a doctor.</p>
 </main>
 <script>
@@ -114,7 +133,7 @@ details.who:not([open]) summary .pill .c{display:none}
   fetch('/content/site.json',{cache:'no-cache'}).then(function(r){return r.json()}).then(function(d){
     var h=d.home||{};
     if(h.kicker)$('kicker').textContent=h.kicker;
-    if(h.title)$('title').innerHTML=bi(h.title);
+    if(h.title)$('title').textContent=h.title.zh;
     if(h.sub)$('sub').innerHTML=bi(h.sub);
     if(h.lead)$('lead').innerHTML=bi(h.lead);
     if(h.lead2)$('lead2').innerHTML=bi(h.lead2);
@@ -123,7 +142,7 @@ details.who:not([open]) summary .pill .c{display:none}
     // 第一個開放的系列＝主視覺的大按鈕
     var m=open[0];
     $('cta').href=m.href;$('cta').innerHTML='<b>'+esc(m.zh)+esc(m.emoji||'')+'</b><span class="en">'+esc(m.en)+'</span>';
-    if(m.desc)$('ctaDesc').textContent=String(m.desc.zh).replace(/^身體怪物出沒中！/,'');
+    if(m.desc)$('ctaDesc').innerHTML=esc(String(m.desc.zh).replace(/^身體怪物出沒中！/,''))+'<span class="en">'+esc(String(m.desc.en).replace(/^Body monsters on the loose! /,''))+'</span>';
     $('zones').innerHTML=(m.zones||[]).filter(function(z){return z.status==='open'}).map(function(z){return '<span class="zone">'+esc(z.zh)+'<small>'+esc(z.en)+'</small></span>'}).join(' ');
     // 其他開放的系列＝下面的小卡片
     var rest=open.slice(1);
