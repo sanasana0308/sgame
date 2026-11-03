@@ -13,16 +13,16 @@
       "en": "Sandywich Town"
     },
     "sub": {
-      "zh": "大家都被夾成三明治了🥪",
-      "en": "Everyone's a little sandwiched."
+      "zh": "大家都被夾成三明治了 🥪",
+      "en": "Life has us all a little sandwiched."
     },
     "lead": {
-      "zh": "每個人都被某件事夾著過日子。來鎮上玩一局，鬆一鬆，看看你怎麼做決定。",
-      "en": "Everyone's squeezed by something. Come play a round, loosen up, and see how you choose."
+      "zh": "每個人都有被生活夾住的時候。工作、關係、身體，或是那些說不清楚的小煩惱。",
+      "en": "Everyone gets squeezed by life sometimes: work, relationships, the body, or little worries that are hard to name."
     },
-    "hook": {
-      "zh": "在 Reel 看過聳肩怪嗎？牠就住在這裡👻",
-      "en": "Met the Shrug Monster in the Reel? This is where it lives."
+    "lead2": {
+      "zh": "生活的夾心太多？來鎮上玩一局，看看今天發現什麼。沒有標準答案，只有屬於你的下一步。",
+      "en": "Too much filling in your life? Play a round in town and see what you discover today. No right answers, just your own next step."
     }
   },
   "series": [
@@ -30,12 +30,12 @@
       "id": "yoga",
       "emoji": "",
       "zh": "身體救援隊・出動！",
-      "en": "Body Rescue Squad, Go!",
+      "en": "Body Rescue: Let's Go!",
       "status": "open",
       "href": "/town",
       "desc": {
-        "zh": "身體怪物出沒中，5 分鐘救回鎮民，也救自己。",
-        "en": "Body monsters on the loose. 5 minutes to rescue the townsfolk, and yourself."
+        "zh": "身體怪物出沒中！花 5 分鐘，幫鎮民解決身體小麻煩，也順便照顧一下自己。",
+        "en": "Body monsters on the loose! Take 5 minutes to fix the townsfolk's little body troubles, and look after yourself too."
       },
       "zones": [
         {
