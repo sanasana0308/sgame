@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>三明治鎮・身體救援隊出動！｜Sandywich Yoga</title>
 <meta name="description" content="聳肩怪出沒中！5 分鐘救回鎮民，也救自己。">
 <meta property="og:title" content="三明治鎮・身體救援隊出動！">
@@ -26,7 +26,10 @@
   color-scheme:light;
 }
 [hidden]{display:none!important}
-html,body{background:var(--cream)}
+html,body{background:var(--cream);touch-action:manipulation}
+/* 連點按鈕：不讓手機把連點當成放大 */
+button,.pat{touch-action:manipulation}
+.pat{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 body{color:var(--ink);font-family:var(--f-zh);font-size:16px;line-height:1.65;margin:0}
 .ribbon{height:22px;background:linear-gradient(90deg,var(--yellow) 0 32%,var(--tomato) 32% 57%,var(--ink) 57% 80%,var(--lettuce) 80% 100%);
   -webkit-mask:radial-gradient(circle 7px at 50% 100%,transparent 6.5px,#000 7.5px) 0 0/20px 100% repeat-x;

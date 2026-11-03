@@ -682,7 +682,9 @@ function openFree(n){
       $panel.querySelector('.pb').insertAdjacentHTML('beforeend','<div class="row"><button class="primary" id="freeAgain">再試一次</button><button class="ghost" id="freeOut">先不要</button></div>');
       $('freeAgain').onclick=()=>openFree(n);$('freeOut').onclick=closeSheet;}
     renderHud();};
-  btn.onclick=()=>{if(done)return;if(!t0){t0=performance.now();timer=setInterval(()=>{const left=FREE.sec-(performance.now()-t0)/1000;if(left<=0)finish(false);else msg.textContent=`${k}/${need}・還有 ${left.toFixed(1)} 秒`;},100);}
+  // 用 pointerdown 計數：手機快速連點不會被當成「點兩下放大」，也不會漏算
+  btn.onclick=null;btn.addEventListener('pointerdown',e=>{e.preventDefault();tapFree();});
+  const tapFree=()=>{if(done)return;if(!t0){t0=performance.now();timer=setInterval(()=>{const left=FREE.sec-(performance.now()-t0)/1000;if(left<=0)finish(false);else msg.textContent=`${k}/${need}・還有 ${left.toFixed(1)} 秒`;},100);}
     k++;if(!RM){btn.classList.remove('hit');void btn.offsetWidth;btn.classList.add('hit');}
     if(k>=need)finish(true);else msg.textContent=`${k}/${need}`;};
   $('freeNo').onclick=()=>{done=true;clearInterval(timer);wasted();closeSheet();};
@@ -1138,4 +1140,10 @@ if(location.hash==='#book')album();else intro();
 // 給自動測試用（不影響遊戲）
 window.__town={Z,NPCS,R,storyPng,get S(){return S},G,get run(){return run},get player(){return player},get sheetKind(){return sheetKind},get sheetOpen(){return sheetOpen},
   goTo,distTo,openRes,clockStr,DAYLEN,BLD,ts:()=>ts};
+})();
+// 手機連點時不要放大畫面（iOS 會忽略 viewport 設定，所以另外擋）
+(function(){let last=0;
+  document.addEventListener('touchend',e=>{const now=Date.now();if(now-last<350&&!e.target.closest('input,textarea,select,a'))e.preventDefault();last=now;},{passive:false});
+  document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+  document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
 })();
