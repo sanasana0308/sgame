@@ -405,6 +405,8 @@
    "arrive": "午休鐘響了。高中生小宇溜到長椅上滑手機，脖子越來越低。"
   }
  ],
+ "_rounds說明": "循序漸進：第 1 局只有前 3 位，玩完一局多 1 位；null＝全部。",
+ "rounds": [["tomato","post","barista"],["tomato","post","barista","student"],null],
  "events": [
   {
    "id": "cart",
