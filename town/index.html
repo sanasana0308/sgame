@@ -244,6 +244,10 @@ h3.sec{margin:6px 0 0;font-size:16px;font-weight:900}
 .pass small{font-size:13px;color:var(--stone)}
 .pass a.primary{text-decoration:none;margin-top:6px;align-self:stretch}
 .home{font-size:13px;color:var(--stone);text-decoration:none;font-weight:700}
+.link.reset{display:block;margin:14px auto 0;font-size:13px;color:var(--stone)}
+.quit{justify-self:end;align-self:center;margin-top:6px;background:var(--white);border:2px solid var(--ink);border-radius:99px;padding:4px 12px;font:inherit;font-size:13px;font-weight:700;color:var(--ink);box-shadow:0 2px 0 var(--ink);cursor:pointer}
+.roster{margin:0 0 10px;font-size:15px}.roster span{color:var(--stone);font-size:13px}
+.unlock{margin:12px 0;background:var(--yellow-soft,#fff1cc);border:2px dashed var(--ink);border-radius:14px;padding:10px 14px;display:flex;flex-direction:column;gap:2px}.unlock small{color:var(--stone)}
 .home.pill{display:inline-flex;align-items:center;gap:4px;align-self:flex-start;background:var(--white);border:2px solid var(--ink);border-radius:99px;padding:3px 12px;color:var(--ink);box-shadow:0 2px 0 var(--ink)}
 a.ghost.homebtn{text-decoration:none;display:flex;align-items:center;justify-content:center;color:var(--ink)}
 
@@ -381,6 +385,7 @@ a.primary{display:block;text-align:center;text-decoration:none}
     <div class="meter" aria-label="體力"><span class="h">體力</span><span class="bar"><i id="enBar"></i></span><b id="enNum">100</b></div>
     <div class="bagrow" id="bagRow" aria-label="背包"></div>
     <div class="goal" id="goal" aria-live="polite"></div>
+    <button class="quit" id="quitBtn">🥪 先收工，看結果</button>
   </div>
   <div class="main">
   <div class="stage" id="stageMap">

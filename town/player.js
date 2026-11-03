@@ -65,6 +65,8 @@ window.SWPlayer={
   today,
   zone(id){if(!S.zones[id])S.zones[id]=blankZone();return S.zones[id];},
   resetZone(id){S.zones[id]=blankZone();save();},
+  // 全部重來：徽章、稱號、三明治、圖鑑都清空（不刪 key，免得又把舊版存檔搬回來）
+  resetAll(){S=blank();save();},
   badge(id){if(!S.badges.includes(id)){S.badges.push(id);save();return true;}return false;},
   monster(id){if(!S.monsters.includes(id)){S.monsters.push(id);save();return true;}return false;}
 };

@@ -57,7 +57,7 @@ const pick=a=>a[Math.floor(Math.random()*a.length)];
 const fill=(s,o)=>String(s||'').replace(/\{(\w+)\}/g,(_,k)=>o[k]!==undefined?o[k]:'');
 
 // 居民
-const NPCS=Z.residents.map(r=>{
+const ALL=Z.residents.map(r=>{
   const pose=POSES[r.pose]||{};
   return {id:r.id,nm:r.name,role:r.role||'',x:r.at[0],y:r.at[1],kind:r.char,color:r.color,need:r.needs,noitem:r.noItem,ask:r.ask,thanks:r.thanks,
     sticker:r.sticker,bonus:r.bonus,bonusHave:r.bonusHave,bonusMissing:r.bonusMissing,bonusThanks:r.bonusThanks,
@@ -65,6 +65,16 @@ const NPCS=Z.residents.map(r=>{
     drag:pose.drag||{joint:'hip',from:'stand',label:''},quizRaw:r.quiz,
     L:{nm:pose.name,en:pose.en,fig:pose.figure,back:!!BACK[pose.figure],intro:pose.intro,q:r.quiz.q,fact:r.fact||pose.fact,tip:r.tip||pose.cue,cue:pose.cue,warn:pose.warn}};
 });
+// 循序漸進：第一局只有幾位居民，每玩完一局多開放幾位（zone 檔 rounds；null＝全部）
+const NPCS=[];
+const ROUNDS=Z.rounds&&Z.rounds.length?Z.rounds:[null];
+const roundIds=k=>{const ids=ROUNDS[Math.min(k,ROUNDS.length-1)];return ids||ALL.map(n=>n.id);};
+function setRoster(){const ids=roundIds(S.runs||0);NPCS.length=0;ALL.filter(n=>ids.includes(n.id)).forEach(n=>NPCS.push(n));}
+const lockedNow=()=>ALL.filter(n=>!NPCS.includes(n));
+// 下一局會多出來的居民
+const comingNext=()=>{const ids=roundIds(S.runs||0);return ALL.filter(n=>ids.includes(n.id)&&!NPCS.includes(n));};
+// 序列圖卡要幾層：居民少的時候少一層，先讓人拿到小成功
+const CARD=()=>Math.min(R.cardAt,Math.max(1,NPCS.length-1));
 const F=Z.finale,SEC=Z.secret;
 const LETTUCE={id:'lettuce',nm:F.name,role:F.role,x:F.at[0],y:F.at[1],kind:F.char};
 const CHEESE=SEC?{id:'cheese',nm:SEC.name,role:SEC.role,x:SEC.at[0],y:SEC.at[1],kind:SEC.char}:null;
@@ -84,6 +94,7 @@ const save=()=>PL.save();
 const hasRope=()=>!!G.bag.rope;
 
 // ================= 一天（一局）的狀態，不存檔 =================
+setRoster();
 let run,player,sheetOpen=false,sheetLive=false,sheetKind='',keyHandler=null;
 function newRun(){
   const [a,b]=R.startTension;
@@ -251,16 +262,16 @@ function sandwichSvg(has){
 // v4：每一層畫真的食材，旁邊插小旗子寫救了誰。沒救到＝虛線，吃掉＝虛線＋「被吃掉了」。疊滿會眨眼。
 // stateOf(n) 回傳 'on' | 'eaten' | 'off'；names=false 時沒救到的旗子寫「？」
 function sandwichFlags(stateOf,names){
-  const ink='#2c2c2a',dash='#b9b5ad',by=k=>NPCS.find(n=>n.sticker===k);
+  const ink='#2c2c2a',dash='#b9b5ad',by=k=>ALL.find(n=>n.sticker===k);
   const st=k=>{const n=by(k);return n?stateOf(n):'off';};
   const D=on=>on?`stroke="${ink}" stroke-width="3.5"`:`fill="none" stroke="${dash}" stroke-width="3" stroke-dasharray="7 6"`;
   let y=8,body='',flags=[];
-  const flag=(k,cy)=>{const n=by(k);if(!n)return;const s_=st(k);flags.push({cy,s:s_,t:s_==='on'?n.nm:s_==='eaten'?'被吃掉了':(names?n.nm:'？')});};
+  const flag=(k,cy)=>{const n=by(k);if(!n)return;const s_=st(k);flags.push({cy,s:s_,t:s_==='on'?n.nm:s_==='eaten'?'被吃掉了':s_==='lock'?'🔒下一局':(names?n.nm:'？')});};
   const bread=st('bread')==='on';
   // 上面的吐司
   body+=`<path d="M40 ${y+46} C40 ${y-6} 290 ${y-6} 290 ${y+46} Z" ${D(bread)} ${bread?'fill="#e8b46a"':''}/>`;
   if(bread)body+=`<g fill="#fbe6c2"><ellipse cx="110" cy="${y+22}" rx="8" ry="4"/><ellipse cx="170" cy="${y+13}" rx="8" ry="4"/><ellipse cx="225" cy="${y+25}" rx="8" ry="4"/></g>`;
-  const full=NPCS.every(n=>stateOf(n)==='on');
+  const act=ALL.filter(n=>stateOf(n)!=='lock'),full=act.length>0&&act.every(n=>stateOf(n)==='on');
   if(full)body+=`<circle cx="140" cy="${y+30}" r="5" fill="${ink}"/><path d="M182 ${y+30} q8 -8 16 0" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M150 ${y+38} q15 10 30 0" stroke="${ink}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
   flag('bread',y+24);y+=58;
   // 生菜
@@ -287,9 +298,9 @@ function sandwichFlags(stateOf,names){
      `<text x="${fx+43}" y="${fy+19}" text-anchor="middle" font-family="Noto Sans TC,PingFang TC,Microsoft JhengHei,sans-serif" font-size="${f.t.length>4?13:15}" font-weight="700" fill="${on?ink:'#a8a39a'}">${f.t}</text>`;}).join('');
   return `<svg viewBox="0 0 420 ${y}" role="img" aria-label="三明治">${body}${fl}</svg>`;
 }
-const runState=n=>{const r=resOf(n);return r.state==='saved'?(r.eaten?'eaten':'on'):'off';};
+const runState=n=>{if(!NPCS.includes(n))return 'lock';const r=resOf(n);return r.state==='saved'?(r.eaten?'eaten':'on'):'off';};
 const albumState=n=>S.helped.includes(n.id)?'on':'off';
-const albumHas=k=>NPCS.some(n=>n.sticker===k&&S.helped.includes(n.id));
+const albumHas=k=>ALL.some(n=>n.sticker===k&&S.helped.includes(n.id));
 const layerOn=n=>resOf(n).state==='saved'&&!resOf(n).eaten;
 const runHas=k=>NPCS.some(n=>n.sticker===k&&layerOn(n));
 const layersNow=()=>NPCS.filter(layerOn).length;
@@ -311,8 +322,8 @@ function renderHud(){
    ${run.coupon&&run.coupon.have&&!run.coupon.used?`<span class="slot got" title="${Z.coupon.name}">${couponSvg()}按摩券</span>`:''}
    ${run.rainUntil>=0?'<span class="slot rain">下雨中</span>':''}`;
   if(renderHud.bag!==bag){renderHud.bag=bag;$('bagRow').innerHTML=bag;}
-  const sv=layersNow(),left=R.cardAt-sv;
-  const goal=`<span class="pips">${Array.from({length:R.cardAt},(_,i)=>`<i class="${i<sv?'on':''}"></i>`).join('')}</span>${left>0?`三明治再疊 <b>${left}</b> 層，解鎖序列圖卡`:'三明治夠厚了，序列圖卡解鎖！再多救幾位'}`;
+  const sv=layersNow(),left=CARD()-sv;
+  const goal=`<span class="pips">${Array.from({length:CARD()},(_,i)=>`<i class="${i<sv?'on':''}"></i>`).join('')}</span>${left>0?`三明治再疊 <b>${left}</b> 層，解鎖序列圖卡`:'三明治夠厚了，序列圖卡解鎖！再多救幾位'}`;
   if(renderHud.goal!==goal){renderHud.goal=goal;$('goal').innerHTML=goal;}
 }
 function renderUI(){
@@ -328,7 +339,7 @@ function renderUI(){
     const cls='who '+r.state+(r.state==='open'&&tt>=80?' hot':'');if(b.className!==cls)b.className=cls;
     const sm=b.querySelector('small');if(sm.textContent!==sub)sm.textContent=sub;
     const i=b.querySelector('.tb i');i.style.width=(r.state==='open'?tt:0)+'%';i.style.background=tCol(tt);}
-  const dots=NPCS.map(n=>`<span class="dot ${S.helped.includes(n.id)?'on':'off'}" title="${ING[n.sticker]}">${ingSvg(n.sticker)}</span>`).join('');
+  const dots=ALL.map(n=>`<span class="dot ${S.helped.includes(n.id)?'on':'off'}" title="${ING[n.sticker]}">${ingSvg(n.sticker)}</span>`).join('');
   if(renderUI.dots!==dots){renderUI.dots=dots;$('albumDots').innerHTML=dots;}
   renderHud();
 }
@@ -586,6 +597,8 @@ function lessonResult(n,grade,frac,o){
   }
   if(grade==='perfect')st.perfects++;else st.passes++;
   r.state='saved';r.t=0;r.grade=grade;run.active=null;checkResolved();
+  {const sv=NPCS.filter(x=>resOf(x).state==='saved').length,left=NPCS.length-sv;
+   floatPlus('🥪 +1 層');toast(left?`🥪 三明治 +1 層！救回 ${sv}/${NPCS.length}，還差 ${left} 位`:`🥪 三明治 +1 層！${NPCS.length} 位全部救回來了！`);}
   if(o.useBrick){S.brickUsed=true;}
   if(!S.helped.includes(n.id))S.helped.push(n.id);save();
   lb.innerHTML=`<span class="grade ${grade}">${grade==='perfect'?'完美！':'過關'}</span><p class="note">穩住 ${pct}%・體力 −${grade==='perfect'?E.perfect:E.pass}</p><button class="primary" id="toQuiz">${n.nm}有問題要問你</button>`;
@@ -701,7 +714,7 @@ function eatTarget(){const l=NPCS.filter(layerOn);return l.length?l[l.length-1]:
 function askOvertime(stuckL){
   const e=Math.max(0,Math.round(run.energy)),food=eatTarget(),layers=layersNow();
   const left=clockStr(DAYLEN).slice(0,5);
-  const cardRisk=layers===R.cardAt?'（吃了就只剩 '+(layers-1)+' 層，序列圖卡要靠加班救回來）':'';
+  const cardRisk=layers===CARD()?'（吃了就只剩 '+(layers-1)+' 層，序列圖卡要靠加班救回來）':'';
   openSheet(`${head(LETTUCE)}<div class="pb"><p class="say">今天的事都處理完了。可是……還有 <b>${stuckL.length} 位</b>被聳肩怪抓走。要加班救嗎？（${left} 收工）</p>
    <div class="stuckrow">${stuckL.map(n=>`<span>${monsterSvg('mi')}<b>${n.nm}</b><small>卡在${n.part}</small></span>`).join('')}</div>
    <p class="note">你的體力：${e} / 100・三明治 ${layers} 層</p>
@@ -767,7 +780,7 @@ function finishRun(){
   const b=S.best;
   if(!b||saved.length>b.saved||(saved.length===b.saved&&(b.min===null||endMin<b.min)))S.best={saved:saved.length,min:endMin,date:PL.today(),style:sty.id,title:run.title};
   S.last={saved:saved.map(n=>n.id),stuck:stuckL.map(n=>n.id),style:sty.id,min:endMin,date:PL.today(),title:run.title};
-  if(layersNow()>=R.cardAt&&!S.done){S.done=true;S.doneAt=PL.today();}
+  if(layersNow()>=CARD()&&!S.done){S.done=true;S.doneAt=PL.today();}
   const lv0=levelOf();
   G.title=bestTitle()||run.title;
   const give=id=>{if(BADGES[id]&&PL.badge(id))run.newBadges.push(id);};
@@ -775,7 +788,7 @@ function finishRun(){
   if(saved.length===NPCS.length)give('all-saved');
   if(saved.length>=3&&st.fails===0)give('no-fail');
   if(saved.length>=3&&st.zero===0)give('energy-master');
-  if(saved.length===NPCS.length&&run.allDoneAt!==null&&run.allDoneAt<=hm(R.fastBefore)-DAY0)give('speedy');
+  if(NPCS.length===ALL.length&&saved.length===NPCS.length&&run.allDoneAt!==null&&run.allDoneAt<=hm(R.fastBefore)-DAY0)give('speedy');
   if(S.perfects>=5)give('perfect5');
   run.levelUp=levelOf()>lv0;
   save();
@@ -812,7 +825,7 @@ function ending(){
   const sty=run.style,title=run.title;
   const V={saved:saved.length,stuck:stuckL.length,hiPick:st.hiPick,nearPick:st.nearPick,picks:st.picks,talk:st.talk,direct:st.direct,rests:st.rests,zero:st.zero,zeroMin:st.zero*R.energy.zeroRestMin,
     fails:st.fails,perfects:st.perfects,walk:st.walk,wasted:st.wasted,monster:st.monster,scares:st.scares,minEnergy:Math.max(0,Math.round(st.minEnergy)),end:clockStr(run.endMin)};
-  const NW=Z.nextWeek;const layers=layersNow();const card=layers>=R.cardAt;const need=R.cardAt-layers;const LV=levelInfo();
+  const NW=Z.nextWeek;const layers=layersNow();const card=layers>=CARD();const need=CARD()-layers;const LV=levelInfo();
   const cta=card&&Z.cta&&Z.cta.url?Z.cta:null;
   const ig=!cta&&IG;
   const best=S.best;const cheer=run.eaten&&!card?`救回 ${saved.length} 位很厲害！可是三明治被你吃掉 ${run.eaten} 層，序列圖卡要下次了。`:((Z.cheer||[])[Math.min((Z.cheer||[]).length-1,saved.length)]||'');
@@ -824,6 +837,7 @@ function ending(){
    ${run.freed?`<small class="freed">其中 ${run.freed} 位是從聳肩怪手上搶回來的💪</small>`:''}
    <div class="row top2"><button class="primary" id="book">看貼紙簿</button><button class="ghost" id="again">再玩一天</button></div>
    ${cheer?`<p class="say">${cheer}</p>`:''}
+   ${comingNext().length?`<div class="unlock">🔓 <b>下一局解鎖：${comingNext().map(n=>n.nm).join('、')}</b><small>會帶來新的一層三明治，鎮上也會更熱鬧</small></div>`:''}
    <div class="swbox"><h3>🥪 你的三明治：${layers} / ${NPCS.length} 層</h3>
     <div class="sandwich big">${sandwichFlags(runState,true)}</div>
     <p class="swprog">${card?'<b>序列圖卡解鎖了！</b>':`再 <b>${need} 層</b> → 序列圖卡`}<br>${layers<NPCS.length?`疊滿 ${NPCS.length} 層 → 三明治會對你眨眼😉`:'疊滿了！三明治在對你眨眼😉'}${run.eaten?`<br><small>加班時吃掉了 ${run.eaten} 層。</small>`:''}</p></div>
@@ -832,7 +846,7 @@ function ending(){
     ${lvBox(LV,run.levelUp)}</div>
    <div class="ttl sm"><small>今天的稱號</small><b>${title}</b>${best&&best.saved>saved.length?`<small>最佳紀錄：救回 ${best.saved} 位</small>`:''}</div>
    ${card?`<div class="pass">${cta?`<small>通關密語</small><b>${Z.passcode}</b><small>把通關密語傳給我們，領這一區的序列圖卡。</small><a class="primary" href="${cta.url}" target="_blank" rel="noopener">${cta.label}</a>`:`<small>序列圖卡解鎖了</small><b style="font-size:20px">${Z.card.title}</b>`}<a class="cardlink" href="/cards/${Z.id}" target="_blank" rel="noopener">看序列圖卡 →</a></div>`
-     :`<div class="lock"><b>三明治差 ${need} 層就能拿到序列圖卡</b><small>${fill(Z.cardLocked||'',{n:R.cardAt})}</small><ul>${tipsFor().map(t=>`<li>${t}</li>`).join('')}</ul></div>`}
+     :`<div class="lock"><b>三明治差 ${need} 層就能拿到序列圖卡</b><small>${fill(Z.cardLocked||'',{n:CARD()})}</small><ul>${tipsFor().map(t=>`<li>${t}</li>`).join('')}</ul></div>`}
    ${stuckL.length?`<div class="stuckL"><b>沒救回來的</b>${stuckL.map(n=>`<div class="sk">${monsterSvg('mi')}<span><b>${n.nm}${resOf(n).state==='stuck'?'':'<small class="nr">（收工前沒輪到）</small>'}</b><small>卡在：${n.part}</small></span></div>`).join('')}</div>`:''}
    <div class="style"><small>你今天的教學風格</small><h3>${sty.name}</h3>
     <ul>${(sty.obs||[]).map(o=>`<li>${fill(o,V)}</li>`).join('')}</ul>
@@ -849,7 +863,7 @@ function ending(){
    ${run.cheese&&run.cheese.caught&&SEC.teaser?`<p class="say">${SEC.teaser}</p>`:''}
    <div class="row"><button class="ghost" id="again2">再玩一天</button><button class="ghost" id="book2">看貼紙簿</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div>
    <p class="disc">好玩為主，這不是治療；身體有傷痛，請先詢問醫師。</p></div>`,{kind:'end'});
-  const againFn=()=>{const low=saved.length<=1;newRun();if(low&&BADGES.comeback&&PL.badge('comeback'))run.newBadges.push('comeback');sheetOpen=false;$sheet.hidden=true;renderUI();goals();};
+  const againFn=()=>{const low=saved.length<=1;setRoster();$('people').innerHTML='';renderUI.dots='';newRun();if(low&&BADGES.comeback&&PL.badge('comeback'))run.newBadges.push('comeback');sheetOpen=false;$sheet.hidden=true;renderUI();goals();};
   $('again').onclick=againFn;$('again2').onclick=againFn;
   $('book').onclick=()=>album(ending);$('book2').onclick=()=>album(ending);
   const shareText=()=>`我在「三明治鎮」加入身體救援隊，救回 ${saved.length}/${NPCS.length} 位居民，稱號是「${title}」，教學風格「${sty.name}」！\n${stuckL.length?`沒救回來的卡在：${parts}。\n`:''}換你出動 👉 ${GAME_URL}${IG?`\n@${IG.handle}`:''}\n#PDPL排都排了排好序列一起練 #sandywichyoga`;
@@ -923,15 +937,25 @@ async function storyPng(d){
 }
 
 // ================= 今天的任務（開場） =================
+// 隨時可以先收工：直接看結果，帶走目前的三明治和稱號
+function quitEarly(){
+  if(!run.started||run.over||sheetOpen)return;
+  const sv=NPCS.filter(n=>resOf(n).state==='saved').length;
+  openSheet(`<div class="pb"><h2 class="h2">現在先收工？</h2><p class="say">已經救回 ${sv} 位，三明治有 ${layersNow()} 層。<br>還沒救的居民，這局會算「沒救回來」。</p>
+   <div class="row"><button class="primary" id="qYes">🥪 收工，看結果</button><button class="ghost" id="qNo">再救一下</button></div></div>`,{kind:'quit'});
+  $('qYes').onclick=()=>{sheetOpen=false;$sheet.hidden=true;endDay();};
+  $('qNo').onclick=closeSheet;
+}
 function goals(){
   const nb=G.badges.filter(id=>BADGES[id]).length,NB=Object.keys(BADGES).length,mGot=G.monsters.includes(MON.id)?1:0;
   const cardOn=S.done;const playing=run.started&&!run.over;
-  const dots=NPCS.map(n=>`<span class="mini ${S.helped.includes(n.id)?'on':''}">${ingSvg(n.sticker)}</span>`).join('');
+  const dots=ALL.map(n=>`<span class="mini ${S.helped.includes(n.id)?'on':''}">${ingSvg(n.sticker)}</span>`).join('');
   openSheet(`<div class="pb goals"><span class="eyebrow">${zoneName}・${Z.title}</span><h2 class="h2">今天的任務</h2>
    ${run.newBadges.includes('comeback')?`<div class="newb"><b class="nbh">新徽章：${BADGES.comeback[0]}</b><small>${BADGES.comeback[1]}。今天一定救得回來！</small></div>`:''}
+   <p class="roster">今天鎮上有 <b>${NPCS.length} 位</b>居民需要幫忙${lockedNow().length?`・<span>每玩完一局，會多 1 位來鎮上（還有 ${lockedNow().length} 位）</span>`:''}</p>
    <ol class="glist">
-    <li><span class="gi">${ingSvg('bread')}</span><div><b>救回一位 → 三明治疊一層</b><span class="minis">${dots}</span></div><em>${S.helped.length}/${NPCS.length}</em></li>
-    <li><span class="gi">${poseSvg('dog')}</span><div><b>一天疊到 ${R.cardAt} 層 → 解鎖序列圖卡</b><small>${cardOn?'已經解鎖了，可以再挑戰更多人':Z.card.title}</small></div><em class="${cardOn?'ok':''}">${cardOn?'✓':'🔒'}</em></li>
+    <li><span class="gi">${ingSvg('bread')}</span><div><b>救回一位 → 三明治疊一層</b><span class="minis">${dots}</span></div><em>${S.helped.length}/${ALL.length}</em></li>
+    <li><span class="gi">${poseSvg('dog')}</span><div><b>一天疊到 ${CARD()} 層 → 解鎖序列圖卡</b><small>${cardOn?'已經解鎖了，可以再挑戰更多人':Z.card.title}</small></div><em class="${cardOn?'ok':''}">${cardOn?'✓':'🔒'}</em></li>
     <li><span class="gi">${medalSvg(nb>0)}</span><div><b>收集徽章 → 升老師等級</b><small>現在：${levelInfo().cur.name}${levelInfo().next?`・再 ${levelInfo().to} 個升「${levelInfo().next.name}」`:''}</small></div><em>${nb}/${NB}</em></li>
     <li><span class="gi">${monsterSvg('',false)}</span><div><b>怪物圖鑑</b><small>${mGot?MON.name+'：'+fill(MON.hintBubble||'連點 {n} 下嚇跑牠！',{n:MON.scareTaps}):'在鎮上遇到牠就會收進來'}</small></div><em>${mGot}/1</em></li>
    </ol>
@@ -946,6 +970,7 @@ function goals(){
   $('toAlbum').onclick=()=>album(goals);
 }
 const intro=goals;
+{const qb=$('quitBtn');if(qb)qb.onclick=quitEarly;}
 
 // ================= 貼紙簿・圖鑑 =================
 function album(back){
@@ -953,12 +978,12 @@ function album(back){
   const nb=G.badges.filter(id=>BADGES[id]).length,NB=Object.keys(BADGES).length;
   const need=scareNeed();
   const LV=levelInfo();const ORDN=Z.order||1;
-  const menu=[0,1,2].map(k=>{const o=ORDN+k;return k===0?`<div class="zc on"><b>${zoneName}</b><span>${Z.title}</span><small>${S.helped.length} / ${NPCS.length} 層</small></div>`:`<div class="zc off"><b>第${ORD[o]||o}區</b><span>即將開放</span></div>`;}).join('');
+  const menu=[0,1,2].map(k=>{const o=ORDN+k;return k===0?`<div class="zc on"><b>${zoneName}</b><span>${Z.title}</span><small>${S.helped.length} / ${ALL.length} 層</small></div>`:`<div class="zc off"><b>第${ORD[o]||o}區</b><span>即將開放</span></div>`;}).join('');
   openSheet(`<div class="pb alb"><span class="eyebrow">貼紙簿</span><h2 class="h2">我的三明治鎮</h2>
    <section>${lvBox(LV,false)}</section>
    <section><h3 class="sec">🥪 三明治 <span class="cnt">每一區一個</span></h3>
      <div class="sandwich big">${sandwichFlags(albumState,false)}</div>
-     <p class="cap">救回一位居民＝疊一層，旗子上寫救了誰。一天疊到 ${R.cardAt} 層，解鎖序列圖卡${S.done?'（已解鎖 ✓）':''}。</p>
+     <p class="cap">救回一位居民＝疊一層，旗子上寫救了誰。一天疊到 ${CARD()} 層，解鎖序列圖卡${S.done?'（已解鎖 ✓）':''}。</p>
      <div class="zmenu">${menu}</div></section>
    <section><h3 class="sec">🏅 徽章 <span class="cnt">${nb}/${NB}・用來升等級</span></h3><div class="cards3">${Object.keys(BADGES).map(id=>badgeCard(id,false)).join('')}</div></section>
    <section><h3 class="sec">👻 怪物圖鑑 <span class="cnt">${mGot?1:0}/1</span></h3>
@@ -967,8 +992,12 @@ function album(back){
      <span class="${hasRope()?'on':''}">瑜伽繩 ${hasRope()?'✓':'還沒拿'}：手碰不到時用，嚇怪少點幾下</span>
      <span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0}/${BRICK.badgeAt||3}：墊著做，穩住比較簡單</span></div></section>
    <section><h3 class="sec">📜 稱號</h3><p class="cap" style="text-align:left">最佳：<b>${b?bestTitle():'還沒有'}</b>${b?`（救回 ${b.saved} 位・玩了 ${S.runs||0} 天）`:''}${last&&last.title&&b&&last.title!==bestTitle()?`<br>上一次：${last.title}`:''}</p></section>
-   <div class="row">${!back&&run.started&&!run.over?'<button class="ghost" id="toGoals">今天的任務</button>':''}<button class="primary" id="close">${back===goals?'回去':back?'回到結果':'回到小鎮'}</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div></div>`,{kind:'album'});
+   <div class="row">${!back&&run.started&&!run.over?'<button class="ghost" id="toGoals">今天的任務</button>':''}<button class="primary" id="close">${back===goals?'回去':back?'回到結果':'回到小鎮'}</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div>
+   <button class="link reset" id="resetAll">🔄 全部重來（清掉所有紀錄）</button></div>`,{kind:'album'});
   $('close').onclick=()=>{if(back){back();return;}closeSheet();if(!run.started)goals();};
+  $('resetAll').onclick=()=>openSheet(`<div class="pb"><h2 class="h2">真的要全部重來嗎？</h2><p class="say">徽章、老師等級、稱號、三明治、貼紙、怪物圖鑑、最佳紀錄都會清空，像第一次來鎮上一樣。<br>清掉就找不回來了。</p>
+    <div class="row"><button class="primary" id="rYes">清空，重新開始</button><button class="ghost" id="rNo">不要，留著</button></div></div>`,{kind:'reset'});
+  document.addEventListener('click',function rs(e){if(e.target.id==='rYes'){document.removeEventListener('click',rs);PL.resetAll();location.reload();}else if(e.target.id==='rNo'){document.removeEventListener('click',rs);album(back);}});
   if($('toGoals'))$('toGoals').onclick=()=>goals();
 }
 $('albumBtn').onclick=()=>{if(!sheetOpen)album();else if(sheetKind==='goals')album(goals);};
