@@ -7,6 +7,10 @@
 <meta name="description" content="大家都被夾成三明治了🥪 Everyone's a little sandwiched.">
 <meta property="og:title" content="三明治鎮 Sandywich Town">
 <meta property="og:description" content="每個人都被某件事夾著過日子。來鎮上玩一局，鬆一鬆。">
+<meta property="og:image" content="https://sandygame.vercel.app/assets/og-town.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Poppins:wght@500;600;700&display=swap">
@@ -56,6 +60,9 @@ a.game.soon,div.game.soon{background:var(--soft);border-style:dashed;box-shadow:
 .game.night{background:linear-gradient(135deg,#232a4d,#3a4580);color:#f5f1e8}
 .game.night .g b{color:#f5f1e8}.game.night .g>span,.game.night .en{color:#c9c6d8}
 .game.night .ic{background:rgba(255,255,255,.08)}
+.hook{margin:0;background:#fff;border:2px dashed var(--ink);border-radius:14px;padding:8px 12px;font-weight:700;font-size:15px}
+.hook .en{font-size:12px}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -64,6 +71,7 @@ a.game.soon,div.game.soon{background:var(--soft);border-style:dashed;box-shadow:
   <p class="kicker" id="kicker">SANDYWICH · 三明治鎮</p>
   <h1 id="title">三明治鎮<span class="en">Sandywich Town</span></h1>
   <p class="hsub" id="sub">大家都被夾成三明治了🥪<span class="en">Everyone's a little sandwiched.</span></p>
+  <p class="hook" id="hook" hidden></p>
   <p class="lead" id="lead">每個人都被某件事夾著過日子。來鎮上玩一局，鬆一鬆，看看你怎麼做決定。<span class="en">Everyone's squeezed by something. Come play a round, loosen up, and see how you choose.</span></p>
 
   <div class="series" id="series">
@@ -89,6 +97,7 @@ a.game.soon,div.game.soon{background:var(--soft);border-style:dashed;box-shadow:
     if(h.title)document.getElementById('title').innerHTML=bi(h.title);
     if(h.sub)document.getElementById('sub').innerHTML=bi(h.sub);
     if(h.lead)document.getElementById('lead').innerHTML=bi(h.lead);
+    if(h.hook){var hk=document.getElementById('hook');hk.innerHTML=bi(h.hook);hk.hidden=false;}
     if(!d.series||!d.series.length)return;
     var html=d.series.filter(function(s){return s.status!=='hidden'}).map(function(s,i){
       var open=s.status==='open'&&s.href;

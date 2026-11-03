@@ -866,8 +866,9 @@ function ending(){
       if(phone&&navigator.canShare&&navigator.canShare({files:[file]})){
         try{await navigator.share({files:[file]});out.innerHTML=tip||'分享好了！';return;}catch(e){if(e&&e.name==='AbortError'){out.innerHTML=tip;return;}}
       }
-      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sandywich-town.png';document.body.appendChild(a);a.click();a.remove();
-      out.innerHTML=(phone?'圖片存好了，在相簿裡。':'圖片已經下載到電腦了。')+(tip?'<br>'+tip:'');
+      const url=URL.createObjectURL(blob);
+      if(!phone){const a=document.createElement('a');a.href=url;a.download='sandywich-town.png';document.body.appendChild(a);a.click();a.remove();}
+      out.innerHTML=(phone?'<b>長按下面的圖，選「儲存圖片」</b>，再到 IG 發限動。':'圖片已經下載到電腦了。')+`<img src="${url}" alt="三明治鎮戰績圖" style="display:block;width:min(240px,70%);margin:8px auto;border-radius:12px;border:2px solid #2c2c2a">`+(tip?tip:'');
     }catch(e){console.warn(e);out.textContent='做圖失敗了，改用「複製結果文字」吧。';}
   };
   if(ig)showQR(igLink());
