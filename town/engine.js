@@ -816,8 +816,8 @@ function badgeCard(id,isNew){const got=G.badges.includes(id),b=BADGES[id]||[id,'
 function lvBox(L,up){
   const a=L.prevAt,b=L.next?L.next.at:a,seg=Math.max(1,b-a),got=Math.min(seg,L.n-a);
   return `<div class="lvl"><div class="lvh"><span>老師等級</span><b>${L.cur.name}</b>${up?'<em class="up">升級了！</em>':''}</div>
-   ${L.next?`<div class="lvbar">${Array.from({length:seg},(_,i)=>`<i class="${i<got?'on':''}"></i>`).join('')}</div><small>再 ${L.to} 個徽章，升「${L.next.name}」：${L.next.perk}</small>`:'<small>已經是現在最高的等級了！</small>'}
-   ${L.i>0?`<small class="perk">現在的好處：${LEVELS.slice(1,L.i+1).map(l=>l.perk).join('、')}</small>`:''}</div>`;
+   ${L.next?`<div class="lvbar">${Array.from({length:seg},(_,i)=>`<i class="${i<got?'on':''}"></i>`).join('')}</div><small>徽章收集越多等級越高。再 ${L.to} 個，升「${L.next.name}」（${L.next.perk}）</small>`:'<small>已經是現在最高的等級了！</small>'}
+   ${up&&L.i>0?`<small class="perk">新好處：${L.cur.perk}</small>`:''}</div>`;
 }
 function igLink(){return IG?IG.url:'';}
 function ending(){
@@ -837,12 +837,11 @@ function ending(){
    ${run.freed?`<small class="freed">其中 ${run.freed} 位是從聳肩怪手上搶回來的💪</small>`:''}
    <div class="row top2"><button class="primary" id="book">看貼紙簿</button><button class="ghost" id="again">再玩一天</button></div>
    ${cheer?`<p class="say">${cheer}</p>`:''}
-   ${comingNext().length?`<div class="unlock">🔓 <b>下一局解鎖：${comingNext().map(n=>n.nm).join('、')}</b><small>會帶來新的一層三明治，鎮上也會更熱鬧</small></div>`:''}
-   <div class="swbox"><h3>🥪 你的三明治：${layers} / ${NPCS.length} 層</h3>
+   ${comingNext().length?`<div class="unlock"><b>🔓 下一局解鎖：${comingNext().map(n=>n.nm).join('、')}</b><small>會帶來新的一層三明治，鎮上也會更熱鬧</small></div>`:''}
+   <div class="swbox"><h3>🥪 這一局的三明治：${layers} / ${NPCS.length} 層</h3><small class="swnote">每局重新疊。救過的居民會一直留在貼紙簿裡。</small>
     <div class="sandwich big">${sandwichFlags(runState,true)}</div>
     <p class="swprog">${card?'<b>序列圖卡解鎖了！</b>':`再 <b>${need} 層</b> → 序列圖卡`}<br>${layers<NPCS.length?`疊滿 ${NPCS.length} 層 → 三明治會對你眨眼😉`:'疊滿了！三明治在對你眨眼😉'}${run.eaten?`<br><small>加班時吃掉了 ${run.eaten} 層。</small>`:''}</p></div>
-   <div class="newb"><b class="nbh">${nb.length?fill(Z.badgeCheer||'拿到 {n} 個新徽章！',{n:nb.length}):'🏅 老師等級'}</b>
-    ${nb.length?`<div class="cards3">${nb.map(id=>badgeCard(id,true)).join('')}</div>`:''}
+   <div class="newb">${nb.length?`<b class="nbh">🏅 新徽章：${nb.map(id=>(BADGES[id]||[id])[0]).join('、')}</b>`:''}
     ${lvBox(LV,run.levelUp)}</div>
    <div class="ttl sm"><small>今天的稱號</small><b>${title}</b>${best&&best.saved>saved.length?`<small>最佳紀錄：救回 ${best.saved} 位</small>`:''}</div>
    ${card?`<div class="pass">${cta?`<small>通關密語</small><b>${Z.passcode}</b><small>把通關密語傳給我們，領這一區的序列圖卡。</small><a class="primary" href="${cta.url}" target="_blank" rel="noopener">${cta.label}</a>`:`<small>序列圖卡解鎖了</small><b style="font-size:20px">${Z.card.title}</b>`}<a class="cardlink" href="/cards/${Z.id}" target="_blank" rel="noopener">看序列圖卡 →</a></div>`
@@ -852,8 +851,8 @@ function ending(){
     <ul>${(sty.obs||[]).map(o=>`<li>${fill(o,V)}</li>`).join('')}</ul>
     <p class="cost2">${fill(sty.cost,V)}</p>
     <div class="tip"><i>小習慣</i><p>${fill(sty.habit,V)}</p></div></div>
-   ${NW?`<div class="nw"><small>${stuckL.length?fill(NW.lead,{parts}):NW.leadAll}</small><h3>${NW.title}<span>${NW.part}</span></h3><p>${NW.text}</p>
-     ${ig?`<a class="primary igbtn" id="igbtn" href="${igLink()}" target="_blank" rel="noopener">追蹤 @${IG.handle}，跟著練</a><div class="qr" id="qr" hidden><div id="qrc"></div><small>手機掃這裡，追蹤 @${IG.handle}</small></div>`:''}</div>`:''}
+   ${NW?`<div class="nw"><small>${stuckL.length?'沒救回來的肩膀，這套序列練得到 👇':NW.leadAll}</small><h3>${NW.title}<span>${NW.part}</span></h3>
+     ${ig?`<div class="nwrow"><a class="primary igbtn" id="igbtn" href="${igLink()}" target="_blank" rel="noopener">追蹤 @${IG.handle}，跟著練</a><div class="qr" id="qr" hidden title="手機掃這裡追蹤"><div id="qrc"></div></div></div>`:''}</div>`:''}
    ${!NW&&ig?`<a class="primary igbtn" id="igbtn" href="${igLink()}" target="_blank" rel="noopener">追蹤 @${IG.handle}，跟著練</a>`:''}
    <div class="sec2">
     <button class="ghost sm" id="story">${IG?`存成限動圖，分享並標記 @${IG.handle}`:'存成限動圖分享'}</button>
@@ -893,7 +892,7 @@ function ending(){
 function showQR(url){
   if(!url||!window.matchMedia||!matchMedia('(min-width:700px)').matches)return;
   const draw=()=>{const box=$('qr'),el=$('qrc');if(!box||!el||!window.QRCode)return;el.innerHTML='';
-    try{new QRCode(el,{text:url,width:132,height:132,colorDark:'#2c2c2a',colorLight:'#ffffff'});box.hidden=false;}catch(_){box.hidden=true;}};
+    try{new QRCode(el,{text:url,width:72,height:72,colorDark:'#2c2c2a',colorLight:'#ffffff'});box.hidden=false;}catch(_){box.hidden=true;}};
   if(window.QRCode){draw();return;}
   if(showQR.loading)return;showQR.loading=true;
   const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';s.async=true;
