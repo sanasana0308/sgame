@@ -888,8 +888,8 @@ function askReset(kind){
 function moreMenu(){
   if(sheetOpen&&!['goals','album'].includes(sheetKind))return;
   openSheet(`<div class="pb"><h2 class="h2">設定</h2>
-   <button class="otopt" id="mZone"><b>🔄 重玩這一區</b><small>三明治清空，從第 1 天開始。稱號牆會留著。</small></button>
-   <button class="otopt" id="mAll"><b>🧹 全部重來</b><small>所有紀錄都清掉，連稱號牆也是。</small></button>
+   <button class="otopt" id="mZone"><b>🔄 重玩這一區</b><small>三明治清空，從第 1 天開始。稱號牆、背包、怪物圖鑑都留著。</small></button>
+   <button class="otopt" id="mAll"><b>🧹 全部重來</b><small>像第一次來：三明治、稱號牆、背包、怪物圖鑑全部清掉。</small></button>
    <button class="ghost" id="mBack">回去</button></div>`,{kind:'more'});
   $('mZone').onclick=()=>askReset('zone');$('mAll').onclick=()=>askReset('all');
   $('mBack').onclick=()=>{closeSheet();if(!run.started)goals();};
@@ -996,8 +996,8 @@ function album(back){
    <section><h3 class="sec">👻 怪物圖鑑 <span class="cnt">${mGot?1:0}/1</span></h3>
      <div class="card mon ${mGot?'':'off'}">${monsterSvg('mbig')}<div>${mGot?`<b>${MON.name}</b><small>${MON.about}</small><small><em>怎麼嚇跑：</em>趁牠靠近時連點牠 ${need} 下${hasRope()?'（有瑜伽繩）':''}。</small>`:`<b>？？？</b><small>在鎮上遇到牠，就會收進圖鑑。</small>`}</div></div></section>
    <section><h3 class="sec">🎒 背包</h3><div class="chips">
-     <span class="${hasRope()?'on':''}">瑜伽繩 ${hasRope()?'✓':'沒有'}：手碰不到時用，嚇怪少點幾下。借出去就要再去雜貨店拿</span>
-     <span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0} 塊：墊著做，穩住比較簡單。用一次送出一塊，地上每天會再出現</span></div></section>
+     <span class="${hasRope()?'on':''}">瑜伽繩 ${hasRope()?'✓':'沒有'}：手碰不到時，用繩子幫忙。用掉就沒了，雜貨店可以再拿</span>
+     <span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0} 塊：墊在手下，動作更穩。用一次少一塊，地上可以再撿</span></div></section>
    <div class="row">${!back&&run.started&&!run.over?'<button class="ghost" id="toGoals">今天的任務</button>':''}<button class="primary" id="close">${back===goals?'回去':back?'回到結果':'回到小鎮'}</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div></div>`,{kind:'album'});
   $('close').onclick=()=>{if(back){back();return;}closeSheet();if(!run.started)goals();};
   if($('toGoals'))$('toGoals').onclick=()=>goals();
