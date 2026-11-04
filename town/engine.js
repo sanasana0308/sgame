@@ -35,7 +35,7 @@ const clockStr=m=>{const t=DAY0+Math.round(m);return `${String(Math.floor(t/60))
 const RM=(()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(_){return false}})();
 // 測試用：?speed=4 讓地圖上的時間和走路一起變快（比例不變，平衡不變）
 const SPEED=Math.min(8,Math.max(1,+new URLSearchParams(location.search).get('speed')||1));
-const GAME_URL=location.origin+'/town';
+const GAME_URL=location.origin+'/';
 const MON=Object.assign({start:[1,1],minPerTile:2.2,drain:12,scareTaps:5,scareTapsRope:3,dazeMin:40},Z.monster||{});
 const ROPE=Z.items.find(i=>i.id==='rope');
 const BRICK=Z.items.find(i=>i.id==='brick')||{at:[],badgeAt:99};
@@ -68,7 +68,7 @@ const introduced=d=>{const ids=[];DAYS.slice(0,Math.min(d,DAYS.length-1)+1).forE
 const layerOn=n=>(S.layers||[]).includes(n.id);
 const layersNow=()=>(S.layers||[]).length;
 const zoneDone=()=>layersNow()>=ALL.length;
-function toRest(n){if(n.rest){n.x=n.rest[0];n.y=n.rest[1];}}
+function toRest(n){} // 救回的人改到地圖外的「休息區」名單，不佔地圖
 function setRoster(){
   S.layers=S.layers||[];
   const ids=introduced(S.day||0);NPCS.length=0;
@@ -105,7 +105,7 @@ function newRun(){
     res:Object.fromEntries(NPCS.map(n=>{const [lo,hi]=n.startT||[a,b];return [n.id,{t:Math.round(rnd(lo,hi)),state:n.from>0?'away':'open',fails:0,tries:0,grade:'',warned:false}];})),
     grab:dayCfg().grab!==false,otGo:false,
     events:(dayCfg().events===false?[]:(Z.events||[])).map(e=>({e,at:Math.random()<(e.chance??1)?rnd(hm(e.time[0])-DAY0,hm(e.time[1])-DAY0):null,done:false})),
-    walkMul:1,rainUntil:-1,rainId:null,
+    walkMul:1,rainUntil:-1,rainId:null,bricks:[],
     coupon:Z.coupon&&Z.coupon.at&&Z.coupon.at.length?{at:pick(Z.coupon.at),have:false,used:false}:null,
     cheese:null,
     mon:{x:MON.start[0],y:MON.start[1],fx:MON.start[0],fy:MON.start[1],path:[],target:null,acc:0,daze:0,cool:0,linger:0,taps:[]},
@@ -123,7 +123,7 @@ newRun();
 const resOf=n=>run.res[n.id];
 const openRes=()=>NPCS.filter(n=>resOf(n).state==='open');
 const cheeseVisible=()=>run.cheese&&!run.cheese.caught&&!run.cheese.gone&&run.min>=run.cheese.from&&run.min<run.cheese.to;
-function allPeople(){const a=[...NPCS.filter(n=>resOf(n).state!=='away'),...restPeople(),LETTUCE];if(CHEESE&&cheeseVisible())a.push(Object.assign(CHEESE,{x:run.cheese.x,y:run.cheese.y}));return a;}
+function allPeople(){const a=[...NPCS.filter(n=>{const s=resOf(n).state;return s!=='away'&&s!=='saved';}),LETTUCE];if(CHEESE&&cheeseVisible())a.push(Object.assign(CHEESE,{x:run.cheese.x,y:run.cheese.y}));return a;}
 function blocked(x,y){if(!walkable(x,y))return true;return allPeople().some(n=>n.x===x&&n.y===y);}
 function bfs(sx,sy,goal,blk){
   blk=blk||blocked;if(goal(sx,sy))return [];
@@ -320,12 +320,13 @@ function renderHud(){
   $('enNum').textContent=e;
   const b=G.bag.brick||0,need=BRICK.badgeAt||3;
   const bag=`<span class="slot ${hasRope()?'got':'off'}" title="瑜伽繩">${ropeSvg()}${hasRope()?'瑜伽繩':'瑜伽繩？'}</span>
-   <span class="slot ${b?'got':'off'}" title="瑜伽磚">${brickSvg()}${b}/${need}</span>
+   <span class="slot ${b?'got':'off'}" title="瑜伽磚">${brickSvg()}${b}</span>
    ${run.coupon&&run.coupon.have&&!run.coupon.used?`<span class="slot got" title="${Z.coupon.name}">${couponSvg()}按摩券</span>`:''}
    ${run.rainUntil>=0?'<span class="slot rain">下雨中</span>':''}`;
   if(renderHud.bag!==bag){renderHud.bag=bag;$('bagRow').innerHTML=bag;}
   const sv=layersNow(),N=ALL.length;
-  const goal=`<span class="pips">${ALL.map(n=>`<i class="${layerOn(n)?'on':notYet(n)?'lock':''}"></i>`).join('')}</span><span>三明治 <b>${sv}/${N}</b> 層・${sv<R.cardAt?`再 <b>${R.cardAt-sv}</b> 層解鎖序列圖卡`:sv<N?`再 <b>${N-sv}</b> 層完成${zoneName}`:`${zoneName}完成了！`}</span>`;
+  const goal=`<span class="pips">${ALL.map(n=>`<i class="${layerOn(n)?'on':notYet(n)?'lk':''}"></i>`).join('')}</span><span>三明治 <b>${sv}/${N}</b> 層・${sv<R.cardAt?`再 <b>${R.cardAt-sv}</b> 層解鎖序列圖卡`:sv<N?`再 <b>${N-sv}</b> 層完成${zoneName}`:`${zoneName}完成了！`}</span>`;
+  {const fb=$('ffBtn');if(fb){const l=run.ffAuto?'⏩ 等人中，快轉':run.ff?'⏩ 快轉中（按我恢復）':'⏩ 快轉時間';if(fb.textContent!==l)fb.textContent=l;fb.classList.toggle('on',!!(run.ff||run.ffAuto));}}
   if(renderHud.goal!==goal){renderHud.goal=goal;$('goal').innerHTML=goal;}
 }
 function renderUI(){
@@ -342,6 +343,7 @@ function renderUI(){
     b.hidden=r.state==='saved'; // 救回的人去休息區了，名單上不再出現
     const sm=b.querySelector('small');if(sm.textContent!==sub)sm.textContent=sub;
     const i=b.querySelector('.tb i');i.style.width=(r.state==='open'?tt:0)+'%';i.style.background=tCol(tt);}
+  {const rest=ALL.filter(layerOn);const rb=$('restBar');const h=rest.length?`<b>🌳 休息區</b>${rest.map(n=>{const [c,tx]=avOf(n);return `<span class="rp"><i style="background:${c}">${tx}</i>${n.nm}</span>`;}).join('')}`:'';if(rb&&rb.innerHTML!==h){rb.innerHTML=h;rb.hidden=!rest.length;}}
   const dots=ALL.map(n=>`<span class="dot ${S.helped.includes(n.id)?'on':'off'}" title="${ING[n.sticker]}">${ingSvg(n.sticker)}</span>`).join('');
   if(renderUI.dots!==dots){renderUI.dots=dots;$('albumDots').innerHTML=dots;}
   renderHud();
@@ -381,11 +383,11 @@ function interact(tg){
 }
 function pickTile(x,y){
   const k=x+','+y;
-  if(BRICKS.some(([bx,by])=>bx===x&&by===y)&&!S.bricks.includes(k)){
-    S.bricks.push(k);G.bag.brick=(G.bag.brick||0)+1;productive();
-    const full=G.bag.brick>=(BRICK.badgeAt||3);if(full&&BRICK.badge&&PL.badge(BRICK.badge))run.newBadges.push(BRICK.badge);
+  if(BRICKS.some(([bx,by])=>bx===x&&by===y)&&!run.bricks.includes(k)){
+    run.bricks.push(k);G.bag.brick=(G.bag.brick||0)+1;productive();
+    const full=false;
     save();renderUI();
-    toast(!full?`撿到瑜伽磚（${G.bag.brick}/${BRICK.badgeAt}）。磚會一直放在背包，下一區也用得到。`:`集滿 ${BRICK.badgeAt} 塊瑜伽磚！獲得「磚家」徽章。`);
+    toast(!full?`撿到瑜伽磚（背包有 ${G.bag.brick} 塊）。幫需要的居民墊著做，用一次送出一塊。`:`集滿 ${BRICK.badgeAt} 塊瑜伽磚！獲得「磚家」徽章。`);
   }
   const c=run.coupon;
   if(c&&!c.have&&c.at[0]===x&&c.at[1]===y){c.have=true;productive();renderHud();toast(Z.coupon.found||'撿到按摩券！');}
@@ -536,10 +538,10 @@ function holdGame(n,o){
     const grade=early?'fail':frac>=H_.perfect?'perfect':frac>=H_.pass?'pass':'fail';
     lessonResult(n,grade,frac,o);});
   if(!(G.tut&&G.tut.hold)){
-    $('lb').innerHTML=`<span class="eyebrow">第一次？先試一次（不計分）</span>
+    $('lb').innerHTML=`<span class="eyebrow">只要 1 個呼吸</span>
      <ol class="how"><li><b>吸氣：按住</b>，指針往上，跟著綠色一起升。</li><li><b>吐氣：放開</b>，指針往下，跟著綠色一起降。</li><li>指針待在<b>綠色</b>裡就對了。圓圈變大是吸氣，變小是吐氣。</li></ol>
-     <button class="primary" id="try">先試一次</button>`;
-    $('try').onclick=()=>go(true);
+     <button class="primary" id="go1">開始（1 個呼吸）</button><button class="link" id="try">想先試一次（不計分）</button>`;
+    $('go1').onclick=()=>{G.tut=G.tut||{};G.tut.hold=true;save();go(false);};$('try').onclick=()=>go(true);
   }else go(false);
 }
 function runHold(n,o,practice,onEnd){
@@ -605,7 +607,8 @@ function lessonResult(n,grade,frac,o){
   r.state='saved';r.t=0;r.grade=grade;run.active=null;checkResolved();
   {const L=layersNow(),left=NPCS.filter(x=>resOf(x).state!=='saved').length;
    floatPlus('🥪 +1 層');toast(`🥪 三明治 +1 層（${L}/${ALL.length}）！${L===R.cardAt?'序列圖卡解鎖了！':''}${left?`今天還要救 ${left} 位`:'今天的人都救回來了！'}`);}
-  if(o.useBrick){S.brickUsed=true;}
+  if(o.useBrick){S.brickUsed=true;G.bag.brick=Math.max(0,(G.bag.brick||0)-1);toast(`瑜伽磚送給${n.nm}了（背包剩 ${G.bag.brick} 塊）。`);}
+  if(n.need==='rope'&&hasRope()){G.bag.rope=false;setTimeout(()=>toast(`瑜伽繩借給${n.nm}了。下次要用，再去雜貨店拿。`),1800);}
   if(!S.helped.includes(n.id))S.helped.push(n.id);
   S.layers=S.layers||[];if(!S.layers.includes(n.id))S.layers.push(n.id);toRest(n);save();
   lb.innerHTML=`<span class="grade ${grade}">${grade==='perfect'?'完美！':'過關'}</span><p class="note">穩住 ${pct}%・體力 −${grade==='perfect'?E.perfect:E.pass}</p><button class="primary" id="toQuiz">${n.nm}有問題要問你</button>`;
@@ -625,6 +628,7 @@ function quiz(n){
   const opts=n.quizRaw.opts.map((t,i)=>({t,ok:i===0}));
   for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
   const ai=opts.findIndex(o=>o.ok);
+  $panel.querySelectorAll('.bubble,#fbox').forEach(x=>x.hidden=true);
   lb.innerHTML=`<span class="eyebrow">${n.nm}問你</span><h2 style="font-size:19px">${L.q}</h2>
     <div class="opts">${opts.map((o,i)=>`<button class="opt" data-i="${i}">${o.t}</button>`).join('')}</div><div id="after"></div>`;
   lb.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
@@ -632,10 +636,10 @@ function quiz(n){
     if(ok)S.right++;else{run.st.wrong++;spend(R.wrongQuizMin);}
     S.quiz[n.id]=ok;save();
     lb.querySelectorAll('.opt').forEach((x,j)=>{x.disabled=true;if(j===ai)x.classList.add('right');else if(j===i)x.classList.add('wrong');});
-    $('after').innerHTML=`<div class="fact"><b>${ok?'答對了！':`哈，是綠色那個。（想了一下，花了 ${R.wrongQuizMin} 分鐘）`}</b><p>${L.fact}</p><div class="tip"><i>小撇步</i><p>${L.tip}</p></div></div>
-      <p class="say" style="margin-top:12px">${n.bonus&&S.brickUsed&&n.bonusThanks?n.bonusThanks:''}${n.thanks}</p>
-      <button class="primary" id="nx" style="width:100%;margin-top:12px">拿到「${ING[n.sticker]}」貼紙，回到小鎮</button>`;
-    $('nx').onclick=()=>{closeSheet();toast(`拿到「${ING[n.sticker]}」貼紙！`);const ab=$('albumBtn');ab.classList.remove('pop');void ab.offsetWidth;ab.classList.add('pop');};
+    $('after').innerHTML=`<div class="fact"><b>${ok?'✅ 答對了！':`是綠色那個。（想了一下，+${R.wrongQuizMin} 分鐘）`}</b><p>${L.fact}</p><div class="tip"><i>小撇步</i><p>${L.tip}</p></div></div>
+      <button class="primary" id="nx" style="width:100%;margin-top:12px">🥪 疊上「${ING[n.sticker]}」，回到小鎮</button>`;
+    $('after').scrollIntoView({block:'nearest'});
+    $('nx').onclick=()=>{closeSheet();toast(`${n.nm}：「肩膀鬆多了，謝謝你！」去休息區坐一下。`);const ab=$('albumBtn');ab.classList.remove('pop');void ab.offsetWidth;ab.classList.add('pop');};
   });
 }
 
@@ -653,7 +657,7 @@ function openBench(forced){
    <button class="holdpad" id="hold"><b>按住＝吸氣</b><small id="hstat">圓圈變大時按住，變小時放開</small></button>
    ${forced?'':'<button class="link" id="nob">算了，不休息</button>'}</div>`,{kind:'bench'});
   const pad=$('hold'),ring=$('bring'),btxt=$('btxt'),hstat=$('hstat');
-  let holding=false,started=false,T=0,good=0,done=false,last=performance.now(),raf=0;const per=H_.inSec+H_.exSec,dur=per*2;
+  let holding=false,started=false,T=0,good=0,done=false,last=performance.now(),raf=0;const per=H_.inSec+H_.exSec,dur=per*1;
   const setHold=h=>{holding=h;pad.classList.toggle('on',h);if(h&&!started){started=true;last=performance.now();}};
   pad.addEventListener('pointerdown',e=>{e.preventDefault();try{pad.setPointerCapture(e.pointerId);}catch(_){}setHold(true);});
   pad.addEventListener('pointerup',()=>setHold(false));pad.addEventListener('pointercancel',()=>setHold(false));
@@ -935,7 +939,7 @@ async function storyPng(d){
   if(IG){try{const qi=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=(SITE.ig&&SITE.ig.qr)||'/assets/qr-ig.png';});
     round(110,by,300,300,28);g.fillStyle='#fff';g.fill();g.lineWidth=6;g.strokeStyle='#2c2c2a';g.stroke();g.drawImage(qi,124,by+14,272,272);qrOk=true;}catch(_){}}
   const cx=qrOk?700:540;g.fillStyle='#2c2c2a';g.font=`900 64px ${ZH}`;g.fillText('換你出動！',cx,by+90);
-  g.font=`600 36px Poppins,${ZH}`;g.fillText((location.host||'')+'/town',cx,by+150);
+  g.font=`600 36px Poppins,${ZH}`;g.fillText(location.host||'sandygame.vercel.app',cx,by+150);
   if(IG){round(cx-230,by+185,460,84,42);g.fillStyle='#ffc233';g.fill();g.fillStyle='#2c2c2a';g.font=`700 44px Poppins,${ZH}`;g.fillText('@'+IG.handle,cx,by+243);}
   return await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error('toBlob')),'image/png'));
 }
@@ -950,7 +954,7 @@ function quitEarly(){
   $('qYes').onclick=()=>{sheetOpen=false;$sheet.hidden=true;endDay();};
   $('qNo').onclick=closeSheet;
 }
-function pipsHtml(){return `<span class="pips2">${ALL.map(n=>{const s=stateNow(n);return `<i class="${s}" title="${n.nm}">${s==='lock'?'明':avOf(n)[1]}</i>`;}).join('')}</span>`;}
+function pipsHtml(){return `<span class="pips2">${ALL.map(n=>{const s=stateNow(n);return `<i class="p-${s}" title="${n.nm}">${s==='lock'?'明':avOf(n)[1]}</i>`;}).join('')}</span>`;}
 function goals(){
   const playing=run.started&&!run.over;const L=layersNow(),N=ALL.length,day=(S.day||0)+1,grab=run.grab;
   if(zoneDone()&&!playing){
@@ -979,7 +983,7 @@ function goals(){
   $('toAlbum').onclick=()=>album(goals);
 }
 const intro=goals;
-{const qb=$('quitBtn');if(qb)qb.onclick=quitEarly;const mb=$('moreBtn');if(mb)mb.onclick=moreMenu;}
+{const fb=$('ffBtn');if(fb)fb.onclick=()=>{if(!run.started||run.over)return;run.ff=!run.ff;renderHud();toast(run.ff?'⏩ 時間快轉中：大家的肩膀也會變緊得比較快喔。再按一次恢復。':'時間恢復正常。');};const qb=$('quitBtn');if(qb)qb.onclick=quitEarly;const mb=$('moreBtn');if(mb)mb.onclick=moreMenu;}
 
 // ================= 貼紙簿・稱號牆・圖鑑 =================
 function album(back){
@@ -992,8 +996,8 @@ function album(back){
    <section><h3 class="sec">👻 怪物圖鑑 <span class="cnt">${mGot?1:0}/1</span></h3>
      <div class="card mon ${mGot?'':'off'}">${monsterSvg('mbig')}<div>${mGot?`<b>${MON.name}</b><small>${MON.about}</small><small><em>怎麼嚇跑：</em>趁牠靠近時連點牠 ${need} 下${hasRope()?'（有瑜伽繩）':''}。</small>`:`<b>？？？</b><small>在鎮上遇到牠，就會收進圖鑑。</small>`}</div></div></section>
    <section><h3 class="sec">🎒 背包</h3><div class="chips">
-     <span class="${hasRope()?'on':''}">瑜伽繩 ${hasRope()?'✓':'還沒拿'}：手碰不到時用，嚇怪少點幾下</span>
-     <span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0}/${BRICK.badgeAt||3}：墊著做，穩住比較簡單</span></div></section>
+     <span class="${hasRope()?'on':''}">瑜伽繩 ${hasRope()?'✓':'沒有'}：手碰不到時用，嚇怪少點幾下。借出去就要再去雜貨店拿</span>
+     <span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0} 塊：墊著做，穩住比較簡單。用一次送出一塊，地上每天會再出現</span></div></section>
    <div class="row">${!back&&run.started&&!run.over?'<button class="ghost" id="toGoals">今天的任務</button>':''}<button class="primary" id="close">${back===goals?'回去':back?'回到結果':'回到小鎮'}</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div></div>`,{kind:'album'});
   $('close').onclick=()=>{if(back){back();return;}closeSheet();if(!run.started)goals();};
   if($('toGoals'))$('toGoals').onclick=()=>goals();
@@ -1024,12 +1028,9 @@ function draw(dt){
     ctx.fillStyle=info.fg||'#fff';const fs=Math.max(9,Math.min(ts*.5,w/info.name.length*.85));ctx.font=`900 ${fs}px "Noto Sans TC",sans-serif`;ctx.fillText(info.name,x+w/2,y+h*(h>ts?.6:.52));
     if(ROPE&&k===ROPE.at&&!hasRope())bubble(b.x0+(b.x1-b.x0+1)/2,b.y0,'#ffc233','繩');
   }
-  for(const [bx,by] of BRICKS){if(S.bricks.includes(bx+','+by))continue;const cx=(bx+.5)*ts,cy=(by+.5)*ts+wob(Math.sin(pulse*3)*1.5);ctx.fillStyle='#b48ad8';rr(cx-ts*.28,cy-ts*.18,ts*.56,ts*.36,4);ctx.fill();ctx.strokeStyle='#2c2c2a';ctx.lineWidth=1.5;ctx.stroke();}
+  for(const [bx,by] of BRICKS){if(run.bricks.includes(bx+','+by))continue;const cx=(bx+.5)*ts,cy=(by+.5)*ts+wob(Math.sin(pulse*3)*1.5);ctx.fillStyle='#b48ad8';rr(cx-ts*.28,cy-ts*.18,ts*.56,ts*.36,4);ctx.fill();ctx.strokeStyle='#2c2c2a';ctx.lineWidth=1.5;ctx.stroke();}
   const c=run.coupon;
   if(c&&!c.have&&Math.abs(player.x-c.at[0])+Math.abs(player.y-c.at[1])<=3){const cx=(c.at[0]+.5)*ts,cy=(c.at[1]+.5)*ts;ctx.globalAlpha=.6+.4*Math.sin(pulse*5);ctx.fillStyle='#fff1cc';rr(cx-ts*.3,cy-ts*.2,ts*.6,ts*.4,3);ctx.fill();ctx.strokeStyle='#d7263d';ctx.lineWidth=1.5;ctx.stroke();ctx.globalAlpha=1;}
-  if(REST_SPOTS.length){const xs=REST_SPOTS.map(a=>a[0]),ys=REST_SPOTS.map(a=>a[1]);const x0=Math.min(...xs)*ts,y0=Math.min(...ys)*ts-ts*.45,x1=(Math.max(...xs)+1)*ts,y1=(Math.max(...ys)+1)*ts;
-    ctx.fillStyle='rgba(255,241,204,.75)';rr(x0+2,y0,x1-x0-4,y1-y0-2,ts*.3);ctx.fill();ctx.setLineDash([4,3]);ctx.strokeStyle='#c9a24a';ctx.lineWidth=1.5;ctx.stroke();ctx.setLineDash([]);
-    ctx.fillStyle='#8a6d1f';ctx.font=`900 ${Math.max(9,ts*.3)}px "Noto Sans TC",sans-serif`;ctx.fillText('🌳 休息區',(x0+x1)/2,y0+ts*.2);}
   for(const n of allPeople())drawNpc(n);
   drawMonster(dt);
   drawPlayer();
@@ -1116,7 +1117,8 @@ function frame(now){
   const dt=Math.min(.05,(now-last)/1000||0);last=now;
   const live=run.started&&!run.over&&(!sheetOpen||sheetLive);
   if(live){
-    tick(dt*R.minPerSec*SPEED);
+    const idle=!sheetOpen&&openRes().length===0&&NPCS.some(n=>resOf(n).state==='away');
+    run.ffAuto=idle;tick(dt*R.minPerSec*SPEED*(idle?8:run.ff?3:1));
     if(!sheetOpen){
       if(player.path.length){const [nx,ny]=player.path[0];const dx=nx-player.x,dy=ny-player.y,d=Math.hypot(dx,dy),s=R.walkTilesPerSec*run.walkMul*SPEED*dt;
         if(d<=s){player.x=nx;player.y=ny;player.path.shift();run.st.walk++;run.st.pend++;run.energy-=R.energy.walkTile;run.st.minEnergy=Math.min(run.st.minEnergy,run.energy);pickTile(nx,ny);
