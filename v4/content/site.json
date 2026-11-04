@@ -1,0 +1,93 @@
+{
+  "_說明": "整個網站共用的設定。ig.handle 填 Sandy 的 IG 帳號（不用 @）。url 不填就自動用 https://www.instagram.com/<handle>/。handle 空白時，遊戲結尾不顯示 IG 按鈕。 qr 是 IG 帳號的 QR code 圖（換帳號時要重做）。",
+  "ig": {
+    "handle": "sandywich.su",
+    "url": "https://www.instagram.com/sandywich.su/",
+    "qr": "/assets/qr-ig.png"
+  },
+  "_說明_series": "首頁的系列按鈕。新的人生主題＝加一個 series（「我熱愛…」＋emoji），每月新的一區＝在該系列的 zones 加一筆。status: open 可以玩、soon 即將開放（灰色不能按）、hidden 不顯示（還沒公開的先放這裡）。每一行都要有 zh 和 en。 emoji 接在標題後面；icon 是左邊的圖（sandwich＝三明治圖，其他填一個 emoji）。 還沒公開的系列放在 lab 分支，不放在正式網站。",
+  "home": {
+    "kicker": "SANDYWICH TOWN",
+    "title": {
+      "zh": "三明治鎮",
+      "en": "Sandywich Town"
+    },
+    "sub": {
+      "zh": "大家都被夾成三明治了 🥪",
+      "en": "Life has us all a little sandwiched."
+    },
+    "lead": {
+      "zh": "每個人都有被生活夾住的時候。工作、關係、身體，或是那些說不清楚的小煩惱。",
+      "en": "Everyone gets squeezed by life sometimes: work, relationships, the body, or little worries that are hard to name."
+    },
+    "lead2": {
+      "zh": "生活的夾心太多？來鎮上玩一局，看看今天發現什麼。沒有標準答案，只有屬於你的下一步。",
+      "en": "Too much filling in your life? Play a round in town and see what you discover today. No right answers, just your own next step."
+    }
+  },
+  "series": [
+    {
+      "id": "yoga",
+      "emoji": "",
+      "zh": "身體救援隊・出動！",
+      "en": "Body Rescue: Let's Go!",
+      "status": "open",
+      "href": "/town",
+      "desc": {
+        "zh": "身體怪物出沒中！花 5 分鐘，幫鎮民解決身體小麻煩，也順便照顧一下自己。",
+        "en": "Body monsters on the loose! Take 5 minutes to fix the townsfolk's little body troubles, and look after yourself too."
+      },
+      "zones": [
+        {
+          "zh": "第一區・極致肩持",
+          "en": "Zone 1 · Shoulder On",
+          "status": "open",
+          "href": "/town"
+        }
+      ],
+      "icon": "sandwich"
+    },
+    {
+      "id": "glow",
+      "icon": "firefly",
+      "emoji": "",
+      "theme": "night",
+      "zh": "微光螢火蟲・發現去！",
+      "en": "Little Firefly, Off to Discover",
+      "status": "hidden",
+      "href": "/glow/",
+      "desc": {
+        "zh": "發現，就是創造。越發現自己，越踏實。",
+        "en": "To discover is to create. The more you find yourself, the steadier you stand."
+      }
+    },
+    {
+      "id": "mom",
+      "emoji": "🙃",
+      "zh": "我熱愛當媽",
+      "en": "I ♥ Being a Mom",
+      "status": "hidden",
+      "icon": "🍳"
+    },
+    {
+      "id": "feel",
+      "emoji": "🫧",
+      "zh": "我熱愛感受",
+      "en": "I ♥ Feeling Things",
+      "status": "hidden",
+      "icon": "🌊"
+    },
+    {
+      "id": "mailbox",
+      "emoji": "",
+      "zh": "三明治鎮信箱",
+      "en": "Sandywich Mailbox",
+      "status": "hidden",
+      "desc": {
+        "zh": "投稿你的煩惱，可能變成下一位居民。",
+        "en": "Send us your worries. You might become our next resident."
+      },
+      "icon": "💌"
+    }
+  ]
+}
