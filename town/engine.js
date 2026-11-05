@@ -440,7 +440,7 @@ function openNpc(n){
    ${needRope?`<p class="note warn">${n.noitem||'這個動作要用到瑜伽繩。'}（沒有繩子，兩手會碰不到。）</p>`:''}
    ${lowE?`<p class="note warn">你的體力只剩 ${Math.round(run.energy)}，手也在抖，穩住會比較難。</p>`:''}
    ${canCoupon?`<button class="ghost" id="coupon">${couponSvg()}${Z.coupon.use||'用按摩券'}<small>　最適合快變紅的人</small></button>`:''}
-   ${(G.bag.brick||0)>0?`<button class="ghost brickpick ${r.brickPick?'on':''}" id="brickPick">${brickSvg()}${r.brickPick?'✓ 會墊瑜伽磚':'墊瑜伽磚'}<small>　這次一定穩得住・用掉 1 塊（剩 ${G.bag.brick}）</small></button>`:''}
+   ${(G.bag.brick||0)>0?`<button class="ghost brickpick ${r.brickPick?'on':''}" id="brickPick">${brickSvg()}${r.brickPick?'✓ 會墊瑜伽磚':'墊瑜伽磚'}<small>　拉到位就過關，不用做「穩住」・用掉 1 塊（剩 ${G.bag.brick}）</small></button>`:''}
    <button class="primary big" id="apDirect"><b>直接教</b><small>　教一次 ${r.tries?R.retryMin:R.lessonMin} 分鐘</small></button>
    <button class="link" id="later">等一下再來</button></div>`;
   openSheet(html,{live:true,kind:'npc'});
@@ -473,7 +473,7 @@ function startLesson(n,kind,ap){
   let zone=(run.holdZone||R.hold.zone)+(ap.zone||0);const why=[];
   if((ap.zone||0)>=.04)why.push(`${ap.label||'先聊聊'}，他比較配合`);else if((ap.zone||0)<0)why.push(`${ap.label||'直接教'}，他沒那麼配合`);
   const useBrick=!!r.brickPick&&(G.bag.brick||0)>0;
-  if(useBrick){zone+=R.hold.brickZone;why.push('墊了瑜伽磚，這次一定過關');}
+  if(useBrick){zone+=R.hold.brickZone;why.push('墊了瑜伽磚');}
   if(run.energy<R.energy.low){zone+=R.energy.lowZone;why.push('你很累');}
   zone=Math.max(R.hold.minZone,zone);
   if(n.need==='rope'&&!r.rope&&hasRope()){r.rope=true;G.bag.rope=false;save();renderHud();toast(`把瑜伽繩借給${n.nm}了（背包沒有繩子了）。`);}
@@ -511,7 +511,11 @@ function dragGame(n,o){
   };
   const finish=()=>{if(done)return;done=true;cancelAnimationFrame(raf);keyHandler=null;key=false;
     if(cow&&!rope){noRope(n);return;}
-    t=1;render();const lb=$('lb');if(lb)lb.innerHTML=`<p class="patmsg">到位！</p>`;
+    t=1;render();const lb=$('lb');
+    if(o.useBrick){ // 墊了瑜伽磚：動作很穩，不用做「穩住」，直接過關
+      if(lb)lb.innerHTML=`<p class="patmsg">到位！</p><p class="note" style="text-align:center"><b>🧱 墊著瑜伽磚，動作很穩，不用再穩住，直接過關！</b></p>`;
+      o.brickSaved=true;setTimeout(()=>lessonResult(n,'pass',1,o),RM?600:1400);return;}
+    if(lb)lb.innerHTML=`<p class="patmsg">到位！</p>`;
     setTimeout(()=>holdGame(n,o),RM?200:550);};
   const loop=now=>{const dt=Math.min(.05,(now-last)/1000);last=now;if(done)return;
     if(key){t=Math.min(maxT,t+dt*.9);}
@@ -544,7 +548,7 @@ function holdGame(n,o){
   if(!BACK[L.fig]){fig.cur=clone(P[L.fig]||P.stand);fig.view='side';}else{fig.view='back';fig.cowT=1;fig.rope=!!resOf(n).rope||hasRope();}
   const box=$('fbox');box.classList.remove('drag');box.classList.add('hold');
   box.querySelector('.tag').textContent='2 穩住';
-  box.insertAdjacentHTML('beforeend',`<div class="gauge" aria-hidden="true"><div class="band" id="band" style="bottom:${(H_.low-o.zone/2)*100}%;height:${o.zone*100}%"></div><div class="needle" id="needle"></div></div>
+  box.insertAdjacentHTML('beforeend',`<div class="glabel" aria-hidden="true">黑線待在<br><b>綠色</b>裡</div><div class="gauge" aria-hidden="true"><div class="band" id="band" style="bottom:${(H_.low-o.zone/2)*100}%;height:${o.zone*100}%"></div><div class="needle" id="needle"></div></div>
     <div class="breath"><div class="ring" id="ring"></div><span id="btxt"></span></div><div class="bigcue in" id="bigcue">吸氣：按住 ↑</div><div class="peek" id="peek" hidden>${monsterSvg('pk')}</div>`);
   drawFig();
   box.addEventListener('pointerdown',e=>{if(!holdSet)return;e.preventDefault();try{box.setPointerCapture(e.pointerId);}catch(_){}holdSet(true);});
@@ -554,8 +558,7 @@ function holdGame(n,o){
       G.tut=G.tut||{};G.tut.hold=true;save();
       $('lb').innerHTML=`<p class="patmsg">${frac>=.5?'很好，就是這樣！':'抓到感覺了嗎？'}</p><p class="note" style="text-align:center">練習：指針在綠色裡 ${Math.round(frac*100)}%（不計分）。<br>正式的要穩住 ${H_.breaths} 個呼吸，一半以上在綠色裡就過關。</p><button class="primary" id="real">開始正式</button><button class="link" id="again2">再練一次</button>`;
       $('real').onclick=()=>go(false);$('again2').onclick=()=>go(true);return;}
-    let grade=early?'fail':frac>=H_.perfect?'perfect':frac>=H_.pass?'pass':'fail';
-    if(grade==='fail'&&o.useBrick){grade='pass';o.brickSaved=true;}
+    const grade=early?'fail':frac>=H_.perfect?'perfect':frac>=H_.pass?'pass':'fail';
     lessonResult(n,grade,frac,o);});
   if(!(G.tut&&G.tut.hold)){
     $('lb').innerHTML=`<span class="eyebrow">只要 1 個呼吸</span>
@@ -631,7 +634,7 @@ function lessonResult(n,grade,frac,o){
   if(o.useBrick){S.brickUsed=true;run.brickUsed=true;G.bag.brick=Math.max(0,(G.bag.brick||0)-1);toast(`瑜伽磚送給${n.nm}了（背包剩 ${G.bag.brick} 塊）。`);}
   if(!S.helped.includes(n.id))S.helped.push(n.id);
   S.layers=S.layers||[];if(!S.layers.includes(n.id))S.layers.push(n.id);toRest(n);save();
-  lb.innerHTML=`<span class="grade ${grade}">${grade==='perfect'?'完美！':'過關'}</span>${o.brickSaved?'<p class="note"><b>🧱 瑜伽磚撐住了！</b>剛剛差點晃掉，墊著磚還是穩住了。</p>':''}<p class="note">穩住 ${pct}%・體力 −${grade==='perfect'?E.perfect:E.pass}</p><button class="primary" id="toQuiz">${n.nm}有問題要問你</button>`;
+  lb.innerHTML=`<span class="grade ${grade}">${grade==='perfect'?'完美！':'過關'}</span>${o.brickSaved?'<p class="note"><b>🧱 墊了瑜伽磚，省掉「穩住」直接過關！</b>（瑜伽磚用掉 1 塊）</p>':''}<p class="note">${o.brickSaved?'':`穩住 ${pct}%・`}體力 −${grade==='perfect'?E.perfect:E.pass}</p><button class="primary" id="toQuiz">${n.nm}有問題要問你</button>`;
   $('toQuiz').onclick=()=>quiz(n);
 }
 // 重試：同樣的開場方式，不再算一次「先聊聊」
@@ -1033,7 +1036,8 @@ function album(back){
      <div class="card mon ${mGot?'':'off'}">${monsterSvg('mbig')}<div>${mGot?`<b>${MON.name}</b><small>${MON.about}</small><small><em>怎麼嚇跑：</em>趁牠靠近時連點牠 ${need} 下${hasRope()?'（有瑜伽繩）':''}。</small>`:`<b>？？？</b><small>在鎮上遇到牠，就會收進圖鑑。</small>`}</div></div></section>
    <section><h3 class="sec">🎒 背包</h3><div class="chips">
      <span class="${hasRope()?'on':''}">瑜伽繩 ${hasRope()?'✓':'沒有'}：手碰不到時，用繩子幫忙。用掉就沒了，雜貨店可以再拿</span>
-     <span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0} 塊：墊在手下，動作更穩。用一次少一塊，地上可以再撿</span></div></section>
+     <span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0} 塊：墊著做，拉到位就過關，不用做「穩住」。用一次少一塊，地上可以再撿</span>
+     <span class="${run.coupon&&run.coupon.have&&!run.coupon.used?'on':''}">按摩券 ${run.coupon&&run.coupon.have&&!run.coupon.used?'×1':'×0'}：地圖上每天有一張黃色小票。點居民就能用，緊繃 −30，最適合快變紅的人</span></div></section>
    <div class="row">${!back&&run.started&&!run.over?'<button class="ghost" id="toGoals">今天的任務</button>':''}<button class="primary" id="close">${back===goals?'回去':back?'回到結果':'回到小鎮'}</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div></div>`,{kind:'album'});
   $('close').onclick=()=>{if(back){back();return;}closeSheet();if(!run.started)goals();};
   if($('toGoals'))$('toGoals').onclick=()=>goals();
