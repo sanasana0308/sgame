@@ -224,14 +224,18 @@ function tapMonster(){
 
 // ================= 圖：小人 =================
 let fig={cur:clone(P.stand),view:'side',bt:0,brick:false,shrug:0,cowT:1,rope:true};
-function brickPose(p){const o=clone(p);o.h1=[p.h1[0],186];o.h2=[p.h2[0],186];o.e1=[p.e1[0],p.e1[1]-6];o.e2=[p.e2[0],p.e2[1]-6];return o;}
+// 瑜伽磚放在手下面：手在地上時，把手抬到磚面上，磚畫在兩手中間
+const handsDown=p=>Math.max(p.h1[1],p.h2[1])>=170;
+function brickPose(p){if(!handsDown(p))return p;const o=clone(p);o.h1=[p.h1[0],186];o.h2=[p.h2[0],186];o.e1=[p.e1[0],p.e1[1]-6];o.e2=[p.e2[0],p.e2[1]-6];return o;}
+function brickSvg2(p){const hx=handsDown(p)?(p.h1[0]+p.h2[0])/2:(p.hip?p.hip[0]:100),y=handsDown(p)?186:(p.hip?Math.min(186,p.hip[1]+8):186),x=Math.max(4,Math.min(176,hx-20));
+  return `<rect x="${x}" y="${y}" width="40" height="13" rx="3" fill="#b48ad8" stroke="#2c2c2a" stroke-width="2"/>`;} // 右上角標籤已寫「墊瑜伽磚」，磚上不再寫字，免得被手腳蓋住
 const BRICKSVG=`<rect x="46" y="186" width="40" height="13" rx="3" fill="#b48ad8" stroke="#2c2c2a" stroke-width="2"/><text x="40" y="196" text-anchor="end" font-size="11" font-weight="700" fill="#2c2c2a" font-family="Noto Sans TC,sans-serif">瑜伽磚</text>`;
 function figMarkup(extra){
   const b=Math.sin(fig.bt)*1.6;
   if(fig.view==='back')return backSvgT(b+fig.shrug,fig.cowT,fig.rope,false,fig.cowT>=1)+(extra||'');
   let p=fig.brick?brickPose(fig.cur):fig.cur;
   if(fig.shrug){p=clone(p);for(const k of ['hd','sh','e1','e2','h1','h2'])p[k][1]-=fig.shrug*(k[0]==='h'&&k!=='hd'?.3:1);}
-  return figSvg(p,b,{shrug:fig.shrug>2})+(fig.brick?BRICKSVG:'')+(extra||'');
+  return figSvg(p,b,{shrug:fig.shrug>2})+(fig.brick?brickSvg2(p):'')+(extra||'');
 }
 function drawFig(extra){const el=$('fig');if(el)el.innerHTML=figMarkup(extra);}
 function moveFig(name,ms=900){
@@ -440,8 +444,8 @@ function openNpc(n){
    ${needRope?`<p class="note warn">${n.noitem||'這個動作要用到瑜伽繩。'}（沒有繩子，兩手會碰不到。）</p>`:''}
    ${lowE?`<p class="note warn">你的體力只剩 ${Math.round(run.energy)}，呼吸也比較亂，深呼吸會比較難。</p>`:''}
    ${canCoupon?`<button class="ghost" id="coupon">${couponSvg()}${Z.coupon.use||'用按摩券'}<small>　最適合快變紅的人</small></button>`:''}
-   ${(G.bag.brick||0)>0?`<button class="ghost brickpick ${r.brickPick?'on':''}" id="brickPick">${brickSvg()}${r.brickPick?'✓ 會墊瑜伽磚':'墊瑜伽磚'}<small>　拉到位直接過關（用掉 1 塊，剩 ${G.bag.brick}）</small></button>`:''}
-   <button class="primary big" id="apDirect"><b>直接教</b><small>　教一次 ${r.tries?R.retryMin:R.lessonMin} 分鐘</small></button>
+   ${(G.bag.brick||0)>0?`<button class="ghost brickpick ${r.brickPick?'on':''}" id="brickPick">${brickSvg()}${r.brickPick?'✓ 會墊瑜伽磚':'墊瑜伽磚'}<small>　用掉 1 塊（剩 ${G.bag.brick}）</small></button>`:''}
+   <button class="primary big" id="apDirect"><b>開始</b><small>　教一次 ${r.tries?R.retryMin:R.lessonMin} 分鐘</small></button>
    <button class="link" id="later">等一下再來</button></div>`;
   openSheet(html,{live:true,kind:'npc'});
   run.active=n.id;
@@ -513,7 +517,7 @@ function dragGame(n,o){
     if(cow&&!rope){noRope(n);return;}
     t=1;render();const lb=$('lb');
     if(o.useBrick){ // 墊了瑜伽磚：動作很穩，不用做深呼吸，直接過關
-      if(lb)lb.innerHTML=`<p class="patmsg">到位！</p><p class="note" style="text-align:center"><b>🧱 直接過關！</b></p>`;
+      if(lb)lb.innerHTML=`<p class="patmsg">到位！</p>`;
       o.brickSaved=true;setTimeout(()=>lessonResult(n,'pass',1,o),RM?600:1400);return;}
     if(lb)lb.innerHTML=`<p class="patmsg">到位！</p>`;
     setTimeout(()=>holdGame(n,o),RM?200:550);};
@@ -634,7 +638,7 @@ function lessonResult(n,grade,frac,o){
   if(o.useBrick){S.brickUsed=true;run.brickUsed=true;G.bag.brick=Math.max(0,(G.bag.brick||0)-1);toast(`瑜伽磚送給${n.nm}了（背包剩 ${G.bag.brick} 塊）。`);}
   if(!S.helped.includes(n.id))S.helped.push(n.id);
   S.layers=S.layers||[];if(!S.layers.includes(n.id))S.layers.push(n.id);toRest(n);save();
-  lb.innerHTML=`<span class="grade ${grade}">${grade==='perfect'?'完美！':'過關'}</span>${o.brickSaved?'<p class="note"><b>🧱 墊瑜伽磚，直接過關</b>（瑜伽磚 −1）</p>':''}<p class="note">${o.brickSaved?'':`呼吸跟上 ${pct}%・`}體力 −${grade==='perfect'?E.perfect:E.pass}</p><button class="primary" id="toQuiz">${n.nm}有問題要問你</button>`;
+  lb.innerHTML=`<span class="grade ${grade}">${grade==='perfect'?'完美！':'過關'}</span><p class="note">${o.brickSaved?'':`呼吸跟上 ${pct}%・`}體力 −${grade==='perfect'?E.perfect:E.pass}</p><button class="primary" id="toQuiz">${n.nm}有問題要問你</button>`;
   $('toQuiz').onclick=()=>quiz(n);
 }
 // 重試：同樣的開場方式，不再算一次「先聊聊」
