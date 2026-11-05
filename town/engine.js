@@ -315,7 +315,9 @@ const AV={tomato:['#d7263d','番'],lettuce:['#7fa63d','生'],cheese:['#ffc233','
 function avOf(n){return n.kind==='person'?[n.color,n.nm.slice(-1)]:AV[n.kind]||['#888780',n.nm[0]];} // 用名字最後一個字，避免「阿」「小」重複
 const tCol=t=>t>=80?'#d7263d':t>=50?'#f0a020':'#7fa63d';
 function renderHud(){
-  $('clk').textContent=clockStr(Math.floor(Math.min(run.min,DAYLEN)/5)*5);
+  {const m=Math.floor(Math.min(run.min,DAYLEN)/5)*5,tt=DAY0+m,h=Math.floor(tt/60),mi=tt%60;
+   $('clk').textContent=`${h>12?h-12:h}:${String(mi).padStart(2,'0')}`;$('ampm').textContent=h<12?'上午':h===12?'中午':'下午';
+   const hh=$('hHand'),mh=$('mHand');if(hh){hh.setAttribute('transform',`rotate(${(h%12)*30+mi/2} 12 12)`);mh.setAttribute('transform',`rotate(${mi*6} 12 12)`);}}
   $('dayBar').style.width=Math.min(100,run.min/DAYLEN*100)+'%';
   const e=Math.max(0,Math.round(run.energy));
   $('enBar').style.width=e+'%';$('enBar').style.background=e<R.energy.low?'#d7263d':e<60?'#f0a020':'#7fa63d';
@@ -416,20 +418,31 @@ function openSay(n,text,btns,opt){
   $panel.querySelectorAll('.row button').forEach(b=>b.onclick=()=>btns[+b.dataset.i].fn());
 }
 function moodLine(n){const r=resOf(n);return r.t>=60?(n.mood.tense||n.ask):(n.mood.calm||n.ask);}
+// 開場方式的效果寫在按鈕上：花時間換來什麼，一眼看得懂
+function apEffect(a){const z=a.zone||0,te=a.tension||0,out=[];
+  if(z>=.05)out.push('比較好穩住');else if(z<0)out.push('比較難穩住');
+  if(te<0)out.push(`緊繃 ${te}`);else if(te>0)out.push('他會更煩');
+  return out.length?'・'+out.join('・'):'';}
 function openNpc(n){
   const r=resOf(n);
   const ap=n.ap,talk=ap.talk||{label:'先聊聊',zone:.06,tension:-8},direct=ap.direct||{label:'直接教',zone:0,tension:0};
   const needRope=n.need==='rope'&&!hasRope();
   const lowE=run.energy<R.energy.low;
   const c=run.coupon,canCoupon=c&&c.have&&!c.used;
+  if(needRope){ // 沒有瑜伽繩就救不了：直接告訴玩家去哪裡拿，不讓他白做一次
+    openSheet(`${head(n)}<div class="pb"><p class="say">${moodLine(n)}</p>
+     <p class="note warn">🔴 ${n.nm}要用<b>瑜伽繩</b>才能做（兩手碰不到）。你還沒有繩子。</p>
+     <button class="primary" id="getRope">去${BINFO[ROPE.at].name}拿瑜伽繩</button><button class="link" id="later">等一下再來</button></div>`,{kind:'npc'});
+    $('getRope').onclick=()=>{closeSheet();goTo({kind:'bld',key:ROPE.at});};
+    $('later').onclick=()=>{wasted();closeSheet();};return;}
   let html=`${head(n)}<div class="pb"><p class="say">${r.tries?'「再來一次？好吧。」':''}${r.tries?'':moodLine(n)}</p>
    ${needRope?`<p class="note warn">${n.noitem||'這個動作要用到瑜伽繩。'}（沒有繩子，兩手會碰不到。）</p>`:''}
    ${lowE?`<p class="note warn">你的體力只剩 ${Math.round(run.energy)}，手也在抖，穩住會比較難。</p>`:''}
    ${canCoupon?`<button class="ghost" id="coupon">${couponSvg()}${Z.coupon.use||'用按摩券'}</button>`:''}
    <p class="lead" style="margin:0">怎麼開始？<small class="cost">教一次 ${r.tries?R.retryMin:R.lessonMin} 分鐘</small></p>
    <div class="row ap">
-    <button class="primary" id="apTalk"><b>${talk.label||'先聊聊'}</b><small>+${R.talkMin||20} 分鐘</small></button>
-    <button class="primary alt" id="apDirect"><b>${direct.label||'直接教'}</b><small>馬上開始</small></button>
+    <button class="primary" id="apTalk"><b>${talk.label||'先聊聊'}</b><small>+${R.talkMin||20} 分鐘${apEffect(talk)}</small></button>
+    <button class="primary alt" id="apDirect"><b>${direct.label||'直接教'}</b><small>馬上開始${apEffect(direct)}</small></button>
    </div>
    <button class="link" id="later">等一下再來</button></div>`;
   openSheet(html,{live:true,kind:'npc'});
@@ -730,7 +743,7 @@ function askOvertime(stuckL){
   const e=Math.max(0,Math.round(run.energy)),food=eatTarget(),layers=layersNow();
   const first=!run.overtime;
   const cardRisk=layers===R.cardAt?`（吃了變 ${layers-1} 層，序列圖卡還是你的）`:'';
-  openSheet(`${head(LETTUCE)}<div class="pb"><h2 class="h2" style="font-size:20px">今天沒有人在等你了</h2><p class="say">${clockStr(run.min)}。還有 <b>${stuckL.map(n=>n.nm).join('、')}</b> 被聳肩怪抓著。要再去救，還是收工？</p>
+  openSheet(`${head(LETTUCE)}<div class="pb"><h2 class="h2" style="font-size:20px">現在沒人在排隊了</h2><p class="say">${clockStr(run.min)}。還有 <b>${stuckL.map(n=>n.nm).join('、')}</b> 被聳肩怪抓著。要再去救，還是收工？</p>
    <p class="note">你的體力：${e} / 100・三明治 ${layers} 層</p>
    <div class="otopts">
     <button class="otopt main" id="otTough"><b>💪 再去救${stuckL.length===1?stuckL[0].nm:''}</b><small>點被抓走的人，連點 ${FREE.taps} 下趕走聳肩怪，要花 ${FREE.min} 分鐘、體力 −${FREE.energy}。</small></button>

@@ -448,13 +448,13 @@
    "events": true,
    "arrive": {
     "student": "10:00",
-    "rider": "10:30"
+    "rider": "11:00"
    },
    "startTension": [
-    40,
-    60
+    30,
+    50
    ],
-   "rateMul": 1.6,
+   "rateMul": 1.35,
    "holdZone": 0.36
   },
   {
