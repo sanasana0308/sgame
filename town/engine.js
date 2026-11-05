@@ -441,19 +441,14 @@ function openNpc(n){
    ${lowE?`<p class="note warn">你的體力只剩 ${Math.round(run.energy)}，手也在抖，穩住會比較難。</p>`:''}
    ${canCoupon?`<button class="ghost" id="coupon">${couponSvg()}${Z.coupon.use||'用按摩券'}<small>　最適合快變紅的人</small></button>`:''}
    ${(G.bag.brick||0)>0?`<button class="ghost brickpick ${r.brickPick?'on':''}" id="brickPick">${brickSvg()}${r.brickPick?'✓ 會墊瑜伽磚':'墊瑜伽磚'}<small>　綠色區域變寬・用掉 1 塊（剩 ${G.bag.brick}）</small></button>`:''}
-   <p class="lead" style="margin:0">怎麼開始？<small class="cost">教一次 ${r.tries?R.retryMin:R.lessonMin} 分鐘</small></p>
-   <div class="row ap">
-    <button class="primary" id="apTalk"><b>${talk.label||'先聊聊'}</b><small>+${R.talkMin||20} 分鐘${apEffect(talk)}</small></button>
-    <button class="primary alt" id="apDirect"><b>${direct.label||'直接教'}</b><small>馬上開始${apEffect(direct)}</small></button>
-   </div>
+   <button class="primary big" id="apDirect"><b>直接教</b><small>　教一次 ${r.tries?R.retryMin:R.lessonMin} 分鐘</small></button>
    <button class="link" id="later">等一下再來</button></div>`;
   openSheet(html,{live:true,kind:'npc'});
   run.active=n.id;
   $('later').onclick=()=>{wasted();closeSheet();};
   if($('brickPick'))$('brickPick').onclick=()=>{r.brickPick=!r.brickPick;openNpc(n);};
   if(canCoupon)$('coupon').onclick=()=>{c.used=true;r.t=Math.max(0,r.t-(Z.coupon.amount||30));productive();toast(fill(Z.coupon.used,{name:n.nm}));renderHud();openNpc(n);};
-  $('apTalk').onclick=()=>startLesson(n,'talk',talk);
-  $('apDirect').onclick=()=>startLesson(n,'direct',direct);
+  $('apDirect').onclick=()=>startLesson(n,'direct',{label:'直接教',line:direct.line||'',zone:0,tension:0});
 }
 function startLesson(n,kind,ap){
   const r=resOf(n);
@@ -623,7 +618,7 @@ function lessonResult(n,grade,frac,o){
     lb.innerHTML=`<span class="grade fail">失敗</span><p class="say">${isStuck?`聳肩怪趁機跳到${n.nm}的肩膀上。${n.mood.stuck||''}`:`指針跑出綠色太久（穩住 ${pct}%）。${n.nm}的肩膀又往上爬了（緊繃 +${R.failTension}）。`}</p>
       <p class="note">體力 −${E.fail}${isStuck?`・卡住的地方：${n.part}`:''}</p>
       <div class="row">${canRetry?`<button class="primary" id="retry">再試一次（${R.retryMin} 分鐘）</button>`:''}<button class="${canRetry?'ghost':'primary'}" id="leave">${isStuck?'好，去幫別人':'先去幫別人'}</button></div>`;
-    if(canRetry)$('retry').onclick=()=>{if(run.energy<=0){closeSheet();return;}const ap=(n.ap[r.approach]||{});startLesson2(n,ap);};
+    if(canRetry)$('retry').onclick=()=>{if(run.energy<=0){closeSheet();return;}startLesson2(n,{label:'直接教',line:'',zone:0,tension:0});};
     $('leave').onclick=()=>closeSheet();
     return;
   }
