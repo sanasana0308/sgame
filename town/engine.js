@@ -912,7 +912,7 @@ function askReset(kind){
    <p class="say">${zone?`三明治、天數、背包會清空，從第 1 天開始。<br><b>鎮上挑戰和怪物圖鑑會留著</b>，可以繼續挑戰。`:'三明治、鎮上挑戰、序列圖卡、怪物圖鑑、背包都會清空，像第一次來鎮上一樣。<br>清掉就找不回來了。'}</p>
    <div class="row"><button class="primary" id="rYes">${zone?'重玩這一區':'清空，重新開始'}</button><button class="ghost" id="rNo">不要，留著</button></div></div>`,{kind:'reset'});
   $('rYes').onclick=()=>{if(zone){G.bag={brick:0,rope:false};PL.resetZone(Z.id);}else PL.resetAll();location.reload();};
-  $('rNo').onclick=()=>{if(run.over)ending();else closeSheet();};
+  $('rNo').onclick=()=>{if(run.over)ending();else if(!run.started)goals();else closeSheet();};
 }
 function moreMenu(){
   if(sheetOpen&&!['goals','album'].includes(sheetKind))return;
@@ -1010,7 +1010,9 @@ function goals(){
     ${grab?`<li><b>聳肩怪開始抓人了！</b>牠靠近時連點牠嚇跑；有人被抓走，點他、連點趕走聳肩怪，就能再救（要花體力）。</li>`:''}</ul>
     ${grab?'':'<p class="note" style="margin-top:6px">第 2 天會多學一招：聳肩怪開始抓人。</p>'}</div>
    <button class="primary big" id="go">${playing?'回到小鎮':'開始上工'}</button>
-   <div class="row"><button class="ghost" id="toAlbum">貼紙簿</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div></div>`,{kind:'goals'});
+   <div class="row"><button class="ghost" id="toAlbum">貼紙簿</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div>
+   ${!playing&&((S.day||0)>0||layersNow()>0)?'<button class="link reset" id="restartZone">🔄 想從第 1 天重新開始？</button>':''}</div>`,{kind:'goals'});
+  if($('restartZone'))$('restartZone').onclick=()=>askReset('zone');
   $('go').onclick=()=>{sheetOpen=false;$sheet.hidden=true;if(!playing){run.started=true;const post=NPCS.find(n=>n.need==='rope');toast(post&&!hasRope()&&(S.day||0)>=2?`${post.nm}需要瑜伽繩，先去雜貨店拿！`:grab?'聳肩怪開始抓人了，小心。':'上班囉！先救最紅的。');}renderUI();};
   $('toAlbum').onclick=()=>album(goals);
 }
