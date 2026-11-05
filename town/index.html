@@ -410,6 +410,9 @@ a.primary{display:block;text-align:center;text-decoration:none}
 .chbox h3{margin:0;font-size:15px}.chbox small{font-size:12px;color:var(--stone)}
 .ch{font-size:13px;color:#8a857c}.ch.on{color:var(--ink);font-weight:700}.ch.new{background:var(--yellow-soft);border-radius:8px;padding:2px 6px}.ch b{color:var(--tomato);font-size:12px}
 .todaych{background:var(--yellow-soft);border:2px dashed var(--ink);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:2px;font-size:14px}.todaych small{font-size:12px;color:#5f5e5a}
+
+.clkrow{display:flex;align-items:center;gap:5px}.clkico{width:22px;height:22px;flex:none}.ampm{font-size:13px;font-weight:700;color:var(--stone)}
+#coupon svg{width:26px;height:26px;vertical-align:middle;margin-right:6px}#coupon{display:flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
@@ -421,7 +424,7 @@ a.primary{display:block;text-align:center;text-decoration:none}
     <div class="topbtns"><button class="albumBtn" id="albumBtn" aria-label="打開貼紙簿"><span class="lbl">貼紙簿</span><span class="dots" id="albumDots"></span></button><button class="moreBtn" id="moreBtn" aria-label="設定：重玩這一區、全部重來">⋯</button></div>
   </div>
   <div class="hud" id="hud">
-    <div class="clock" aria-label="時間"><b id="clk">08:00</b><span class="day"><i id="dayBar"></i></span><span class="plus" id="plus"></span></div>
+    <div class="clock" aria-label="時間"><span class="clkrow"><svg class="clkico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#fff" stroke="#2c2c2a" stroke-width="2"/><line id="hHand" x1="12" y1="12" x2="12" y2="7" stroke="#2c2c2a" stroke-width="2.4" stroke-linecap="round"/><line id="mHand" x1="12" y1="12" x2="12" y2="4.5" stroke="#d7263d" stroke-width="1.6" stroke-linecap="round"/></svg><span class="ampm" id="ampm">上午</span><b id="clk">8:00</b></span><span class="day"><i id="dayBar"></i></span><span class="plus" id="plus"></span></div>
     <div class="meter" aria-label="體力"><span class="h">體力</span><span class="bar"><i id="enBar"></i></span><b id="enNum">100</b></div>
     <div class="bagrow" id="bagRow" aria-label="背包"></div>
     <div class="goal" id="goal" aria-live="polite"></div>
