@@ -100,9 +100,11 @@ const hasRope=()=>!!G.bag.rope;
 setRoster();
 let run,player,sheetOpen=false,sheetLive=false,sheetKind='',keyHandler=null;
 function newRun(){
-  const [a,b]=R.startTension;
+  const C=dayCfg(),[a,b]=C.startTension||R.startTension;
+  const fromOf=n=>C.arrive&&C.arrive[n.id]?hm(C.arrive[n.id])-DAY0:n.from;
   run={min:0,started:false,over:false,timeUp:false,allDoneAt:null,energy:R.energy.start,active:null,
-    res:Object.fromEntries(NPCS.map(n=>{const [lo,hi]=n.startT||[a,b];return [n.id,{t:Math.round(rnd(lo,hi)),state:n.from>0?'away':'open',fails:0,tries:0,grade:'',warned:false}];})),
+    res:Object.fromEntries(NPCS.map(n=>{const [lo,hi]=C.startTension||n.startT||[a,b];const f=fromOf(n);return [n.id,{t:Math.round(rnd(lo,hi)),state:f>0?'away':'open',from:f,fromStr:clockStr(f),fails:0,tries:0,grade:'',warned:false}];})),
+    rateMul:(R.rateMul||1)*(C.rateMul||1),monMul:C.monSlow||1,holdZone:C.holdZone||null,
     grab:dayCfg().grab!==false,otGo:false,
     events:(dayCfg().events===false?[]:(Z.events||[])).map(e=>({e,at:Math.random()<(e.chance??1)?rnd(hm(e.time[0])-DAY0,hm(e.time[1])-DAY0):null,done:false})),
     walkMul:1,rainUntil:-1,rainId:null,bricks:[],
@@ -154,13 +156,13 @@ function tick(gm){
   const m=run.mon;
   if(m.cool>0)m.cool-=gm;
   if(m.daze>0)m.daze-=gm;
-  else{m.acc+=gm/MON.minPerTile;m.linger-=gm;while(m.acc>=1){m.acc-=1;monStep();}}
+  else{m.acc+=gm/(MON.minPerTile*run.monMul);m.linger-=gm;while(m.acc>=1){m.acc-=1;monStep();}}
   // 晚一點才出現的居民
-  for(const n of NPCS){const r=resOf(n);if(r.state==='away'&&run.min>=n.from){r.state='open';toast(n.arrive||`${n.nm}出現了。`,'event');}}
+  for(const n of NPCS){const r=resOf(n);if(r.state==='away'&&run.min>=r.from){r.state='open';toast(n.arrive||`${n.nm}出現了。`,'event');}}
   // 緊繃值
   for(const n of NPCS){const r=resOf(n);if(r.state!=='open'||run.active===n.id)continue;
     const near=m.daze<=0&&Math.abs(m.x-n.x)+Math.abs(m.y-n.y)<=R.monsterNear;
-    r.t+=n.rate*(near?R.monsterBoost:1)*gm;r.near=near;
+    r.t+=n.rate*run.rateMul*(near?R.monsterBoost:1)*gm;r.near=near;
     if(r.t>=75&&!r.warned){r.warned=true;toast(`${n.nm}的肩膀快撐不住了！`,'warn');}
     if(r.t>=100)stuck(n);}
   // 起司先生
@@ -185,7 +187,7 @@ function fireEvent(e){
 function stuck(n){
   const r=resOf(n);if(r.state!=='open')return;
   if(!run.grab){r.t=Math.min(r.t,95);return;} // 第 1 天聳肩怪還不抓人
-  r.state='stuck';r.t=100;
+  r.state='stuck';r.t=100;run.anyStuck=true;
   PL.monster(MON.id);
   toast(fill(MON.stuck||'{name}卡住了。',{name:n.nm})+' 點他可以救回來。','warn');
   checkResolved();
@@ -310,10 +312,10 @@ const runState=stateNow,albumState=stateNow;
 // ================= 畫面 =================
 function toast(t,kind){const el=$('toast');el.textContent=t;el.className='toast'+(kind?' '+kind:'');el.style.opacity=1;clearTimeout(toast.t);toast.t=setTimeout(()=>el.style.opacity=0,4600);}
 const AV={tomato:['#d7263d','番'],lettuce:['#7fa63d','生'],cheese:['#ffc233','起']};
-function avOf(n){return n.kind==='person'?[n.color,n.nm.slice(-2,-1)]:AV[n.kind]||['#888780',n.nm[0]];}
+function avOf(n){return n.kind==='person'?[n.color,n.nm.slice(-1)]:AV[n.kind]||['#888780',n.nm[0]];} // 用名字最後一個字，避免「阿」「小」重複
 const tCol=t=>t>=80?'#d7263d':t>=50?'#f0a020':'#7fa63d';
 function renderHud(){
-  $('clk').textContent=clockStr(Math.min(run.min,DAYLEN));
+  $('clk').textContent=clockStr(Math.floor(Math.min(run.min,DAYLEN)/5)*5);
   $('dayBar').style.width=Math.min(100,run.min/DAYLEN*100)+'%';
   const e=Math.max(0,Math.round(run.energy));
   $('enBar').style.width=e+'%';$('enBar').style.background=e<R.energy.low?'#d7263d':e<60?'#f0a020':'#7fa63d';
@@ -335,10 +337,10 @@ function renderUI(){
   const pe=$('people');
   if(!pe.children.length){
     pe.innerHTML=NPCS.map(n=>{const [c,t]=avOf(n);return `<button class="who" data-id="${n.id}"><span class="av" style="background:${c}">${t}</span><span class="t"><b>${n.nm}</b><small></small><span class="tb"><i></i></span></span></button>`;}).join('');
-    pe.querySelectorAll('.who').forEach(b=>b.onclick=()=>{const n=NPCS.find(p=>p.id===b.dataset.id);if(resOf(n).state==='away'){toast(`${n.nm}${n.fromStr}才會出現。`);return;}goTo({kind:'npc',n});});
+    pe.querySelectorAll('.who').forEach(b=>b.onclick=()=>{const n=NPCS.find(p=>p.id===b.dataset.id);if(resOf(n).state==='away'){toast(`${n.nm}${resOf(n).fromStr}才會出現。`);return;}goTo({kind:'npc',n});});
   }
   for(const b of pe.children){const n=NPCS.find(p=>p.id===b.dataset.id);const r=resOf(n);const tt=Math.min(100,Math.round(r.t));
-    const sub=r.state==='saved'?(r.eaten?'救回了・那層三明治被你吃掉了':`救回了・${n.L.nm}`):r.state==='stuck'?`被抓走了・點我救回來`:r.state==='away'?`${n.fromStr} 才會出現`:`緊繃 ${tt}${r.near&&run.mon.daze<=0?'・聳肩怪在旁邊':''}`;
+    const sub=r.state==='saved'?(r.eaten?'救回了・那層三明治被你吃掉了':`救回了・${n.L.nm}`):r.state==='stuck'?`被抓走了・點我救回來`:r.state==='away'?`${r.fromStr} 才會出現`:`緊繃 ${tt}${r.near&&run.mon.daze<=0?'・聳肩怪在旁邊':''}`;
     const cls='who '+r.state+(r.state==='open'&&tt>=80?' hot':'');if(b.className!==cls)b.className=cls;
     b.hidden=r.state==='saved'; // 救回的人去休息區了，名單上不再出現
     const sm=b.querySelector('small');if(sm.textContent!==sub)sm.textContent=sub;
@@ -454,7 +456,7 @@ function startLesson(n,kind,ap){
   r.t=Math.max(0,r.t+(ap.tension||0));
   if(r.t>=100&&run.grab){run.active=null;stuck(n);closeSheet();return;}
   if(!run.grab)r.t=Math.min(r.t,95);
-  let zone=R.hold.zone+(ap.zone||0);
+  let zone=(run.holdZone||R.hold.zone)+(ap.zone||0);
   const useBrick=n.bonus==='brick'&&(G.bag.brick||0)>0;
   if(useBrick)zone+=R.hold.brickZone;
   if(run.energy<R.energy.low)zone+=R.energy.lowZone;
@@ -618,7 +620,7 @@ function lessonResult(n,grade,frac,o){
 // 重試：同樣的開場方式，不再算一次「先聊聊」
 function startLesson2(n,ap){
   const r=resOf(n);
-  let zone=R.hold.zone+(ap.zone||0);
+  let zone=(run.holdZone||R.hold.zone)+(ap.zone||0);
   const useBrick=n.bonus==='brick'&&(G.bag.brick||0)>0;if(useBrick)zone+=R.hold.brickZone;
   if(run.energy<R.energy.low)zone+=R.energy.lowZone;
   zone=Math.max(R.hold.minZone,zone);r.tries++;
@@ -792,8 +794,8 @@ function chBox(){if(!CHS.length)return '';const d=chDone();
   return `<div class="chbox"><h3>🎯 鎮上挑戰 ${d.length} / ${CHS.length}${chAll()?`・🏆 ${Z.challengeMaster||'挑戰達人'}`:''}</h3>${CHS.map(c=>`<span class="ch ${d.includes(c.id)?'on':''} ${run.chNew&&run.chNew.includes(c.id)?'new':''}">${d.includes(c.id)?'✓':'○'} ${c.name}${run.chNew&&run.chNew.includes(c.id)?' <b>新完成！</b>':''}</span>`).join('')}${chAll()?'':`<small>集滿 ${CHS.length} 個：限動圖換成金框＋「${Z.challengeMaster||'挑戰達人'}」</small>`}</div>`;}
 function pickTitle(){
   const st=run.st,saved=savedRun().length,un=NPCS.length-saved;
-  const ok={legend:run.doneToday&&st.fails===0,slayer:run.freed>=1||st.scares>=3,eater:run.eaten>=1,tough:st.zero>=1,
-    almost:un===1&&NPCS.length>=2,brave:saved<=1,fire:run.style&&run.style.id==='fire',runner:true};
+  const ok={legend:run.doneToday&&run.dayNo<=2&&st.fails===0&&!run.anyStuck,slayer:run.freed>=1||st.scares>=3,eater:run.eaten>=1,tough:st.zero>=1,
+    almost:un===1&&NPCS.length>=2,brave:saved<=1&&un>=1,fire:run.style&&run.style.id==='fire',runner:true};
   return TSET.find(x=>ok[x.id])||TSET[TSET.length-1]||{id:'x',name:'鎮上的瑜伽老師'};
 }
 const savedRun=()=>NPCS.filter(n=>resOf(n).state==='saved');
@@ -977,14 +979,14 @@ function goals(){
      <div class="row"><button class="ghost" id="toAlbum">貼紙簿・挑戰</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div></div>`,{kind:'goals'});
     $('replay').onclick=()=>askReset('zone');$('toAlbum').onclick=()=>album(goals);return;}
   const nx=comingNext();
-  openSheet(`<div class="pb goals"><span class="eyebrow">${zoneName}・${Z.title}・第 ${day} 天${S.day<DAYS.length?` / 共 ${DAYS.length} 天`:''}</span><h2 class="h2">今天的任務</h2>
+  openSheet(`<div class="pb goals"><span class="eyebrow">${zoneName}・${Z.title}・第 ${day} 天${(S.day||0)<DAYS.filter(d=>d.ids.length).length?` / 共 ${DAYS.filter(d=>d.ids.length).length} 天`:''}</span><h2 class="h2">今天的任務</h2>
    <p class="say">今天有 <b>${NPCS.length} 位</b>鎮民肩膀卡住了。${nx.length?`<br>明天還有 ${nx.length} 位會來鎮上。`:''}</p>
    <ol class="glist">
-    <li><span class="gi">🥪</span><div><b>救回一位 → 三明治疊一層</b>${pipsHtml()}<small>灰色虛線＝明天才會來</small></div><em>${L}/${N} 層</em></li>
+    <li><span class="gi">🥪</span><div><b>救回一位 → 三明治疊一層</b>${pipsHtml()}</div><em>${L}/${N} 層</em></li>
     <li><span class="gi">🎁</span><div><b>疊到 ${R.cardAt} 層 → 序列圖卡</b><small>「${Z.card.title}」・存圖跟著練</small></div><em class="${S.done?'ok':''}">${S.done?'✓':'🔒'}</em></li>
     <li><span class="gi">🏆</span><div><b>疊滿 ${N} 層 → 完成${zoneName}</b><small>拿「榮譽鎮民」限動圖＋第二區開放倒數</small></div><em>🔒</em></li>
    </ol>
-   ${todayCh()?`<div class="todaych">🎯 <b>今日挑戰：${todayCh().name}</b><small>${todayCh().how}・挑戰 ${chDone().length}/${CHS.length}</small></div>`:(CHS.length?`<div class="todaych">🏆 <b>鎮上挑戰全部完成！</b></div>`:'')}
+   ${todayCh()?`<div class="todaych"><b>🎯 今日挑戰：${todayCh().name}</b><small>${todayCh().how}・挑戰 ${chDone().length}/${CHS.length}</small></div>`:(CHS.length?`<div class="todaych"><b>🏆 鎮上挑戰全部完成！</b></div>`:'')}
    <div class="howto"><b>怎麼玩</b><ul>
     <li>每人頭上一條<b>緊繃條</b>：綠→黃→紅，越紅越急，<b>先救最紅的</b>。</li>
     <li>走到他旁邊點他：<b>拉到位</b>，再跟著呼吸<b>按住、放開</b>。</li>
@@ -993,7 +995,7 @@ function goals(){
     ${grab?'':'<p class="note" style="margin-top:6px">第 2 天會多學一招：聳肩怪開始抓人。</p>'}</div>
    <button class="primary big" id="go">${playing?'回到小鎮':'開始上工'}</button>
    <div class="row"><button class="ghost" id="toAlbum">貼紙簿</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div></div>`,{kind:'goals'});
-  $('go').onclick=()=>{sheetOpen=false;$sheet.hidden=true;if(!playing){run.started=true;toast(grab?'第 2 天！聳肩怪開始抓人了，小心。':'上班囉！先救最紅的。');}renderUI();};
+  $('go').onclick=()=>{sheetOpen=false;$sheet.hidden=true;if(!playing){run.started=true;const post=NPCS.find(n=>n.need==='rope');toast(post&&!hasRope()&&(S.day||0)>=2?`${post.nm}需要瑜伽繩，先去雜貨店拿！`:grab?'聳肩怪開始抓人了，小心。':'上班囉！先救最紅的。');}renderUI();};
   $('toAlbum').onclick=()=>album(goals);
 }
 const intro=goals;
