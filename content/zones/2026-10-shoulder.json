@@ -11,14 +11,14 @@
  "listTitle": "肩膀卡住的居民",
  "doneLabel": "三明治鎮的肩膀都放鬆了",
  "rules": {
-  "_說明": "遊戲數值。分鐘都是遊戲裡的分鐘。minPerSec：地圖上真實 1 秒＝幾分鐘。lessonMin：教一次花的時間。",
+  "_說明": "遊戲數值。分鐘都是遊戲裡的分鐘。minPerSec：地圖上真實 1 秒＝幾分鐘。lessonMin：教一次花的時間。 rateMul：所有人緊繃上升的倍數（時鐘變快後用它平衡）。",
   "dayStart": "08:00",
   "dayEnd": "17:00",
-  "minPerSec": 1.6,
+  "minPerSec": 3.33,
   "walkTilesPerSec": 3.2,
-  "lessonMin": 60,
+  "lessonMin": 80,
   "retryMin": 30,
-  "talkMin": 25,
+  "talkMin": 30,
   "noRopeMin": 20,
   "wrongQuizMin": 10,
   "startTension": [
@@ -57,7 +57,8 @@
    "brickZone": 0.1
   },
   "cardAt": 3,
-  "fastBefore": "15:00"
+  "fastBefore": "15:00",
+  "rateMul": 0.55
  },
  "monster": {
   "id": "shrug",
@@ -68,7 +69,7 @@
    12,
    3
   ],
-  "minPerTile": 2.2,
+  "minPerTile": 4.6,
   "drain": 12,
   "scareTaps": 5,
   "scareTapsRope": 3,
@@ -427,7 +428,7 @@
    "arrive": "午休鐘響了。高中生小宇溜到長椅上滑手機，脖子越來越低。"
   }
  ],
- "_days說明": "兩天：第 1 天只有前 3 位、聳肩怪不抓人、沒有事件；第 2 天加 2 位新居民，聳肩怪開始抓人、有事件。第 3 天以後沿用最後一天的設定，只剩還沒救回的人。救回的人會一直留在三明治裡（休息區），除非那層被吃掉。",
+ "_days說明": "兩天制＋放水。第 1 天：3 位、聳肩怪不抓人、沒有事件。第 2 天：加小宇、阿傑且提早到（arrive），開場比較緊（startTension）、緊得比較快（rateMul）、穩住綠區比較窄（holdZone），聳肩怪開始抓人、有事件。第 3 天起（第 3 筆）：放水，緊繃慢、聳肩怪慢（monSlow），只剩沒救回的人。",
  "days": [
   {
    "ids": [
@@ -444,7 +445,24 @@
     "rider"
    ],
    "grab": true,
-   "events": true
+   "events": true,
+   "arrive": {
+    "student": "10:00",
+    "rider": "10:30"
+   },
+   "startTension": [
+    40,
+    60
+   ],
+   "rateMul": 1.6,
+   "holdZone": 0.36
+  },
+  {
+   "ids": [],
+   "grab": true,
+   "events": false,
+   "rateMul": 0.7,
+   "monSlow": 1.6
   }
  ],
  "events": [
