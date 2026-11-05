@@ -108,7 +108,7 @@ function newRun(){
     grab:dayCfg().grab!==false,otGo:false,
     events:(dayCfg().events===false?[]:(Z.events||[])).map(e=>({e,at:Math.random()<(e.chance??1)?rnd(hm(e.time[0])-DAY0,hm(e.time[1])-DAY0):null,done:false})),
     walkMul:1,rainUntil:-1,rainId:null,bricks:[],
-    coupon:Z.coupon&&Z.coupon.at&&Z.coupon.at.length?{at:pick(Z.coupon.at),have:false,used:false}:null,
+    coupon:dayCfg().grab!==false&&Z.coupon&&Z.coupon.at&&Z.coupon.at.length?{at:pick(Z.coupon.at),have:false,used:false}:null,
     cheese:null,
     mon:{x:MON.start[0],y:MON.start[1],fx:MON.start[0],fy:MON.start[1],path:[],target:null,acc:0,daze:0,cool:0,linger:0,taps:[]},
     freed:0,eaten:0,askedAt:null,overtime:false,
@@ -440,7 +440,7 @@ function openNpc(n){
    ${needRope?`<p class="note warn">${n.noitem||'這個動作要用到瑜伽繩。'}（沒有繩子，兩手會碰不到。）</p>`:''}
    ${lowE?`<p class="note warn">你的體力只剩 ${Math.round(run.energy)}，手也在抖，穩住會比較難。</p>`:''}
    ${canCoupon?`<button class="ghost" id="coupon">${couponSvg()}${Z.coupon.use||'用按摩券'}<small>　最適合快變紅的人</small></button>`:''}
-   ${(G.bag.brick||0)>0?`<button class="ghost brickpick ${r.brickPick?'on':''}" id="brickPick">${brickSvg()}${r.brickPick?'✓ 會墊瑜伽磚':'墊瑜伽磚'}<small>　拉到位就過關，不用做「穩住」・用掉 1 塊（剩 ${G.bag.brick}）</small></button>`:''}
+   ${(G.bag.brick||0)>0?`<button class="ghost brickpick ${r.brickPick?'on':''}" id="brickPick">${brickSvg()}${r.brickPick?'✓ 會墊瑜伽磚':'墊瑜伽磚'}<small>　拉到位直接過關（用掉 1 塊，剩 ${G.bag.brick}）</small></button>`:''}
    <button class="primary big" id="apDirect"><b>直接教</b><small>　教一次 ${r.tries?R.retryMin:R.lessonMin} 分鐘</small></button>
    <button class="link" id="later">等一下再來</button></div>`;
   openSheet(html,{live:true,kind:'npc'});
@@ -513,7 +513,7 @@ function dragGame(n,o){
     if(cow&&!rope){noRope(n);return;}
     t=1;render();const lb=$('lb');
     if(o.useBrick){ // 墊了瑜伽磚：動作很穩，不用做「穩住」，直接過關
-      if(lb)lb.innerHTML=`<p class="patmsg">到位！</p><p class="note" style="text-align:center"><b>🧱 墊著瑜伽磚，動作很穩，不用再穩住，直接過關！</b></p>`;
+      if(lb)lb.innerHTML=`<p class="patmsg">到位！</p><p class="note" style="text-align:center"><b>🧱 直接過關！</b></p>`;
       o.brickSaved=true;setTimeout(()=>lessonResult(n,'pass',1,o),RM?600:1400);return;}
     if(lb)lb.innerHTML=`<p class="patmsg">到位！</p>`;
     setTimeout(()=>holdGame(n,o),RM?200:550);};
@@ -634,7 +634,7 @@ function lessonResult(n,grade,frac,o){
   if(o.useBrick){S.brickUsed=true;run.brickUsed=true;G.bag.brick=Math.max(0,(G.bag.brick||0)-1);toast(`瑜伽磚送給${n.nm}了（背包剩 ${G.bag.brick} 塊）。`);}
   if(!S.helped.includes(n.id))S.helped.push(n.id);
   S.layers=S.layers||[];if(!S.layers.includes(n.id))S.layers.push(n.id);toRest(n);save();
-  lb.innerHTML=`<span class="grade ${grade}">${grade==='perfect'?'完美！':'過關'}</span>${o.brickSaved?'<p class="note"><b>🧱 墊了瑜伽磚，省掉「穩住」直接過關！</b>（瑜伽磚用掉 1 塊）</p>':''}<p class="note">${o.brickSaved?'':`穩住 ${pct}%・`}體力 −${grade==='perfect'?E.perfect:E.pass}</p><button class="primary" id="toQuiz">${n.nm}有問題要問你</button>`;
+  lb.innerHTML=`<span class="grade ${grade}">${grade==='perfect'?'完美！':'過關'}</span>${o.brickSaved?'<p class="note"><b>🧱 墊瑜伽磚，直接過關</b>（瑜伽磚 −1）</p>':''}<p class="note">${o.brickSaved?'':`穩住 ${pct}%・`}體力 −${grade==='perfect'?E.perfect:E.pass}</p><button class="primary" id="toQuiz">${n.nm}有問題要問你</button>`;
   $('toQuiz').onclick=()=>quiz(n);
 }
 // 重試：同樣的開場方式，不再算一次「先聊聊」
@@ -1037,7 +1037,7 @@ function album(back){
    <section><h3 class="sec">🎒 背包</h3><div class="chips">
      <span class="${hasRope()?'on':''}">瑜伽繩 ${hasRope()?'✓':'沒有'}：手碰不到時，用繩子幫忙。用掉就沒了，雜貨店可以再拿</span>
      <span class="${G.bag.brick?'on':''}">瑜伽磚 ${G.bag.brick||0} 塊：墊著做，拉到位就過關，不用做「穩住」。用一次少一塊，地上可以再撿</span>
-     <span class="${run.coupon&&run.coupon.have&&!run.coupon.used?'on':''}">按摩券 ${run.coupon&&run.coupon.have&&!run.coupon.used?'×1':'×0'}：地圖上每天有一張黃色小票。點居民就能用，緊繃 −30，最適合快變紅的人</span></div></section>
+     <span class="${run.coupon&&run.coupon.have&&!run.coupon.used?'on':''}">按摩券 ${run.coupon&&run.coupon.have&&!run.coupon.used?'×1':'×0'}：第 2 天起，地圖上每天有一張黃色小票。點居民就能用，緊繃 −30，最適合快變紅的人</span></div></section>
    <div class="row">${!back&&run.started&&!run.over?'<button class="ghost" id="toGoals">今天的任務</button>':''}<button class="primary" id="close">${back===goals?'回去':back?'回到結果':'回到小鎮'}</button><a class="ghost homebtn" href="/">🏠 回首頁</a></div></div>`,{kind:'album'});
   $('close').onclick=()=>{if(back){back();return;}closeSheet();if(!run.started)goals();};
   if($('toGoals'))$('toGoals').onclick=()=>goals();
