@@ -14,7 +14,7 @@
   "_說明": "遊戲數值。分鐘都是遊戲裡的分鐘。minPerSec：地圖上真實 1 秒＝幾分鐘。lessonMin：教一次花的時間。 rateMul：所有人緊繃上升的倍數（時鐘變快後用它平衡）。",
   "dayStart": "08:00",
   "dayEnd": "17:00",
-  "minPerSec": 3.33,
+  "minPerSec": 2.5,
   "walkTilesPerSec": 3.2,
   "lessonMin": 80,
   "retryMin": 30,
@@ -58,7 +58,7 @@
   },
   "cardAt": 3,
   "fastBefore": "15:00",
-  "rateMul": 0.55
+  "rateMul": 0.73
  },
  "monster": {
   "id": "shrug",
@@ -69,7 +69,7 @@
    12,
    3
   ],
-  "minPerTile": 4.6,
+  "minPerTile": 3.44,
   "drain": 12,
   "scareTaps": 5,
   "scareTapsRope": 3,
@@ -281,7 +281,7 @@
    "pose": 73,
    "sticker": "cheese",
    "bonus": "brick",
-   "bonusHave": "<b>你背包裡有瑜伽磚！</b>小美說撐地手腕會痛，墊一塊磚在手下，手腕就不用往後折那麼多。",
+   "bonusHave": "<b>你背包裡有瑜伽磚！</b>小美說撐地手腕會痛，按「墊瑜伽磚」，手腕就不用往後折那麼多。",
    "bonusMissing": "小美說撐地手腕會痛。如果有瑜伽磚可以墊在手下……鎮上好像藏著幾塊。",
    "bonusThanks": "墊了瑜伽磚，手腕一點都不痛！",
    "ask": "每天彎著腰做拉花，胸口縮成一團。我拉的愛心，都變成駝背的愛心。",
@@ -462,7 +462,11 @@
    "grab": true,
    "events": false,
    "rateMul": 0.7,
-   "monSlow": 1.6
+   "monSlow": 1.6,
+   "arrive": {
+    "student": "08:00",
+    "rider": "08:00"
+   }
   }
  ],
  "events": [

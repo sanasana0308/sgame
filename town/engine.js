@@ -325,7 +325,7 @@ function renderHud(){
   const b=G.bag.brick||0,need=BRICK.badgeAt||3;
   const bag=`<span class="slot ${hasRope()?'got':'off'}" title="瑜伽繩">${ropeSvg()}${hasRope()?'瑜伽繩':'瑜伽繩？'}</span>
    <span class="slot ${b?'got':'off'}" title="瑜伽磚">${brickSvg()}${b}</span>
-   ${run.coupon&&run.coupon.have&&!run.coupon.used?`<span class="slot got" title="${Z.coupon.name}">${couponSvg()}按摩券</span>`:''}
+   ${run.coupon&&run.coupon.have&&!run.coupon.used?`<span class="slot got" title="${Z.coupon.name}" onclick="window.__couponHelp&&window.__couponHelp()">${couponSvg()}按摩券 ×1</span>`:''}
    ${run.rainUntil>=0?'<span class="slot rain">下雨中</span>':''}`;
   if(renderHud.bag!==bag){renderHud.bag=bag;$('bagRow').innerHTML=bag;}
   const sv=layersNow(),N=ALL.length;
@@ -395,7 +395,7 @@ function pickTile(x,y){
     toast(!full?`撿到瑜伽磚（背包有 ${G.bag.brick} 塊）。幫需要的居民墊著做，用一次送出一塊。`:`集滿 ${BRICK.badgeAt} 塊瑜伽磚！獲得「磚家」徽章。`);
   }
   const c=run.coupon;
-  if(c&&!c.have&&c.at[0]===x&&c.at[1]===y){c.have=true;productive();renderHud();toast(Z.coupon.found||'撿到按摩券！');}
+  if(c&&!c.have&&c.at[0]===x&&c.at[1]===y){c.have=true;productive();renderHud();toast((Z.coupon.found||'撿到按摩券！')+' 點居民時就能用，最適合快變紅的人。');}
 }
 
 // ================= 對話框 =================
@@ -423,6 +423,7 @@ function apEffect(a){const z=a.zone||0,te=a.tension||0,out=[];
   if(z>=.05)out.push('比較好穩住');else if(z<0)out.push('比較難穩住');
   if(te<0)out.push(`緊繃 ${te}`);else if(te>0)out.push('他會更煩');
   return out.length?'・'+out.join('・'):'';}
+window.__couponHelp=()=>toast('按摩券：點一位居民，在他的畫面按「用按摩券」，緊繃 −30。最適合快變紅、快被聳肩怪抓走的人。');
 function openNpc(n){
   const r=resOf(n);
   const ap=n.ap,talk=ap.talk||{label:'先聊聊',zone:.06,tension:-8},direct=ap.direct||{label:'直接教',zone:0,tension:0};
@@ -438,7 +439,8 @@ function openNpc(n){
   let html=`${head(n)}<div class="pb"><p class="say">${r.tries?'「再來一次？好吧。」':''}${r.tries?'':moodLine(n)}</p>
    ${needRope?`<p class="note warn">${n.noitem||'這個動作要用到瑜伽繩。'}（沒有繩子，兩手會碰不到。）</p>`:''}
    ${lowE?`<p class="note warn">你的體力只剩 ${Math.round(run.energy)}，手也在抖，穩住會比較難。</p>`:''}
-   ${canCoupon?`<button class="ghost" id="coupon">${couponSvg()}${Z.coupon.use||'用按摩券'}</button>`:''}
+   ${canCoupon?`<button class="ghost" id="coupon">${couponSvg()}${Z.coupon.use||'用按摩券'}<small>　最適合快變紅的人</small></button>`:''}
+   ${(G.bag.brick||0)>0?`<button class="ghost brickpick ${r.brickPick?'on':''}" id="brickPick">${brickSvg()}${r.brickPick?'✓ 會墊瑜伽磚':'墊瑜伽磚'}<small>　綠色區域變寬・用掉 1 塊（剩 ${G.bag.brick}）</small></button>`:''}
    <p class="lead" style="margin:0">怎麼開始？<small class="cost">教一次 ${r.tries?R.retryMin:R.lessonMin} 分鐘</small></p>
    <div class="row ap">
     <button class="primary" id="apTalk"><b>${talk.label||'先聊聊'}</b><small>+${R.talkMin||20} 分鐘${apEffect(talk)}</small></button>
@@ -448,6 +450,7 @@ function openNpc(n){
   openSheet(html,{live:true,kind:'npc'});
   run.active=n.id;
   $('later').onclick=()=>{wasted();closeSheet();};
+  if($('brickPick'))$('brickPick').onclick=()=>{r.brickPick=!r.brickPick;openNpc(n);};
   if(canCoupon)$('coupon').onclick=()=>{c.used=true;r.t=Math.max(0,r.t-(Z.coupon.amount||30));productive();toast(fill(Z.coupon.used,{name:n.nm}));renderHud();openNpc(n);};
   $('apTalk').onclick=()=>startLesson(n,'talk',talk);
   $('apDirect').onclick=()=>startLesson(n,'direct',direct);
@@ -465,17 +468,21 @@ function startLesson(n,kind,ap){
   productive();
   run.st[kind]++;r.approach=kind;
   {const other=n.ap[kind==='talk'?'direct':'talk']||{};if((ap.zone||0)<(other.zone||0))run.st.badAp++;}
-  if(kind==='talk'){spend(R.talkMin||20);for(const x of openRes())if(x!==n)x.flash=performance.now();toast(`聊了 ${R.talkMin||20} 分鐘。其他人的肩膀又緊了一點 ⬆`);}
+  if(kind==='talk'){const others=openRes().filter(x=>x!==n),bef=others.map(x=>resOf(x).t);spend(R.talkMin||20);
+    for(const x of others)x.flash=performance.now();
+    const ups=others.map((x,i)=>`${x.nm} +${Math.max(0,Math.round(resOf(x).t-bef[i]))}`).join('、');
+    toast(`聊了 ${R.talkMin||20} 分鐘。${ups?`其他人變緊：${ups}。`:''}${(ap.tension||0)<0?`${n.nm}放鬆了（緊繃 ${ap.tension}）。`:''}`);}
   r.t=Math.max(0,r.t+(ap.tension||0));
   if(r.t>=100&&run.grab){run.active=null;stuck(n);closeSheet();return;}
   if(!run.grab)r.t=Math.min(r.t,95);
-  let zone=(run.holdZone||R.hold.zone)+(ap.zone||0);
-  const useBrick=n.bonus==='brick'&&(G.bag.brick||0)>0;
-  if(useBrick)zone+=R.hold.brickZone;
-  if(run.energy<R.energy.low)zone+=R.energy.lowZone;
+  let zone=(run.holdZone||R.hold.zone)+(ap.zone||0);const why=[];
+  if((ap.zone||0)>=.04)why.push(`${ap.label||'先聊聊'}，他比較配合`);else if((ap.zone||0)<0)why.push(`${ap.label||'直接教'}，他沒那麼配合`);
+  const useBrick=!!r.brickPick&&(G.bag.brick||0)>0;
+  if(useBrick){zone+=R.hold.brickZone;why.push('墊了瑜伽磚');}
+  if(run.energy<R.energy.low){zone+=R.energy.lowZone;why.push('你很累');}
   zone=Math.max(R.hold.minZone,zone);
   r.tries++;
-  dragGame(n,{line:ap.line,zone,useBrick});
+  dragGame(n,{line:ap.line,zone,useBrick,why});
 }
 
 // ================= 小遊戲 1：拉到位 =================
@@ -562,7 +569,8 @@ function holdGame(n,o){
 }
 function runHold(n,o,practice,onEnd){
   const L=n.L,H_=R.hold,breaths=practice?1:H_.breaths,dur=breaths*(H_.inSec+H_.exSec);
-  $('lb').innerHTML=`<p class="lead" style="margin:0"><b>${practice?'練習 1 個呼吸':`穩住 ${breaths} 個呼吸`}。</b>跟著圓圈：吸氣按住，吐氣放開。</p>
+  const base=run.holdZone||H_.zone,zw=o.zone>base+.02?'寬一點':o.zone<base-.02?'窄一點':'一般';
+  $('lb').innerHTML=`<p class="lead" style="margin:0"><b>${practice?'練習 1 個呼吸':`穩住 ${breaths} 個呼吸`}。</b>跟著圓圈：吸氣按住，吐氣放開。</p>${practice?'':`<p class="note">綠色區域：<b>${zw}</b>${o.why&&o.why.length?`（${o.why.join('、')}）`:''}</p>`}
    <button class="holdpad" id="hold"><span class="pt" id="pt" aria-hidden="true">按住這裡開始 ↓</span><b id="hcue">吸氣：按住</b><small id="hstat">按下去就開始</small></button>
    ${practice?'':`<div class="tip"><i>口令</i><p>${L.cue||L.tip}</p></div>`}`;
   const pad=$('hold'),band=$('band'),needle=$('needle'),ring=$('ring'),btxt=$('btxt'),peek=$('peek'),hstat=$('hstat'),hcue=$('hcue'),big=$('bigcue'),pt=$('pt');
@@ -634,7 +642,7 @@ function lessonResult(n,grade,frac,o){
 function startLesson2(n,ap){
   const r=resOf(n);
   let zone=(run.holdZone||R.hold.zone)+(ap.zone||0);
-  const useBrick=n.bonus==='brick'&&(G.bag.brick||0)>0;if(useBrick)zone+=R.hold.brickZone;
+  const useBrick=!!r.brickPick&&(G.bag.brick||0)>0;if(useBrick)zone+=R.hold.brickZone;
   if(run.energy<R.energy.low)zone+=R.energy.lowZone;
   zone=Math.max(R.hold.minZone,zone);r.tries++;
   dragGame(n,{line:'再來一次。慢慢來。',zone,useBrick});
@@ -1060,7 +1068,7 @@ function draw(dt){
   }
   for(const [bx,by] of BRICKS){if(run.bricks.includes(bx+','+by))continue;const cx=(bx+.5)*ts,cy=(by+.5)*ts+wob(Math.sin(pulse*3)*1.5);ctx.fillStyle='#b48ad8';rr(cx-ts*.28,cy-ts*.18,ts*.56,ts*.36,4);ctx.fill();ctx.strokeStyle='#2c2c2a';ctx.lineWidth=1.5;ctx.stroke();}
   const c=run.coupon;
-  if(c&&!c.have&&Math.abs(player.x-c.at[0])+Math.abs(player.y-c.at[1])<=3){const cx=(c.at[0]+.5)*ts,cy=(c.at[1]+.5)*ts;ctx.globalAlpha=.6+.4*Math.sin(pulse*5);ctx.fillStyle='#fff1cc';rr(cx-ts*.3,cy-ts*.2,ts*.6,ts*.4,3);ctx.fill();ctx.strokeStyle='#d7263d';ctx.lineWidth=1.5;ctx.stroke();ctx.globalAlpha=1;}
+  if(c&&!c.have){const cx=(c.at[0]+.5)*ts,cy=(c.at[1]+.5)*ts;ctx.globalAlpha=.6+.4*Math.sin(pulse*5);ctx.fillStyle='#fff1cc';rr(cx-ts*.3,cy-ts*.2,ts*.6,ts*.4,3);ctx.fill();ctx.strokeStyle='#d7263d';ctx.lineWidth=1.5;ctx.stroke();ctx.globalAlpha=1;}
   for(const n of allPeople())drawNpc(n);
   drawMonster(dt);
   drawPlayer();
@@ -1148,7 +1156,7 @@ function frame(now){
   const live=run.started&&!run.over&&(!sheetOpen||sheetLive);
   if(live){
     const idle=!sheetOpen&&openRes().length===0&&NPCS.some(n=>resOf(n).state==='away');
-    run.ffAuto=idle;tick(dt*R.minPerSec*SPEED*(idle?8:run.ff?3:1));
+    if(idle&&!run.ffAuto)toast('⏩ 現在沒人可以救，時間快轉到下一位居民出現。');run.ffAuto=idle;tick(dt*R.minPerSec*SPEED*(idle?4:run.ff?3:1));
     if(!sheetOpen){
       if(player.path.length){const [nx,ny]=player.path[0];const dx=nx-player.x,dy=ny-player.y,d=Math.hypot(dx,dy),s=R.walkTilesPerSec*run.walkMul*SPEED*dt;
         if(d<=s){player.x=nx;player.y=ny;player.path.shift();run.st.walk++;run.st.pend++;run.energy-=R.energy.walkTile;run.st.minEnergy=Math.min(run.st.minEnergy,run.energy);pickTile(nx,ny);
